@@ -158,7 +158,7 @@ namespace MobiledgeX
         private async void SetupWindow()
         {
             EditorGUILayout.Space();
-            MobiledgeXIntegration.devName = EditorGUILayout.TextField("Orginization Name", MobiledgeXIntegration.devName);
+            MobiledgeXIntegration.orgName = EditorGUILayout.TextField("Orginization Name", MobiledgeXIntegration.orgName);
             MobiledgeXIntegration.appName = EditorGUILayout.TextField("App Name", MobiledgeXIntegration.appName);
             MobiledgeXIntegration.appVers = EditorGUILayout.TextField("App Version", MobiledgeXIntegration.appVers);
             EditorGUILayout.BeginVertical(headerStyle);
