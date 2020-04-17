@@ -290,41 +290,43 @@ namespace MobiledgeX
         /// <summary>
         /// Adds Mobiledgex Plugins to the Unity Project (SDK dll, IOS Plugin)
         /// </summary>
-        private void AddMobiledgeXPlugins()
+         void AddMobiledgeXPlugins()
         {
-            string pluginsFolderPath = @Application.dataPath + @"/Plugins";
-            string MobiledgeXFolderPath = @pluginsFolderPath + @"/MobiledgeX";
-            string dllPath = Path.GetFullPath("Packages/com.mobiledgex.mobiledgexsdk/Editor/Plugins/MatchingEngineSDKRestLibrary.dll");
-            string iosPluginPath = Path.GetFullPath("Packages/com.mobiledgex.mobiledgexsdk/Editor/Plugins/PlatformIntegration.m");
-            try
+        
+            string UnitypluginsFolderPath = Path.Combine(@Application.dataPath, @"Plugins");
+            string MobiledgeXFolderPath = Path.Combine(@UnitypluginsFolderPath, @"MobiledgeX");
+            string sdkPath = Path.GetFullPath("Packages/com.mobiledgex.mobiledgexsdk/Editor/Plugins/MatchingEngineSDKRestLibrary.dll");
+            string iosPluginPath = Path.GetFullPath("Packages/com.mobiledgex.mobiledgexsdk/Editor/Plugins/iOS/PlatformIntegration.m");
             {
-                if (!Directory.Exists(@pluginsFolderPath))
+                try
                 {
-                    AssetDatabase.CreateFolder("Assets", "Plugins");
+                    if (!Directory.Exists(@UnitypluginsFolderPath))
+                    {
+                        AssetDatabase.CreateFolder("Assets", "Plugins");
+                    }
+                    if (!Directory.Exists(@MobiledgeXFolderPath))
+                    {
+                        AssetDatabase.CreateFolder("Assets/Plugins", "MobiledgeX");
+                    }
+                    if (!File.Exists(Path.Combine(@MobiledgeXFolderPath + @"MatchingEngineSDKRestLibrary.dll")))
+                    {
+                        FileUtil.MoveFileOrDirectory(@sdkPath, @MobiledgeXFolderPath + @"/MatchingEngineSDKRestLibrary.dll");
+                    }
+                    if (!File.Exists(Path.Combine(@MobiledgeXFolderPath + @"iOS")))
+                    {
+                        AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "iOS");
+                    }
+                    if (!File.Exists(Path.Combine(@MobiledgeXFolderPath + @"iOS/PlatformIntegration.m")))
+                    {
+                        FileUtil.MoveFileOrDirectory(@iosPluginPath, Path.Combine(@MobiledgeXFolderPath, @"iOS/PlatformIntegration.m"));
+                        EditorPrefs.SetBool("MexPluginAdded", true);
+                    }
                 }
-                if (!Directory.Exists(@MobiledgeXFolderPath))
+                catch (Exception e)
                 {
-                    AssetDatabase.CreateFolder("Assets/Plugins", "MobiledgeX");
+                    Debug.LogError(e);
+                    Debug.Log("MobiledgeX: Please Follow these steps \n 1.remove the package from the Pacakge Manager. \n 2.Delete This folder Assets/MobiledgeX \n 3.Use the Package Manager to download Again.");
                 }
-                if (!Directory.Exists(@MobiledgeXFolderPath))
-                {
-                    AssetDatabase.CreateFolder("Assets/Plugins", "MobiledgeX");
-                }
-                if (!File.Exists(Path.Combine(@MobiledgeXFolderPath , @"MatchingEngineSDKRestLibrary.dll")))
-                {
-                    FileUtil.MoveFileOrDirectory(dllPath, @MobiledgeXFolderPath + @"/MatchingEngineSDKRestLibrary.dll");
-
-                }
-                if (!File.Exists(Path.Combine(@MobiledgeXFolderPath , @"PlatformIntegration.m")))
-                {
-                    FileUtil.MoveFileOrDirectory(iosPluginPath, @MobiledgeXFolderPath + @"/PlatformIntegration.m");
-
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.Log(e);
-            }
         }
 
         #endregion
