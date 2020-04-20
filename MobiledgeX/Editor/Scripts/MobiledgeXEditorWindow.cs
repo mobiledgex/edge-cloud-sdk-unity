@@ -11,14 +11,14 @@ namespace MobiledgeX
     [ExecuteInEditMode]
     public class MobiledgeXEditorWindow : EditorWindow
     {
+        static MobiledgeXSettings settings;
         #region Private Variables
-        MobiledgeXIntegration integration;
         Texture2D MexLogo;
         string ProgressText;
         Vector2 scrollPos;
         GUIStyle headerStyle;
         GUIStyle LabelStyle;
-
+    
         /// <summary>
         /// The titles of the tabs in Mobiledgex window.
         /// </summary>
@@ -49,11 +49,19 @@ namespace MobiledgeX
         #endregion
 
         #region  Mobiledgex ToolBar Menu items
-        [MenuItem("MobiledgeX/Setup",priority =100)]
+        [MenuItem("MobiledgeX/Setup", priority = 100)]
         public static void ShowWindow()
         {
-            Type[] dockerNextTo = new Type[2] { typeof(SceneView),typeof(InspectorMode) };
+            Type[] dockerNextTo = new Type[2] { typeof(SceneView), typeof(InspectorMode) };
             GetWindow<MobiledgeXEditorWindow>("MobiledgeX", dockerNextTo);
+        }
+
+        [MenuItem("MobiledgeX/Settings", priority = 100)]
+        public static void ShowSettings()
+        {
+            settings = (MobiledgeXSettings)Resources.Load("MobiledgeXSettings", typeof(MobiledgeXSettings));
+            Selection.objects = new UnityEngine.Object[] { settings };
+            EditorGUIUtility.PingObject(settings);
         }
 
         [MenuItem("MobiledgeX/API References")]
@@ -67,14 +75,13 @@ namespace MobiledgeX
         {
             Application.OpenURL("https://developers.mobiledgex.com/sdk-libraries/unity-sdk");
         }
-
         #endregion
 
 
         #region EditorWindow callbacks
         private void Awake()
         {
-            if (!EditorPrefs.HasKey("PopUp"))
+            if (!EditorPrefs.GetBool("PopUp") || !EditorPrefs.HasKey("PopUp"))
             {
                 if (!EditorUtility.DisplayDialog("MobiledgeX",
             "Have you already created an Account?", "Yes", "No"))
@@ -83,7 +90,6 @@ namespace MobiledgeX
                 };
                 EditorPrefs.SetBool("PopUp", true);
             }
-            AddMobiledgeXPlugins();
         }
 
         private void OnGUI()
@@ -97,11 +103,11 @@ namespace MobiledgeX
             }
             currentTab = selectedTab;
             switch (currentTab)
-                {
-                 default:
-                 case 0:
-                        SetupWindow();
-                        break;
+            {
+                default:
+                case 0:
+                    SetupWindow();
+                    break;
                 case 1:
                     DocumentationWindow();
                     break;
@@ -110,16 +116,15 @@ namespace MobiledgeX
                     break;
             }
         }
+            #endregion
 
-        #endregion
 
+            #region Private Helper Functions
 
-        #region Private Helper Functions
-
-        /// <summary>
-        /// Load Resources to be used in OnGUI
-        /// </summary>
-        private void Init()
+            /// <summary>
+            /// Load Resources to be used in OnGUI
+            /// </summary>
+            private void Init()
         {
             MexLogo = Resources.Load("mobiledgexLogo") as Texture2D;
             headerStyle = new GUIStyle();
@@ -148,7 +153,7 @@ namespace MobiledgeX
             rect.y += padding;
             rect.width = 200;
             rect.height = 50;
-            GUI.DrawTexture(rect, MexLogo,ScaleMode.StretchToFill, true, 10.0F);
+            GUI.DrawTexture(rect, MexLogo, ScaleMode.StretchToFill, true, 10.0F);
             EditorGUILayout.EndHorizontal();
         }
 
@@ -157,10 +162,15 @@ namespace MobiledgeX
         /// </summary>
         private async void SetupWindow()
         {
+            settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
+
             EditorGUILayout.Space();
-            MobiledgeXIntegration.orgName = EditorGUILayout.TextField("Orginization Name", MobiledgeXIntegration.orgName);
-            MobiledgeXIntegration.appName = EditorGUILayout.TextField("App Name", MobiledgeXIntegration.appName);
-            MobiledgeXIntegration.appVers = EditorGUILayout.TextField("App Version", MobiledgeXIntegration.appVers);
+            settings.devName = EditorGUILayout.TextField("Orginization Name", settings.devName);
+
+            settings.appName = EditorGUILayout.TextField("App Name", settings.appName);
+
+            settings.appVers = EditorGUILayout.TextField("App Version", settings.appVers);
+
             EditorGUILayout.BeginVertical(headerStyle);
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(300), GUILayout.Height(100));
             GUILayout.Label(ProgressText, LabelStyle);
@@ -168,19 +178,23 @@ namespace MobiledgeX
             EditorGUILayout.EndVertical();
             if (GUILayout.Button("Setup"))
             {
+                MobiledgeXIntegration.devName = settings.devName;
+                MobiledgeXIntegration.appName = settings.appName;
+                MobiledgeXIntegration.appVers = settings.appVers;
                 ProgressText = "";
-            
-                if (await CheckCredentials()) {
+
+                if (await CheckCredentials())
+                {
                     ProgressText += "\nConnected,You are all set! ";
-                   
+
                 }
                 else
                 {
-                 ProgressText += "\nError Connecting, Check the console for more details! ";
+                    ProgressText += "\nError Connecting, Check the console for more details! ";
                 }
             }
         }
-       
+
         /// <summary>
         /// Draw the License Window
         /// </summary>
@@ -240,7 +254,7 @@ namespace MobiledgeX
             EditorGUILayout.EndVertical();
         }
 
-        private void clog(string msgTitle,string msg,bool error=false)
+        private void clog(string msgTitle, string msg, bool error = false)
         {
             if (!error)
             {
@@ -250,7 +264,7 @@ namespace MobiledgeX
             {
                 UnityEngine.Debug.LogErrorFormat(msgTitle + "\n" + msg);
             }
-            
+
             ProgressText += "\n" + msgTitle;
 
         }
@@ -261,74 +275,30 @@ namespace MobiledgeX
         /// <returns>boolean value</returns>
         public async Task<bool> CheckCredentials()
         {
-            integration = new MobiledgeXIntegration();
-            integration.useWifiOnly(true);
+            MobiledgeXIntegration.useWifiOnly(true);
             try
             {
                 // Register and find cloudlet:
-                clog("Registering to DME ...","");
-                return await integration.Register();
+                clog("Registering to DME ...", "");
+                return await MobiledgeXIntegration.Register();
             }
             catch (HttpException httpe) // HTTP status, and REST API call error codes.
             {
                 // server error code, and human readable message:
-                clog("RegisterClient Exception ", httpe.Message + ", HTTP StatusCode: " + httpe.HttpStatusCode + ", API ErrorCode: " + httpe.ErrorCode + "\nStack: " + httpe.StackTrace,true);
+                clog("RegisterClient Exception ", httpe.Message + ", HTTP StatusCode: " + httpe.HttpStatusCode + ", API ErrorCode: " + httpe.ErrorCode + "\nStack: " + httpe.StackTrace, true);
                 return false;
             }
             catch (HttpRequestException httpre)
             {
-                clog("RegisterClient HttpRequest Exception" ,httpre.Message + "\nStack Trace: " + httpre.StackTrace,true);
+                clog("RegisterClient HttpRequest Exception", httpre.Message + "\nStack Trace: " + httpre.StackTrace, true);
                 return false;
             }
             catch (Exception e)
             {
-                clog("Unexpected Exception " ,e.StackTrace,true);
+                clog("Unexpected Exception ", e.StackTrace, true);
                 return false;
             }
         }
-
-        /// <summary>
-        /// Adds Mobiledgex Plugins to the Unity Project (SDK dll, IOS Plugin)
-        /// </summary>
-         void AddMobiledgeXPlugins()
-        {
-        
-            string UnitypluginsFolderPath = Path.Combine(@Application.dataPath, @"Plugins");
-            string MobiledgeXFolderPath = Path.Combine(@UnitypluginsFolderPath, @"MobiledgeX");
-            string sdkPath = Path.GetFullPath("Packages/com.mobiledgex.mobiledgexsdk/Editor/Plugins/MatchingEngineSDKRestLibrary.dll");
-            string iosPluginPath = Path.GetFullPath("Packages/com.mobiledgex.mobiledgexsdk/Editor/Plugins/iOS/PlatformIntegration.m");
-            {
-                try
-                {
-                    if (!Directory.Exists(@UnitypluginsFolderPath))
-                    {
-                        AssetDatabase.CreateFolder("Assets", "Plugins");
-                    }
-                    if (!Directory.Exists(@MobiledgeXFolderPath))
-                    {
-                        AssetDatabase.CreateFolder("Assets/Plugins", "MobiledgeX");
-                    }
-                    if (!File.Exists(Path.Combine(@MobiledgeXFolderPath + @"MatchingEngineSDKRestLibrary.dll")))
-                    {
-                        FileUtil.MoveFileOrDirectory(@sdkPath, @MobiledgeXFolderPath + @"/MatchingEngineSDKRestLibrary.dll");
-                    }
-                    if (!File.Exists(Path.Combine(@MobiledgeXFolderPath + @"iOS")))
-                    {
-                        AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "iOS");
-                    }
-                    if (!File.Exists(Path.Combine(@MobiledgeXFolderPath + @"iOS/PlatformIntegration.m")))
-                    {
-                        FileUtil.MoveFileOrDirectory(@iosPluginPath, Path.Combine(@MobiledgeXFolderPath, @"iOS/PlatformIntegration.m"));
-                        EditorPrefs.SetBool("MexPluginAdded", true);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError(e);
-                    Debug.Log("MobiledgeX: Please Follow these steps \n 1.remove the package from the Pacakge Manager. \n 2.Delete This folder Assets/MobiledgeX \n 3.Use the Package Manager to download Again.");
-                }
-        }
-
         #endregion
     }
 }
