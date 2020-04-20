@@ -165,7 +165,7 @@ namespace MobiledgeX
             settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
 
             EditorGUILayout.Space();
-            settings.devName = EditorGUILayout.TextField("Orginization Name", settings.devName);
+            settings.orgName = EditorGUILayout.TextField("Orginization Name", settings.orgName);
 
             settings.appName = EditorGUILayout.TextField("App Name", settings.appName);
 
@@ -178,7 +178,7 @@ namespace MobiledgeX
             EditorGUILayout.EndVertical();
             if (GUILayout.Button("Setup"))
             {
-                MobiledgeXIntegration.devName = settings.devName;
+                MobiledgeXIntegration.orgName = settings.orgName;
                 MobiledgeXIntegration.appName = settings.appName;
                 MobiledgeXIntegration.appVers = settings.appVers;
                 ProgressText = "";
