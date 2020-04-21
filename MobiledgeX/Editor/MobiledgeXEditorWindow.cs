@@ -11,9 +11,9 @@ namespace MobiledgeX
     [ExecuteInEditMode]
     public class MobiledgeXEditorWindow : EditorWindow
     {
-        static MobiledgeXSettings settings;
-        #region Private Variables
-        Texture2D MexLogo;
+		static MobiledgeXSettings settings;
+		#region Private Variables
+		Texture2D MexLogo;
         string ProgressText;
         Vector2 scrollPos;
         GUIStyle headerStyle;
@@ -162,26 +162,26 @@ namespace MobiledgeX
         /// </summary>
         private async void SetupWindow()
         {
-            settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
+			settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
 
-            EditorGUILayout.Space();
-            settings.orgName = EditorGUILayout.TextField("Orginization Name", settings.orgName);
+			EditorGUILayout.Space();
+			settings.orgName = EditorGUILayout.TextField("Orginization Name", settings.orgName);
 
-            settings.appName = EditorGUILayout.TextField("App Name", settings.appName);
+			settings.appName = EditorGUILayout.TextField("App Name", settings.appName);
 
-            settings.appVers = EditorGUILayout.TextField("App Version", settings.appVers);
+			settings.appVers = EditorGUILayout.TextField("App Version", settings.appVers);
 
-            EditorGUILayout.BeginVertical(headerStyle);
+			EditorGUILayout.BeginVertical(headerStyle);
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(300), GUILayout.Height(100));
             GUILayout.Label(ProgressText, LabelStyle);
             EditorGUILayout.EndScrollView();
             EditorGUILayout.EndVertical();
             if (GUILayout.Button("Setup"))
             {
-                MobiledgeXIntegration.orgName = settings.orgName;
-                MobiledgeXIntegration.appName = settings.appName;
-                MobiledgeXIntegration.appVers = settings.appVers;
-                ProgressText = "";
+				MobiledgeXIntegration.orgName = settings.orgName;
+				MobiledgeXIntegration.appName = settings.appName;
+				MobiledgeXIntegration.appVers = settings.appVers;
+				ProgressText = "";
 
                 if (await CheckCredentials())
                 {
