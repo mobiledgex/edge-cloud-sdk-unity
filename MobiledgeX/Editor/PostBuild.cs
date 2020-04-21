@@ -20,7 +20,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEditor.iOS.Xcode;
-namespace Mobiledgex
+namespace MobiledgeX
 {
     /// <summary>
     /// Post Build Adds Core Telephony Framework to the generated XCode Project, Make Sure Unity Ads Package is Updated or Removed
