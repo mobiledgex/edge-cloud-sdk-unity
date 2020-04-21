@@ -63,12 +63,51 @@ This SDK works on Unity Editor 2018.4.19f1 (LTS) and higher.
 <!-- USAGE EXAMPLES -->
 ## Usage
 
+```
+using MobiledgeX;
+using System.Threading.Tasks;
+```
+
+
 For Restful Connection
+
+` string url = await MobiledgeXIntegration.GetRestURI();`
+
 
 For Websocket Connection
 
-
-
+```
+    // Create an instance of MobiledgeXSocketClient
+    MobiledgeXSocketClient wsClient;
+    // Start a websocket using an instance of MobiledgeXSocketClient
+    async void StartWebSocket()
+    {
+        wsClient = new MobiledgeXSocketClient();
+        if (wsClient.isOpen())
+        {
+            wsClient.Dispose();
+            wsClient = new MobiledgeXSocketClient();
+        }
+       await wsClient.Connect("?roomid=testt");
+        wsClient.Send("msg");
+    }
+    
+    // Check wsClient 
+    private void Update()
+    {
+        if (wsClient == null)
+        {
+            return;
+        }
+        var cqueue = wsClient.receiveQueue;
+        string msg;
+        while (cqueue.TryPeek(out msg))
+        {
+            cqueue.TryDequeue(out msg);
+            print(msg);
+        }
+    }
+```
 
 
 _For more examples, please refer to the [Edge Sample Apps](https://github.com/mobiledgex/edge-cloud-sampleapps/)_
