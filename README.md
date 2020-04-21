@@ -46,23 +46,39 @@ This SDK works on Unity Editor 2018.4.19f1 (LTS) and higher.
 
 1. Create an Account on MobiledgeX Console [https://console.mobiledgex.net](https://console.mobiledgex.net)
 2. Upload your server/backend to MobiledgeX Console using(github actions/ MobiledgeX Console) 
+3. If you have Unity 2019 or higher use Unity Package Manager, Add Package using git url 
+
+4. If you have Unity 2018, Please clone the repo and add it to your Unity Project
 
 
+5. Editor Step
+(Enter Organization Name, Application Name, Application Version)
 
+6. MobiledgeX Setting
+(Click on Mobiledgex Settings to Highlight Mobiledgex Settings Object)
+
+##### Known Issues : Make sure to Update Unity Ads Package to (3.4.4) or Remove it.
+##### Location Premissions is needed to connect to the closest Edge Cloudlet according to your location 
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+For Restful Connection
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+For Websocket Connection
+
+
+
+
+
+_For more examples, please refer to the [Edge Sample Apps](https://github.com/mobiledgex/edge-cloud-sampleapps/)_
 
 
 
 <!-- ROADMAP -->
 ## Roadmap
 
-Add and See the [open issues](https://github.com/mobiledgex/edge-cloud-sdk-unity/issues) for a list of proposed features (and known issues).
+Add or See the [open issues](https://github.com/mobiledgex/edge-cloud-sdk-unity/issues) for a list of proposed features (and known issues).
 
 
 
