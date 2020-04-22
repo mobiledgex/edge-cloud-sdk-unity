@@ -258,6 +258,7 @@
       // Typical developer workflow to get connection to application backend
       public static async Task<ClientWebSocket> GetWebsocketConnection(string path)
       {
+        ConfigureMobiledgeXSettings();
         Loc loc = await GetLocationFromDevice();
         string aCarrierName = GetCarrierName();
         string eCarrierName;
