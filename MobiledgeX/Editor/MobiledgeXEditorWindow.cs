@@ -79,9 +79,11 @@ namespace MobiledgeX
 
 
         #region EditorWindow callbacks
-        private void Awake()
+
+        private void OnGUI()
         {
-            if (!EditorPrefs.GetBool("PopUp") || !EditorPrefs.HasKey("PopUp"))
+            AssetDatabase.Refresh();
+             if (!EditorPrefs.GetBool("PopUp") || !EditorPrefs.HasKey("PopUp"))
             {
                 if (!EditorUtility.DisplayDialog("MobiledgeX",
             "Have you already created an Account?", "Yes", "No"))
@@ -90,10 +92,6 @@ namespace MobiledgeX
                 };
                 EditorPrefs.SetBool("PopUp", true);
             }
-        }
-
-        private void OnGUI()
-        {
             Init();
             DrawLogo();
             int selectedTab = GUILayout.Toolbar(currentTab, tabTitles);
