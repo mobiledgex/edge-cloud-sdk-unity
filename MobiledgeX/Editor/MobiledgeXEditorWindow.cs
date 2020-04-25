@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.iOS;
 using DistributedMatchEngine;
 
 namespace MobiledgeX
@@ -11,9 +12,9 @@ namespace MobiledgeX
     [ExecuteInEditMode]
     public class MobiledgeXEditorWindow : EditorWindow
     {
-		static MobiledgeXSettings settings;
-		#region Private Variables
-		Texture2D MexLogo;
+        static MobiledgeXSettings settings;
+        #region Private Variables
+        Texture2D MexLogo;
         string ProgressText;
         Vector2 scrollPos;
         GUIStyle headerStyle;
@@ -79,18 +80,29 @@ namespace MobiledgeX
 
 
         #region EditorWindow callbacks
-
+        private void Awake()
+        {
+            if (EditorPrefs.GetBool("MexPluginAdded") != true)
+            {
+                AddMobiledgeXPlugins();
+            }
+            if (PlayerSettings.iOS.locationUsageDescription.Length<1)
+            {
+                SetUpLocationSettings();
+            }
+         
+        }
         private void OnGUI()
         {
             AssetDatabase.Refresh();
-             if (!EditorPrefs.GetBool("PopUp") || !EditorPrefs.HasKey("PopUp"))
+            if (!EditorPrefs.GetBool("MexPopUp") || !EditorPrefs.HasKey("MexPopUp"))
             {
                 if (!EditorUtility.DisplayDialog("MobiledgeX",
             "Have you already created an Account?", "Yes", "No"))
                 {
                     Application.OpenURL("https://console.mobiledgex.net/");
                 };
-                EditorPrefs.SetBool("PopUp", true);
+                EditorPrefs.SetBool("MexPopUp", true);
             }
             Init();
             DrawLogo();
@@ -160,26 +172,28 @@ namespace MobiledgeX
         /// </summary>
         private async void SetupWindow()
         {
-			settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
+          
+            
+            settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
 
-			EditorGUILayout.Space();
-			settings.orgName = EditorGUILayout.TextField("Orginization Name", settings.orgName);
+            EditorGUILayout.Space();
+            settings.orgName = EditorGUILayout.TextField("Orginization Name", settings.orgName);
 
-			settings.appName = EditorGUILayout.TextField("App Name", settings.appName);
+            settings.appName = EditorGUILayout.TextField("App Name", settings.appName);
 
-			settings.appVers = EditorGUILayout.TextField("App Version", settings.appVers);
+            settings.appVers = EditorGUILayout.TextField("App Version", settings.appVers);
 
-			EditorGUILayout.BeginVertical(headerStyle);
+            EditorGUILayout.BeginVertical(headerStyle);
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(300), GUILayout.Height(100));
             GUILayout.Label(ProgressText, LabelStyle);
             EditorGUILayout.EndScrollView();
             EditorGUILayout.EndVertical();
             if (GUILayout.Button("Setup"))
             {
-				MobiledgeXIntegration.orgName = settings.orgName;
-				MobiledgeXIntegration.appName = settings.appName;
-				MobiledgeXIntegration.appVers = settings.appVers;
-				ProgressText = "";
+                MobiledgeXIntegration.orgName = settings.orgName;
+                MobiledgeXIntegration.appName = settings.appName;
+                MobiledgeXIntegration.appVers = settings.appVers;
+                ProgressText = "";
 
                 if (await CheckCredentials())
                 {
@@ -273,12 +287,13 @@ namespace MobiledgeX
         /// <returns>boolean value</returns>
         public async Task<bool> CheckCredentials()
         {
-            MobiledgeXIntegration.useWifiOnly(true);
+            MobiledgeXIntegration integration = new MobiledgeXIntegration();
+            integration.useWifiOnly(true);
             try
             {
                 // Register and find cloudlet:
                 clog("Registering to DME ...", "");
-                return await MobiledgeXIntegration.Register();
+                return await integration.Register();
             }
             catch (HttpException httpe) // HTTP status, and REST API call error codes.
             {
@@ -296,6 +311,83 @@ namespace MobiledgeX
                 clog("Unexpected Exception ", e.StackTrace, true);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Adds Mobiledgex Plugins to the Unity Project (SDK dll, IOS Plugin)
+        /// </summary>
+         void AddMobiledgeXPlugins()
+        {
+
+            string UnitypluginsFolderPath = Path.Combine(@Application.dataPath, @"Plugins");
+            string MobiledgeXFolderPath = Path.Combine(@UnitypluginsFolderPath, @"MobiledgeX");
+            string sdkPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Runtime/Plugins/MatchingEngineSDKRestLibrary.dll");
+            string sdkMetaPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Runtime/Plugins/MatchingEngineSDKRestLibrary.dll.meta");
+            string iosPluginPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Runtime/Plugins/iOS/PlatformIntegration.m");
+            string iosMetaPluginPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Runtime/Plugins/iOS/PlatformIntegration.m.meta");
+            string linkXMLPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/link.xml");
+            string linkXMLMetaPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/link.xml.meta");
+            string settingPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Resources/MobiledgeXSettings.asset");
+            string settingMetaPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Resources/MobiledgeXSettings.asset.meta");
+            try
+                {
+                    if (!Directory.Exists(@UnitypluginsFolderPath))
+                    {
+                        AssetDatabase.CreateFolder("Assets", "Plugins");
+                    }
+                    if (!Directory.Exists(@MobiledgeXFolderPath))
+                    {
+                        AssetDatabase.CreateFolder("Assets/Plugins", "MobiledgeX");
+                    }
+                    if (!File.Exists(Path.Combine(@MobiledgeXFolderPath, @"MatchingEngineSDKRestLibrary.dll"))
+                        && File.Exists(@sdkPath))
+                    {
+                       FileUtil.MoveFileOrDirectory(@sdkPath, Path.Combine(@MobiledgeXFolderPath, @"MatchingEngineSDKRestLibrary.dll"));
+                       FileUtil.MoveFileOrDirectory(@sdkMetaPath, Path.Combine(@MobiledgeXFolderPath, @"MatchingEngineSDKRestLibrary.dll.meta"));
+                       AssetDatabase.Refresh();
+                    }
+                    if (!Directory.Exists(Path.Combine(@MobiledgeXFolderPath , @"iOS")))
+                    {
+                       AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "iOS");
+                    }
+                    if (!File.Exists(Path.Combine(@MobiledgeXFolderPath , @"iOS/PlatformIntegration.m")) 
+                       && File.Exists(@iosPluginPath))
+                    {
+                   
+                    FileUtil.MoveFileOrDirectory(@iosPluginPath, Path.Combine(@MobiledgeXFolderPath, @"iOS/PlatformIntegration.m"));
+                    FileUtil.MoveFileOrDirectory(@iosMetaPluginPath, Path.Combine(@MobiledgeXFolderPath, @"iOS/PlatformIntegration.m.meta"));
+                    }
+                    if (!File.Exists(Path.Combine(@MobiledgeXFolderPath , @"link.xml")) 
+                       && File.Exists(@linkXMLPath))
+                    {
+                   
+                    FileUtil.MoveFileOrDirectory(@linkXMLPath, Path.Combine(@MobiledgeXFolderPath, @"link.xml"));
+                    FileUtil.MoveFileOrDirectory(@linkXMLMetaPath, Path.Combine(@MobiledgeXFolderPath, @"link.xml.meta"));
+                    
+                    }
+                    if (!Directory.Exists(Path.Combine(@MobiledgeXFolderPath , @"Resources")))
+                    {
+                       AssetDatabase.CreateFolder("Assets", "Resources");
+                    }
+                    if (!File.Exists(Path.Combine(@MobiledgeXFolderPath , @"Resources/MobiledgeXSettings.asset")) 
+                       && File.Exists(@settingPath))
+                    {
+                    FileUtil.MoveFileOrDirectory(@settingPath, Path.Combine(@"Assets", @"Resources/MobiledgeXSettings.asset"));
+                    FileUtil.MoveFileOrDirectory(@settingMetaPath, Path.Combine(@"Assets", @"Resources/MobiledgeXSettings.asset.meta"));
+                    }
+                    EditorPrefs.SetBool("MexPluginAdded", true);
+
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError(e);
+                    Debug.Log("MobiledgeX: Please Follow these steps \n 1.remove the package from the Pacakge Manager. \n 2.Delete This folder Assets/MobiledgeX \n 3.Use the Package Manager to download Again.");
+                }
+        }
+
+        void SetUpLocationSettings()
+        {
+            PlayerSettings.iOS.locationUsageDescription = "Geo-Location is use by the app's MobiledgeX SDK Integration to locate the closest edge cloudlet server and for carrier enhanced Verify Location services.(where supported)";
         }
         #endregion
     }
