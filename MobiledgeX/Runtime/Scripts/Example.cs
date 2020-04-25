@@ -1,28 +1,36 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Networking;
+﻿using UnityEngine;
 using MobiledgeX;
 using System.Threading.Tasks;
+using UnityEngine.UI;
 
 public class Example : MonoBehaviour
 {
+
     #region Websocket Example using MobiledgeX
     MobiledgeXSocketClient wsClient;
+    public Text RestURIText;
+    public Text WebSocketText;
+    public Button StartWebSocketButton;
+    private void Start()
+    {
+        StartWebSocketButton.onClick.AddListener(StartWebSocket);
+    }
     async void StartWebSocket()
     {
-        wsClient = new MobiledgeXSocketClient();
+        MobiledgeXIntegration mobiledgeXIntegration = new MobiledgeXIntegration();
+        wsClient = new MobiledgeXSocketClient (mobiledgeXIntegration);
         if (wsClient.isOpen())
         {
             wsClient.Dispose();
-            wsClient = new MobiledgeXSocketClient();
+            wsClient = new MobiledgeXSocketClient(mobiledgeXIntegration);
         }
-       await wsClient.Connect("?roomid=testt");
-        wsClient.Send("msg");
+       await wsClient.Connect("?roomid=testing&pName=Ahmed&pCharacter=2");
+      
     }
     // Update is called evey frame
     private void Update()
     {
+        
         if (wsClient == null)
         {
             return;
@@ -32,36 +40,22 @@ public class Example : MonoBehaviour
         while (cqueue.TryPeek(out msg))
         {
             cqueue.TryDequeue(out msg);
+            WebSocketText.text += msg;
             print(msg);
         }
     }
     #endregion
 
-    #region Rest Example using MobiledgeX
+    #region Rest Example using MobiledgeX 
     async Task RestExample()
     {
-    string url = await MobiledgeXIntegration.GetRestURI();
-     //WWWForm form = new WWWForm();
-     //form.AddField("myField", "myData");
-     //StartCoroutine(SendPostRequest(url,form));
+        MobiledgeXIntegration integration = new MobiledgeXIntegration();
+        integration.useWifiOnly(true);
+        string uri=  await integration.GetRestURI();
+        RestURIText.text = uri;
+        
     }
-    IEnumerator SendPostRequest(string url, WWWForm form)
-    {
-        using (UnityWebRequest www = UnityWebRequest.Post(url, form))
-        {
-            yield return www.SendWebRequest();
-
-            if (www.isNetworkError || www.isHttpError)
-            {
-                Debug.Log(www.error);
-            }
-            else
-            {
-                Debug.Log(www.downloadHandler.text);
-                Debug.Log("Form upload complete!");
-            }
-        }
-    }
+ 
     #endregion
 
     // test case
