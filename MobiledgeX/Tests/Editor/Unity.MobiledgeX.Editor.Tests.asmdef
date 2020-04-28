@@ -1,10 +1,10 @@
 {
     "name": "Unity.MobiledgeX.Editor.Tests.asmdef",
     "references": [
-        "GUID:daf186133d08d4f52871f6a11dcbfae6",
-        "GUID:aad4608417cf740f59e86b522e3b6599",
-        "GUID:27619889b8ba8c24980f49ee34dbb44a",
-        "GUID:0acc523941302664db1f4e527237feb3"
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "Unity.Mobiledgex.Editor",
+        "Unity.Mobiledgex"
     ],
     "includePlatforms": [
         "Editor"
@@ -16,7 +16,7 @@
         "nunit.framework.dll",
         "MatchingEngineSDKRestLibrary.dll"
     ],
-    "autoReferenced": true,
+    "autoReferenced": false,
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS"
     ],
