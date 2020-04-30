@@ -103,7 +103,7 @@ namespace MobiledgeX
         public async Task<bool> Register()
         {
             ConfigureMobiledgeXSettings();
-            // If MEX is reachable on your SIM card:
+            // If MobiledgeX is reachable on your SIM card:
             string aCarrierName = GetCarrierName();
             string eCarrierName;
             if (me.useOnlyWifi)
@@ -138,7 +138,7 @@ namespace MobiledgeX
             // technically valid, though less likely real, as of writing.
             Loc loc = await GetLocationFromDevice();
 
-            // If MEX is reachable on your SIM card:
+            // If MobiledgeX is reachable on your SIM card:
             string aCarrierName = GetCarrierName();
             string eCarrierName;
             if (me.useOnlyWifi) // There's no host (PC, UnityEditor, etc.)...
@@ -166,7 +166,7 @@ namespace MobiledgeX
         {
             Loc loc = await GetLocationFromDevice();
 
-            // If MEX is reachable on your SIM card:
+            // If MobiledgeX is reachable on your SIM card:
             string aCarrierName = GetCarrierName();
             string eCarrierName;
             if (me.useOnlyWifi) // There's no host (PC, UnityEditor, etc.)...

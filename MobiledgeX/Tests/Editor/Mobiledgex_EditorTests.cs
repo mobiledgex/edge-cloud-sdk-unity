@@ -65,8 +65,7 @@ namespace MobiledgeX
     
 
         [Test]
-        [TestCase("Ahmed_Schrute", "wsar", "latest")]
-        //[TestCase("Ahmed_Schrute", "wsmulti", "latest")]
+        [TestCase("MobiledgeX", "MobiledgeX SDK Demo", "2.0")]
         public void CheckCredentials(string orgName, string appName, string appVers)
         {
             settings.orgName = orgName;
@@ -82,8 +81,8 @@ namespace MobiledgeX
 
        
         [Test]
-        [TestCase("Ahmed_Schrute", "", "latest")]
-        [TestCase("Ahmed_Schrute", "wsar", "2018-20-20")]
+        [TestCase("WrongCredentials", "", "latest")]
+        [TestCase("WrongCredentials", "WrongAppName", "2018-20-20")]
         public void ExpectedExceptionTest(string orgName, string appName, string appVers)
         {
             settings.orgName = orgName;

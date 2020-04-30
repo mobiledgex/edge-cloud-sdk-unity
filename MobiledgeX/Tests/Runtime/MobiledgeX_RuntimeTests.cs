@@ -58,7 +58,7 @@ namespace MobiledgeX
         #region Run Time Tests
 
         [Test]
-        [TestCase("Ahmed_Schrute", "wsar", "latest")]
+        [TestCase("MobiledgeX", "MobiledgeX SDK Demo", "2.0")]
         public void RegisterClient(string orgName, string appName, string appVers)
         {
             settings.orgName = orgName;
@@ -73,7 +73,7 @@ namespace MobiledgeX
         }
 
         [Test]
-        [TestCase("Ahmed_Schrute", "wsar", "latest")]
+        [TestCase("MobiledgeX", "MobiledgeX SDK Demo", "2.0")]
         public void GetRestURI(string orgName, string appName, string appVers)
         {
             settings.orgName = orgName;
@@ -88,7 +88,7 @@ namespace MobiledgeX
         }
 
         [Test]
-        [TestCase("Ahmed_Schrute", "wsa", "latest")]
+        [TestCase("WrongCredentials", "WrongAppName", "WrongAppVersion")]
         public void GetRestURIException(string orgName, string appName, string appVers)
         {
             settings.orgName = orgName;
@@ -116,7 +116,7 @@ namespace MobiledgeX
         }
 
         [Test]
-        [TestCase("Ahmed_Schrute", "wsar", "latest")]
+        [TestCase("MobiledgeX", "PingPong", "2020-02-03")]
         public void WebSocketTest(string orgName, string appName, string appVers)
         {
             settings.orgName = orgName;
@@ -132,7 +132,7 @@ namespace MobiledgeX
         }
 
         [Test]
-        [TestCase("Ahmed_Schrute", "wsa", "latest")]
+        [TestCase("WrongCredentials", "WrongAppName", "WrongAppVersion")]
         public void WebSocketTestExpectedException(string orgName, string appName, string appVers)
         {
             settings.orgName = orgName;
