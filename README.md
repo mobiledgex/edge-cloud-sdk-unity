@@ -37,6 +37,8 @@
 ## Getting Started
 MobiledgeX Inc. is building a marketplace of edge resources and services that will connect developers with the world’s largest mobile networks to power the next generation of applications and devices. MobiledgeX is an edge computing company founded by Deutsche Telekom AG and headquartered in San Francisco, California.
 
+The MobiledgeX Unity SDK enables an application to register and then locate the nearest edge cloudlet backend server for use. The SDK also allows verification of a device's location for all location-specific tasks. Because these APIs involve networking, most functions will run asynchronously, and in a background thread.
+
 ### Prerequisites
 
 This SDK works on Unity Editor 2018.4.19f1 (LTS) and higher.
