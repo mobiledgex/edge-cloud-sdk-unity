@@ -56,8 +56,15 @@ For **Unity 2019 and later** you can add the package through git url
 <img src="MobiledgeX/Documentation/images/Unity2019PackageManager.png" alt="Unity Package Manager 2019" width="500" height="whatever">
 
   
-If you have **Unity 2018**, clone the repo and add it to your Unity Project
-Browse to **(MobiledgeX/package.json)** and double click it
+If you have **Unity 2018**:
+
+a. Clone the repo.
+
+b. Open Unity Package Manager.
+
+c. Select Add Package from disk. (see the image) 
+
+d. Browse to **(MobiledgeX/package.json)** and double click it.
 
 <img src="MobiledgeX/Documentation/images/Unity2018PackageManager.png" alt="Unity Package Manager 2018" width="500" height="whatever"> 
 
@@ -68,9 +75,9 @@ Browse to **(MobiledgeX/package.json)** and double click it
 (Enter Organization Name, Application Name, Application Version) and press Setup
  <img src="MobiledgeX/Documentation/images/MobiledgeXEditorWindow.png" alt="MobiledgeX Editor Window" width="500" height="whatever"> 
 
-5. Once you get the message **"Connected, you are all set! "**, Congrats you have got MobilegdeX Sdk integrated in your project.
+5. Once you get the message **"Connected, you are all set! "**, Congrats you have got MobilegdeX SDK integrated in your project.
 
-**If you are using version control (ex. github) make sure not to exclude the project meta files or at least not to exclude the MobiledgeX meta files**
+**If you are using version control (ex. github) make sure not to exclude the project meta files or at least not to exclude the MobiledgeX SDK meta files**
 
 
 <!-- USAGE EXAMPLES -->
