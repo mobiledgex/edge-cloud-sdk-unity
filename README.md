@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://developers.mobiledgex.com/site/themes/developers/img/logo.svg?v=1582820109" alt="Logo" width="100" height="100">
+  <img src="https://developers.mobiledgex.com/site/themes/developers/img/logo.svg?v=1582820109" alt="Logo" width="whatever" height="whatever">
 
   <h3 align="center">MobiledgeX Unity SDK</h3>
 
@@ -46,19 +46,30 @@ This SDK works on Unity Editor 2018.4.19f1 (LTS) and higher.
 
 1. Create an Account on MobiledgeX Console [https://console.mobiledgex.net](https://console.mobiledgex.net)
 2. Upload your server/backend to MobiledgeX Console using(github actions/ MobiledgeX Console) 
-3. If you have Unity 2019 or higher use Unity Package Manager, Add Package using git url 
+3. Add the UnitySDK using Unity Package Manager
 
-4. If you have Unity 2018, Please clone the repo and add it to your Unity Project
+<img src="MobiledgeX/Documentation/images/Open_PackageManager.png" alt="Unity Package Manager" width="500" height="whatever"> 
+
+For **Unity 2019 and later** you can add the package through git url
+<img src="MobiledgeX/Documentation/images/Unity2019PackageManager.png" alt="Unity Package Manager 2019" width="500" height="whatever">
+
+  
+If you have **Unity 2018**, clone the repo and add it to your Unity Project
+Browse to **(MobiledgeX/package.json)** and double click it
+
+<img src="MobiledgeX/Documentation/images/Unity2018PackageManager.png" alt="Unity Package Manager 2018" width="500" height="whatever"> 
 
 
-5. Editor Step
-(Enter Organization Name, Application Name, Application Version)
+4. Configure MobiledgeX Settings in the editor
+ Open MobiledgeX Setup Window 
+ <img src="MobiledgeX/Documentation/images/MobiledgeXMenu.png" alt="MobiledgeX Menu" width="500" height="whatever"> 
+(Enter Organization Name, Application Name, Application Version) and press Setup
+ <img src="MobiledgeX/Documentation/images/MobiledgeXEditorWindow.png" alt="MobiledgeX Editor Window" width="500" height="whatever"> 
 
-6. MobiledgeX Setting
-(Click on Mobiledgex Settings to Highlight Mobiledgex Settings Object)
+5. Once you get the message **"Connected, you are all set! "**, Congrats you have got MobilegdeX Sdk integrated in your project.
 
-##### Known Issues : Make sure to Update Unity Ads Package to (3.4.4) or Remove it.
-##### Location Premissions is needed to connect to the closest Edge Cloudlet according to your location 
+**If you are using version control (ex. github) make sure not to exclude the project meta files or at least not to exclude the MobiledgeX meta files**
+
 
 <!-- USAGE EXAMPLES -->
 ## Usage
