@@ -21,6 +21,7 @@ namespace MobiledgeX
           GUIStyle headerStyle;
           GUIStyle labelStyle;
           static MobiledgeXSettings settings;
+          static bool editorPopUp;
           
           /// <summary>
           /// The titles of the tabs in Mobiledgex window.
@@ -87,11 +88,7 @@ namespace MobiledgeX
 
           private void Awake()
           {
-              //EditorPrefs.DeleteKey("MexPluginAdded");
-              //if (EditorPrefs.GetBool("MexPluginAdded") != true)
-              //{
-                  AddMobiledgeXPlugins();
-              //}
+          
               if (PlayerSettings.iOS.locationUsageDescription.Length<1)
               {
                   SetUpLocationSettings();
@@ -101,14 +98,16 @@ namespace MobiledgeX
           private void OnGUI()
           {
               AssetDatabase.Refresh();
-              if (!EditorPrefs.GetBool("MexPopUp") || !EditorPrefs.HasKey("MexPopUp"))
+              if (!editorPopUp)
               {
                   if (!EditorUtility.DisplayDialog("MobiledgeX",
               "Have you already created an Account?", "Yes", "No"))
                   {
                       Application.OpenURL("https://console.mobiledgex.net/");
-                  };
-                  EditorPrefs.SetBool("MexPopUp", true);
+                  }else{
+                    editorPopUp = true;
+                  }
+                  
               }
               Init();
               DrawLogo();
@@ -197,6 +196,7 @@ namespace MobiledgeX
                   if (await CheckCredentials())
                   {
                       progressText += "\nConnected,You are all set! ";
+                      AddMobiledgeXPlugins();
                   }
                   else
                   {

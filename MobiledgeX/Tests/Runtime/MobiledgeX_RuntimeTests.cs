@@ -174,7 +174,7 @@ namespace MobiledgeX
         public async Task<string> RegisterAndFindCloudletHelper(string orgName, string appName, string appVers)
         {
             
-            FindCloudletReply reply = await integration.me.RegisterAndFindCloudlet(MatchingEngine.wifiCarrier, orgName, appName, appVers, "",testLocation);
+            FindCloudletReply reply = await integration.me.RegisterAndFindCloudlet( orgName, appName, appVers, testLocation, MatchingEngine.wifiCarrier);
             await Task.Delay(TimeSpan.FromMilliseconds(200));
             string uri = reply.fqdn;
             return uri;
@@ -182,7 +182,7 @@ namespace MobiledgeX
 
         public async Task<string> WebSocketTestHelper(string orgName, string appName, string appVers)
         {
-            FindCloudletReply reply = await integration.me.RegisterAndFindCloudlet(MatchingEngine.wifiCarrier, orgName, appName, appVers, "", testLocation);
+            FindCloudletReply reply = await integration.me.RegisterAndFindCloudlet( orgName, appName, appVers, testLocation, MatchingEngine.wifiCarrier);
             await Task.Delay(TimeSpan.FromMilliseconds(200));
             Dictionary<int, AppPort> appPortsDict = integration.me.GetTCPAppPorts(reply);
             int public_port = reply.ports[0].public_port;

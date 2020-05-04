@@ -14,9 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
-
 using System;
 using System.IO;
 using System.Linq;
@@ -25,7 +22,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
-
 using UnityEngine;
 
 namespace MobiledgeX
@@ -40,37 +36,46 @@ namespace MobiledgeX
     private static string host = "localhost";
     private static int port = 3000;
     private static string server = proto + "://" + host + ":" + port;
-
     public Uri uri = new Uri(server);
     private ClientWebSocket ws = new ClientWebSocket();
     static UTF8Encoding encoder; // For websocket text message encoding.
     const UInt64 MAXREADSIZE = 1 * 1024 * 1024;
-
     public ConcurrentQueue<String> receiveQueue { get; }
     public BlockingCollection<ArraySegment<byte>> sendQueue { get; }
-
     Thread receiveThread { get; set; }
     Thread sendThread { get; set; }
     private bool run = true;
-
     MobiledgeXIntegration integration;
 
-    // TODO: CancellationToken for Tasks to handle OnApplicationFocus, OnApplicationPause.
-    public MobiledgeXSocketClient(MobiledgeXIntegration integration)
+    // For testing
+    public MobiledgeXSocketClient()
     {
       encoder = new UTF8Encoding();
       ws = new ClientWebSocket();
-      this.integration = integration;
-
+     
+    
       receiveQueue = new ConcurrentQueue<string>();
       receiveThread = new Thread(RunReceive);
       receiveThread.Start();
-
+    
       sendQueue = new BlockingCollection<ArraySegment<byte>>();
       sendThread = new Thread(RunSend);
       sendThread.Start();
     }
 
+    public MobiledgeXSocketClient(MobiledgeXIntegration integration)
+    {
+        encoder = new UTF8Encoding();
+        ws = new ClientWebSocket();
+        this.integration = integration;
+        receiveQueue = new ConcurrentQueue<string>();
+        receiveThread = new Thread(RunReceive);
+        receiveThread.Start();
+        sendQueue = new BlockingCollection<ArraySegment<byte>>();
+        sendThread = new Thread(RunSend);
+        sendThread.Start();
+    }
+    
     public bool isConnecting()
     {
       if (ws == null)
