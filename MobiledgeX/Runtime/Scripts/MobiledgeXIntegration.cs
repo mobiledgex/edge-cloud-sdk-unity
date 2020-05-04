@@ -18,9 +18,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-
 using DistributedMatchEngine;
-
 using System.Threading.Tasks;
 using DistributedMatchEngine.PerformanceMetrics;
 using System.Net.WebSockets;
@@ -45,7 +43,6 @@ namespace MobiledgeX
         PlatformIntegration pIntegration;
         public MatchingEngine me;
         public NetTest netTest;
-
         /*
          * These are "carrier independent" settings for demo use:
          */
@@ -120,12 +117,10 @@ namespace MobiledgeX
                 eCarrierName = aCarrierName;
             }
 
-            RegisterClientRequest req = me.CreateRegisterClientRequest(eCarrierName, orgName, appName, appVers, developerAuthToken, cellID, uniqueIDType, uniqueID, tags);
-            Debug.Log("CarrierName: " + req.carrier_name);
-            Debug.Log("OrgName: " + req.dev_name);
+            RegisterClientRequest req = me.CreateRegisterClientRequest(orgName, appName, appVers, developerAuthToken, cellID, uniqueIDType, uniqueID, tags);
+            Debug.Log("OrgName: " + req.org_name);
             Debug.Log("AppName: " + req.app_name);
             Debug.Log("AppVers: " + req.app_vers);
-
             RegisterClientReply reply = await me.RegisterClient(req);
 
             return (reply.status == ReplyStatus.RS_SUCCESS);
@@ -137,7 +132,6 @@ namespace MobiledgeX
             // Location is ephemeral, so retrieve a new location from the platform. May return 0,0 which is
             // technically valid, though less likely real, as of writing.
             Loc loc = await GetLocationFromDevice();
-
             // If MobiledgeX is reachable on your SIM card:
             string aCarrierName = GetCarrierName();
             string eCarrierName;
@@ -155,8 +149,7 @@ namespace MobiledgeX
                 eCarrierName = aCarrierName;
             }
 
-            FindCloudletRequest req = me.CreateFindCloudletRequest(eCarrierName, orgName, appName, appVers, loc, cellID, tags);
-
+            FindCloudletRequest req = me.CreateFindCloudletRequest(loc,eCarrierName, cellID, tags);
             FindCloudletReply reply = await me.FindCloudlet(req);
 
             return reply;
@@ -165,7 +158,6 @@ namespace MobiledgeX
         public async Task<bool> VerifyLocation()
         {
             Loc loc = await GetLocationFromDevice();
-
             // If MobiledgeX is reachable on your SIM card:
             string aCarrierName = GetCarrierName();
             string eCarrierName;
@@ -178,14 +170,13 @@ namespace MobiledgeX
                 eCarrierName = aCarrierName;
             }
 
-            VerifyLocationRequest req = me.CreateVerifyLocationRequest(eCarrierName, loc, cellID, tags);
-
+            VerifyLocationRequest req = me.CreateVerifyLocationRequest(loc, eCarrierName, cellID, tags);
             VerifyLocationReply reply = await me.VerifyLocation(req);
 
             // The return is not binary, but one can decide the particular app's policy
             // on pass or failing the location check. Not being verified or the country
             // not matching at all is on such policy decision:
-
+            
             // GPS and Tower Status:
             switch (reply.gps_location_status)
             {
@@ -224,7 +215,6 @@ namespace MobiledgeX
         {
             ConfigureMobiledgeXSettings();
             Loc loc = await GetLocationFromDevice();
-
             string aCarrierName = GetCarrierName();
             string eCarrierName;
             if (me.useOnlyWifi)
@@ -241,7 +231,7 @@ namespace MobiledgeX
                 eCarrierName = aCarrierName;
             }
 
-            FindCloudletReply findCloudletReply = await me.RegisterAndFindCloudlet(eCarrierName, orgName, appName, appVers, developerAuthToken, loc, cellID, uniqueIDType, uniqueID, tags);
+            FindCloudletReply findCloudletReply = await me.RegisterAndFindCloudlet( orgName, appName, appVers, loc, eCarrierName, developerAuthToken, cellID, uniqueIDType, uniqueID, tags);
             if (findCloudletReply == null)
             {
                 Debug.Log("cannot find findCloudletReply");
@@ -260,12 +250,9 @@ namespace MobiledgeX
             string host="";
             int port=0;
             // For Demo App purposes, it's the TCP app port. Your app may point somewhere else:
-            NetTest.Site site;
-        
+            NetTest.Site site;      
             string aCarrierName = GetCarrierName();
             Debug.Log("aCarrierName: " + aCarrierName);
-
-
             Debug.Log("Calling DME to register client...");
             bool registered = false;
             registered = await Register();
