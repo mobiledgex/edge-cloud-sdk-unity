@@ -1,0 +1,16 @@
+{
+    "name": "Unity.Mobiledgex.Editor",
+    "references": [
+        "Unity.Mobiledgex"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}
