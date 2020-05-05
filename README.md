@@ -91,24 +91,27 @@ using System.Threading.Tasks;
 
 For Restful Connection
 
-` string url = await MobiledgeXIntegration.GetRestURI();`
+` string url = await MobiledgeXIntegration.GetURI();`
 
 
 For Websocket Connection
 
 ```
+    // Create an instance of MobiledgeXIntegration
+    MobiledgeXIntegration integration = new MobiledgeXIntegration();
     // Create an instance of MobiledgeXSocketClient
-    MobiledgeXSocketClient wsClient;
+    MobiledgeXSocketClient client;
     // Start a websocket using an instance of MobiledgeXSocketClient
     async void StartWebSocket()
     {
-        wsClient = new MobiledgeXSocketClient();
-        if (wsClient.isOpen())
+        client = new MobiledgeXSocketClient(integration);
+        if (client.isOpen())
         {
-            wsClient.Dispose();
-            wsClient = new MobiledgeXSocketClient();
+            client.Dispose();
+            client = new MobiledgeXSocketClient(integration);
         }
-       await wsClient.Connect("?roomid=testt");
+       // supply your query parameters 
+       await wsClient.Connect("parameter=x");
         wsClient.Send("msg");
     }
     
