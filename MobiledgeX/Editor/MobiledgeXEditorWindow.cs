@@ -179,7 +179,7 @@ namespace MobiledgeX
           {
               settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
               EditorGUILayout.Space();
-              settings.orgName = EditorGUILayout.TextField("Orginization Name", settings.orgName);
+              settings.orgName = EditorGUILayout.TextField("Organization Name", settings.orgName);
               settings.appName = EditorGUILayout.TextField("App Name", settings.appName);
               settings.appVers = EditorGUILayout.TextField("App Version", settings.appVers);
               EditorGUILayout.BeginVertical(headerStyle);
