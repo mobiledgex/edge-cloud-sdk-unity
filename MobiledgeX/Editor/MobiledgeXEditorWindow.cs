@@ -166,8 +166,8 @@ namespace MobiledgeX
               int padding = EditorStyles.label.padding.vertical;
               rect.x = 100;
               rect.y += padding;
-              rect.width = 200;
-              rect.height = 50;
+              rect.width = 180;
+              rect.height = 30;
               GUI.DrawTexture(rect, mexLogo, ScaleMode.StretchToFill, true, 10.0F);
               EditorGUILayout.EndHorizontal();
           }
