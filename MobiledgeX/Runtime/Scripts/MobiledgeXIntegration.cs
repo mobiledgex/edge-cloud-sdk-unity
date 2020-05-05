@@ -244,11 +244,11 @@ namespace MobiledgeX
         }
 
 
-        public async Task<String> GetRestURI()
+        public async Task<String> GetURI()
         {
             ConfigureMobiledgeXSettings();
             string host="";
-            int port=0;
+            string port="";
             // For Demo App purposes, it's the TCP app port. Your app may point somewhere else:
             NetTest.Site site;      
             string aCarrierName = GetCarrierName();
@@ -335,7 +335,7 @@ namespace MobiledgeX
                     }
                     netTest.doTest(true);
                     host = reply.ports[0].fqdn_prefix + reply.fqdn;
-                    port = reply.ports[0].public_port;
+                    port = reply.ports[0].public_port + reply.ports[0].path_prefix;
                 }
             }
             return host + ":" + port;

@@ -31,7 +31,7 @@ namespace MobiledgeX
   // per send or receive direction of communication.
   public class MobiledgeXSocketClient : IDisposable
   {
-    // Life of MobiledgeXSokcetClient:
+    // Life of MobiledgeXSocketClient:
     private static string proto = "ws";
     private static string host = "localhost";
     private static int port = 3000;

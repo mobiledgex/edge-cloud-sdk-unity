@@ -51,7 +51,7 @@ public class Example : MonoBehaviour
     {
         MobiledgeXIntegration integration = new MobiledgeXIntegration();
         integration.useWifiOnly(true);
-        string uri=  await integration.GetRestURI();
+        string uri=  await integration.GetURI();
         RestURIText.text = uri;
         
     }

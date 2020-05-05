@@ -50,7 +50,7 @@ namespace MobiledgeX
         #endregion
 
         #region Editor Tests
-
+        
         [Test]
         public void MovingFilesTest()
         {
@@ -60,8 +60,6 @@ namespace MobiledgeX
             Assert.True(File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/MatchingEngineSDKRestLibrary.dll")));
             Assert.True(File.Exists(Path.Combine(Application.dataPath, "Resources/MobiledgeXSettings.asset")));
         }
-
-
     
 
         [Test]
@@ -108,10 +106,6 @@ namespace MobiledgeX
                 }
             }
         }
-
-        #endregion
-
-
-        
+        #endregion      
     }
 }
