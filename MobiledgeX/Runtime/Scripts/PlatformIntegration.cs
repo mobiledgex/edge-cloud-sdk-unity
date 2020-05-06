@@ -40,20 +40,7 @@ namespace MobiledgeX
     {
             // Target Device Network Interfaces. This is not known until compile time:
 #if UNITY_ANDROID
-      NetworkInterfaceName = new AndroidNetworkInterfaceName();
-                 // Editor or Player network management (overrides target device platform):
-      switch (Application.platform)
-      {
-        case RuntimePlatform.OSXPlayer: case RuntimePlatform.OSXEditor:
-          NetworkInterfaceName = new MacNetworkInterfaceName();
-          CarrierInfo = new TestCarrierInfoClass();
-          UniqueID = new TestUniqueIDClass();
-          break;
-        default:
-          CarrierInfo = new CarrierInfoClass();
-          UniqueID = new UniqueIDClass();
-          break;
-      }
+            NetworkInterfaceName = new AndroidNetworkInterfaceName();
 #elif UNITY_IOS
             NetworkInterfaceName = new IOSNetworkInterfaceName();
 #else
