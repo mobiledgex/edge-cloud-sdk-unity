@@ -16,34 +16,34 @@ The Matching Engine Unity C# SDK provides everything required to create applicat
 
 The fastest way to import the MobiledgeX Unity SDK into your project is by using the Package Manager. You can open it from *Window > Package Manager* in Unity. To add our MobiledgeX Package, select the **+** icon and click on **“Add package from git URL…”** 
 
-![](https://devstage.mobiledgex.com/assets/unity-sdk/add-git-url.png){.full}
+![](https://developers.mobiledgex.com/assets/unity-sdk/add-git-url.png){.full}
 
 Enter [https://github.com/mobiledgex/edge-cloud-sdk-unity](https://github.com/mobiledgex/edge-cloud-sdk-unity) in the text field, which will automatically start the process of importing the package into your application. 
 
 Once that finishes, you will now see the MobiledgeX SDK within your Package Manager and the SDK will be available under the Packages tab of your Project. 
 
-![](https://devstage.mobiledgex.com/assets/unity-sdk/mobiledgex-package.png){.full}
+![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-package.png){.full}
 
 ## Using the MobiledgeX SDK
 
 Once you have successfully imported the Unity package, you will see a new tab as part of the Unity menu labeled **MobiledgeX**
 
-![](https://devstage.mobiledgex.com/assets/unity-sdk/mobiledgex-menu.png)
+![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-menu.png)
 
 Click on **Setup**, which will open up a new Unity window that will ask for your application's
 * organization name
 * app name
 * app version number 
 
-![](https://devstage.mobiledgex.com/assets/unity-sdk/mobiledgex-unity-window.png)
+![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-unity-window.png)
 
 After you input your application credentials, you can click the setup button, which will communicate with the DME to verify that your application definition exists on the MobiledgeX console. If successful, your project will be set up with the correct plugins and resources necessary to use our APIs. You can verify these files were generated correctly by looking in the Plugins and Resources folders of your project. 
 
-![](https://devstage.mobiledgex.com/assets/unity-sdk/generated-plugins.png)
+![](https://developers.mobiledgex.com/assets/unity-sdk/generated-plugins.png)
 
-![](https://devstage.mobiledgex.com/assets/unity-sdk/generated-resources.png)
+![](https://developers.mobiledgex.com/assets/unity-sdk/generated-resources.png)
 
-![](https://devstage.mobiledgex.com/assets/unity-sdk/mobiledgex-settings.png)
+![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-settings.png)
 
 **Important**: Make sure your Resources/MobiledgeXSettings.asset file has the correct information for your application. 
 
