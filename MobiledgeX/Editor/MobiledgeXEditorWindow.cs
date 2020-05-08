@@ -273,11 +273,11 @@ namespace MobiledgeX
           {
               if (!error)
               {
-                  Debug.Log(msgTitle + "\n" + msg);
+                  Debug.Log("MobiledgeX: "+msgTitle + "\n" + msg);
               }
               else
               {
-                  Debug.LogErrorFormat(msgTitle + "\n" + msg);
+                  Debug.LogErrorFormat("MobiledgeX: " + msgTitle + "\n" + msg);
               }
 
               progressText += "\n" + msgTitle;
@@ -319,7 +319,7 @@ namespace MobiledgeX
           /// <summary>
           /// Adds Mobiledgex Plugins to the Unity Project (SDK dll, IOS Plugin, link.xml and MobiledgeXSettings)
           /// </summary>
-           void AddMobiledgeXPlugins()
+          void AddMobiledgeXPlugins()
           {
               string unityPluginsFolderPath = Path.Combine(@Application.dataPath, @"Plugins");
               string resourcesFolderPath = Path.Combine(@Application.dataPath, @"Resources");
@@ -354,7 +354,7 @@ namespace MobiledgeX
                   }
                   catch (Exception e)
                   {
-                      Debug.LogError(e);
+                      Debug.LogError("MobiledgeX: " + e);
                       Debug.Log("MobiledgeX: Please Follow these steps \n 1.remove the package from the Pacakge Manager. \n 2.Delete This folder Assets/MobiledgeX \n 3.Use the Package Manager to download Again.");
                   }
           }
