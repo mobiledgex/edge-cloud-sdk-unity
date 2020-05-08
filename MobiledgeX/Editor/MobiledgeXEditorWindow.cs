@@ -98,7 +98,8 @@ namespace MobiledgeX
           private void OnGUI()
           {
               AssetDatabase.Refresh();
-              if (!editorPopUp)
+              Init();
+              if (!editorPopUp && settings.orgName.Length < 1)
               {
                   if (!EditorUtility.DisplayDialog("MobiledgeX",
               "Have you already created an Account?", "Yes", "No"))
@@ -109,7 +110,6 @@ namespace MobiledgeX
                   }
                   
               }
-              Init();
               DrawLogo();
               int selectedTab = GUILayout.Toolbar(currentTab, tabTitles);
               if (selectedTab != currentTab)
@@ -142,6 +142,7 @@ namespace MobiledgeX
               /// </summary>
               private void Init()
           {
+              settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
               mexLogo = Resources.Load("mobiledgexLogo") as Texture2D;
               headerStyle = new GUIStyle();
               if (Application.HasProLicense())
@@ -177,7 +178,6 @@ namespace MobiledgeX
           /// </summary>
           private async void SetupWindow()
           {
-              settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
               EditorGUILayout.Space();
               settings.orgName = EditorGUILayout.TextField("Organization Name", settings.orgName);
               settings.appName = EditorGUILayout.TextField("App Name", settings.appName);
@@ -196,6 +196,7 @@ namespace MobiledgeX
                   if (await CheckCredentials())
                   {
                       progressText += "\nConnected,You are all set! ";
+                      EditorUtility.SetDirty(settings);
                       AddMobiledgeXPlugins();
                   }
                   else
@@ -316,7 +317,6 @@ namespace MobiledgeX
           /// </summary>
            void AddMobiledgeXPlugins()
           {
-
               string unityPluginsFolderPath = Path.Combine(@Application.dataPath, @"Plugins");
               string resourcesFolderPath = Path.Combine(@Application.dataPath, @"Resources");
               string mobiledgeXFolderPath = Path.Combine(@unityPluginsFolderPath, @"MobiledgeX");
