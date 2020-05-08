@@ -38,27 +38,30 @@ namespace MobiledgeX
 
     public PlatformIntegration()
     {
-            // Target Device Network Interfaces. This is not known until compile time:
-#if UNITY_ANDROID
-            NetworkInterfaceName = new AndroidNetworkInterfaceName();
-#elif UNITY_IOS
-            NetworkInterfaceName = new IOSNetworkInterfaceName();
+            switch (Application.platform)
+            {
+                case RuntimePlatform.OSXPlayer:
+                case RuntimePlatform.OSXEditor:
+                case RuntimePlatform.WindowsEditor:
+                case RuntimePlatform.LinuxEditor:
+                    NetworkInterfaceName = new NetworkInterfaceName();
+                    CarrierInfo = new TestCarrierInfoClass();
+                    UniqueID = new TestUniqueIDClass();
+                    break;
+                default:
+                    CarrierInfo = new CarrierInfoClass();
+                    UniqueID = new UniqueIDClass();
+
+                    // Target Device Network Interfaces. This is not known until compile time:
+#if (UNITY_ANDROID && UNITY_EDITOR == false)
+                NetworkInterfaceName = new AndroidNetworkInterfaceName();
+#elif (UNITY_IOS && UNITY_EDITOR == false)
+                NetworkInterfaceName = new IOSNetworkInterfaceName();
 #else
-      Debug.Log("Unknown or unsupported platform. Please create WiFi and Cellular interface name Object for your platform");
+                Debug.LogWarning("Unknown or unsupported platform. Please create WiFi and Cellular interface name Object for your platform");
 #endif
-      // Editor or Player network management (overrides target device platform):
-      switch (Application.platform)
-      {
-        case RuntimePlatform.OSXPlayer: case RuntimePlatform.OSXEditor:
-          NetworkInterfaceName = new MacNetworkInterfaceName();
-          CarrierInfo = new TestCarrierInfoClass();
-          UniqueID = new TestUniqueIDClass();
-          break;
-        default:
-          CarrierInfo = new CarrierInfoClass();
-          UniqueID = new UniqueIDClass();
-          break;
-      }
+                break;
+            }
       NetInterface = new NetInterfaceClass(NetworkInterfaceName);
     }
   }
