@@ -22,7 +22,7 @@ using DistributedMatchEngine;
 using System.Threading.Tasks;
 using DistributedMatchEngine.PerformanceMetrics;
 using System.Net.WebSockets;
-
+using System.Net.Http;
 /*
  * MobiledgeX MatchingEngine SDK integration has an additional application side
  * "PlatformIntegration.cs/m" file for Android, IOS, or other platform integration
@@ -46,15 +46,18 @@ namespace MobiledgeX
         /*
          * These are "carrier independent" settings for demo use:
          */
-        public string carrierName { get; set; } = MatchingEngine.wifiCarrier; // carrierName depends on the available subscriber SIM card and roaming carriers, and must be supplied by platform API.
-        public static string orgName { get; set; } = ""; // Your developer name.
+        public string carrierName { get; set; } = ""; // carrierName depends on the available subscriber SIM card and roaming carriers, and must be supplied by platform API.
+        public static string orgName { get; set; } = ""; // Organization name
         public static string appName { get; set; } = ""; // Your appName, if you have created this in the MobiledgeX console.
         public static string appVers { get; set; } = ""; // Your app version uploaded to the docker registry.
+        public static int tcpPort { get; set; } = 0; // Your exposed tcp port mapped at MobiledgeX Console.
+        public static int udpPort { get; set; } = 0; // Your exposed udp port mapped at MobiledgeX Console.
         public string developerAuthToken { get; set; } = ""; // This is an opaque string value supplied by the developer.
         public uint cellID { get; set; } = 0;
         public string uniqueIDType { get; set; } = "";
         public string uniqueID { get; set; } = "";
         public Tag[] tags { get; set; } = new Tag[0];
+        Loc location = new Loc();
 
         public MobiledgeXIntegration()
         {
@@ -99,25 +102,11 @@ namespace MobiledgeX
         // Call once, or when the carrier changes. May throw DistributedMatchEngine.HttpException.
         public async Task<bool> Register()
         {
-            ConfigureMobiledgeXSettings();
-            // If MobiledgeX is reachable on your SIM card:
-            string aCarrierName = GetCarrierName();
-            string eCarrierName;
-            if (me.useOnlyWifi)
-            {
-                eCarrierName = carrierName;
-            }
-            else
-            {
-                if (aCarrierName == null)
-                {
-                    Debug.Log("Missing CarrierName for RegisterClient.");
-                    return false;
-                }
-                eCarrierName = aCarrierName;
-            }
+            await ConfigureMobiledgeXSettings(GetConnectionProtocols.HTTP);
 
             RegisterClientRequest req = me.CreateRegisterClientRequest(orgName, appName, appVers);
+            Debug.Log("OrgName: " + req.org_name);
+            Debug.Log("AppName: " + req.app_name);
             Debug.Log("AppVers: " + req.app_vers);
             RegisterClientReply reply = await me.RegisterClient(req);
 
@@ -126,28 +115,8 @@ namespace MobiledgeX
 
         public async Task<FindCloudletReply> FindCloudlet()
         {
-            ConfigureMobiledgeXSettings();
-            // Location is ephemeral, so retrieve a new location from the platform. May return 0,0 which is
-            // technically valid, though less likely real, as of writing.
-            Loc loc = await GetLocationFromDevice();
-            // If MobiledgeX is reachable on your SIM card:
-            string aCarrierName = GetCarrierName();
-            string eCarrierName;
-            if (me.useOnlyWifi) // There's no host (PC, UnityEditor, etc.)...
-            {
-                eCarrierName = carrierName;
-            }
-            else
-            {
-                if (aCarrierName == "" || aCarrierName == null)
-                {
-                    Debug.Log("Missing CarrierName for FindCloudlet.");
-                    return null;
-                }
-                eCarrierName = aCarrierName;
-            }
-
-            FindCloudletRequest req = me.CreateFindCloudletRequest(loc, eCarrierName);
+            await ConfigureMobiledgeXSettings(GetConnectionProtocols.HTTP);
+            FindCloudletRequest req = me.CreateFindCloudletRequest(location, carrierName);
             FindCloudletReply reply = await me.FindCloudlet(req);
 
             return reply;
@@ -155,20 +124,8 @@ namespace MobiledgeX
 
         public async Task<bool> VerifyLocation()
         {
-            Loc loc = await GetLocationFromDevice();
-            // If MobiledgeX is reachable on your SIM card:
-            string aCarrierName = GetCarrierName();
-            string eCarrierName;
-            if (me.useOnlyWifi) // There's no host (PC, UnityEditor, etc.)...
-            {
-                eCarrierName = carrierName;
-            }
-            else
-            {
-                eCarrierName = aCarrierName;
-            }
-
-            VerifyLocationRequest req = me.CreateVerifyLocationRequest(loc, eCarrierName);
+            await ConfigureMobiledgeXSettings(GetConnectionProtocols.HTTP);
+            VerifyLocationRequest req = me.CreateVerifyLocationRequest(location, carrierName);
             VerifyLocationReply reply = await me.VerifyLocation(req);
 
             // The return is not binary, but one can decide the particular app's policy
@@ -211,33 +168,9 @@ namespace MobiledgeX
         // Typical developer workflow to get connection to application backend
         public async Task<ClientWebSocket> GetWebsocketConnection(string path)
         {
-            ConfigureMobiledgeXSettings();
-            if (!IsEdgeEnabled(GetConnectionProtocols.Websocket))
-            {
-#if UNITY_EDITOR
-                Debug.LogWarning("Device is not edge enabled. Please switch to cellular connection or use server in public cloud");
-#else
-                throw new Exception("Device is not edge enabled. Please switch to cellular connection or use server in public cloud");
-#endif
-            }
-            Loc loc = await GetLocationFromDevice();
-            string aCarrierName = GetCarrierName();
-            string eCarrierName;
-            if (me.useOnlyWifi)
-            {
-                eCarrierName = carrierName;
-            }
-            else
-            {
-                if (aCarrierName == null)
-                {
-                    Debug.Log("Missing CarrierName for RegisterClient.");
-                    return null;
-                }
-                eCarrierName = aCarrierName;
-            }
+            await ConfigureMobiledgeXSettings(GetConnectionProtocols.Websocket);
 
-            FindCloudletReply findCloudletReply = await me.RegisterAndFindCloudlet(orgName, appName, appVers, loc, carrierName);
+            FindCloudletReply findCloudletReply = await me.RegisterAndFindCloudlet(orgName, appName, appVers, location, carrierName);
             if (findCloudletReply == null)
             {
                 Debug.Log("cannot find findCloudletReply");
@@ -246,19 +179,16 @@ namespace MobiledgeX
             Dictionary<int, AppPort> appPortsDict = me.GetTCPAppPorts(findCloudletReply);
             int public_port = findCloudletReply.ports[0].public_port; // We happen to know it's the first one.
             AppPort appPort = appPortsDict[public_port];
-            return await me.GetWebsocketConnection(findCloudletReply, appPort, public_port, 5000, path);
+            return await me.GetWebsocketConnection(findCloudletReply, appPort, public_port, tcpPort, path);
         }
-
 
         public async Task<String> GetURI()
         {
-            ConfigureMobiledgeXSettings();
+            await ConfigureMobiledgeXSettings(GetConnectionProtocols.TCP);
             string host="";
             string port="";
-            // For Demo App purposes, it's the TCP app port. Your app may point somewhere else:
-            NetTest.Site site;      
-            string aCarrierName = GetCarrierName();
-            Debug.Log("aCarrierName: " + aCarrierName);
+            NetTest.Site site;
+
             Debug.Log("Calling DME to register client...");
             bool registered = false;
             registered = await Register();
@@ -344,10 +274,15 @@ namespace MobiledgeX
                     port = reply.ports[0].public_port + reply.ports[0].path_prefix;
                 }
             }
-            return host + ":" + port;
+            return "https://" + host + ":" + port;
         }
-        // Edge requires connections to run over cellular interface
-        public  bool IsEdgeEnabled(GetConnectionProtocols proto)
+
+        /// <summary>
+        /// Wether Edge is Enabled on the device or not, Edge requires connections to run over cellular interface
+        /// </summary>
+        /// <param name="proto">GetConnectionProtocols (TCP, UDP, HTTP, WebSocket) </param>
+        /// <returns></returns>
+        public bool IsEdgeEnabled(GetConnectionProtocols proto)
         {
           if (me.useOnlyWifi)
           {
@@ -382,6 +317,7 @@ namespace MobiledgeX
     
           return true;
         }
+
         /// <summary>
         /// Enum for holding GetConnection Protocols (TCP, UDP, HTTP, Websocket)
         /// </summary>
@@ -392,14 +328,53 @@ namespace MobiledgeX
           HTTP,
           Websocket
         }
+
         /// <summary>
         /// Use MobiledgeXSetting Scriptable object to load orgName, appName, appVers 
         /// </summary>
-        public void ConfigureMobiledgeXSettings()
+        public async Task ConfigureMobiledgeXSettings(GetConnectionProtocols protocol)
         {
+            // Setting Application Definitions
             orgName = settings.orgName;
             appName = settings.appName;
             appVers = settings.appVers;
+            tcpPort = settings.TCP_Port;
+            udpPort = settings.UDP_Port;
+            // Checking if edge is enabled on the device used or not
+            if (!IsEdgeEnabled(GetConnectionProtocols.TCP) || !IsEdgeEnabled(GetConnectionProtocols.UDP) || !IsEdgeEnabled(GetConnectionProtocols.Websocket))
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning("Device is not edge enabled. Please switch to cellular connection or use server in public cloud");
+#else
+                throw new Exception("Device is not edge enabled. Please switch to cellular connection or use server in public cloud");
+#endif
+            }
+            // Getting location from the device, needed for FindCloudlet and VerifyLocation
+            // Location is ephemeral, so retrieve a new location from the platform. May return 0,0 which is
+            // technically valid, though less likely real, as of writing.
+
+            //carrierName = MatchingEngine.wifiCarrier;
+            location = await GetLocationFromDevice();
+
+            // Getting Carrier Name
+
+            if (me.useOnlyWifi)
+            {
+                carrierName = MatchingEngine.wifiCarrier;
+            }
+            else
+            {
+                string CarrierNameFromDevice = GetCarrierName();
+                if (CarrierNameFromDevice == null)
+                {
+                    Debug.LogError("Missing CarrierName for RegisterClient.");
+                    return;
+
+                }
+                carrierName = CarrierNameFromDevice;
+            }
+
+
         }
     }
 }
