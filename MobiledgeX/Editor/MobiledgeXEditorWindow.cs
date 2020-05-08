@@ -182,6 +182,8 @@ namespace MobiledgeX
               settings.orgName = EditorGUILayout.TextField("Organization Name", settings.orgName);
               settings.appName = EditorGUILayout.TextField("App Name", settings.appName);
               settings.appVers = EditorGUILayout.TextField("App Version", settings.appVers);
+              settings.TCP_Port = EditorGUILayout.DelayedIntField("TCP Port", settings.TCP_Port);
+              settings.UDP_Port = EditorGUILayout.DelayedIntField("UDP Port", settings.UDP_Port);
               EditorGUILayout.BeginVertical(headerStyle);
               scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(300), GUILayout.Height(100));
               GUILayout.Label(progressText, labelStyle);
@@ -192,6 +194,8 @@ namespace MobiledgeX
                   MobiledgeXIntegration.orgName = settings.orgName;
                   MobiledgeXIntegration.appName = settings.appName;
                   MobiledgeXIntegration.appVers = settings.appVers;
+                  MobiledgeXIntegration.tcpPort = settings.TCP_Port;
+                  MobiledgeXIntegration.udpPort = settings.UDP_Port;
                   progressText = "";
                   if (await CheckCredentials())
                   {
