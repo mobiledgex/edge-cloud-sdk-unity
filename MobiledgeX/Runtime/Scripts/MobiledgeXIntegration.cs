@@ -43,15 +43,12 @@ namespace MobiledgeX
         PlatformIntegration pIntegration;
         public MatchingEngine me;
         public NetTest netTest;
-        /*
-         * These are "carrier independent" settings for demo use:
-         */
         public string carrierName { get; set; } = ""; // carrierName depends on the available subscriber SIM card and roaming carriers, and must be supplied by platform API.
         public static string orgName { get; set; } = ""; // Organization name
         public static string appName { get; set; } = ""; // Your appName, if you have created this in the MobiledgeX console.
         public static string appVers { get; set; } = ""; // Your app version uploaded to the docker registry.
-        public static int tcpPort { get; set; } = 0; // Your exposed tcp port mapped at MobiledgeX Console.
-        public static int udpPort { get; set; } = 0; // Your exposed udp port mapped at MobiledgeX Console.
+        public static int tcpPort { get; set; } = 0; // Your exposed TCP port mapped at MobiledgeX Console.
+        public static int udpPort { get; set; } = 0; // Your exposed UDP port mapped at MobiledgeX Console.
         public string developerAuthToken { get; set; } = ""; // This is an opaque string value supplied by the developer.
         public uint cellID { get; set; } = 0;
         public string uniqueIDType { get; set; } = "";
@@ -188,7 +185,6 @@ namespace MobiledgeX
             string host="";
             string port="";
             NetTest.Site site;
-
             Debug.Log("Calling DME to register client...");
             bool registered = false;
             registered = await Register();
@@ -203,7 +199,6 @@ namespace MobiledgeX
                 FindCloudletReply reply;
                 Debug.Log("Finding Cloudlet...");
                 reply = await FindCloudlet();
-
 
                 // Handle reply status:
                 bool found = false;
@@ -231,15 +226,12 @@ namespace MobiledgeX
                 {
                     // Edge cloudlets found!
                     Debug.Log("Edge cloudlets found!");
-
                     // Where is this app specific edge enabled cloud server:
                     Debug.Log("GPS location: longitude: " + reply.cloudlet_location.longitude + ", latitude: " + reply.cloudlet_location.latitude);
-
                     // Where is the URI for this app specific edge enabled cloud server:
                     Debug.Log("fqdn: " + reply.fqdn);
-                    // AppPorts?
+                    // AppPorts
                     Debug.Log("On ports: ");
-
                     foreach (AppPort ap in reply.ports)
                     {
                         Debug.Log("Port: proto: " + ap.proto + ", prefix: " +
@@ -274,14 +266,14 @@ namespace MobiledgeX
                     port = reply.ports[0].public_port + reply.ports[0].path_prefix;
                 }
             }
-            return "https://" + host + ":" + port;
+        
+            return  host + ":" + port;
         }
 
         /// <summary>
         /// Wether Edge is Enabled on the device or not, Edge requires connections to run over cellular interface
         /// </summary>
-        /// <param name="proto">GetConnectionProtocols (TCP, UDP, HTTP, WebSocket) </param>
-        /// <returns></returns>
+        /// <returns> boolean value </returns>
         public bool IsEdgeEnabled()
         {
             if (me.useOnlyWifi)
