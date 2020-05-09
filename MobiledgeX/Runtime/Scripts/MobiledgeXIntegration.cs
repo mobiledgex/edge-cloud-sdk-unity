@@ -80,7 +80,7 @@ namespace MobiledgeX
 
         public async Task<Loc> GetLocationFromDevice()
         {
-            
+
             // Location is ephemeral, so retrieve a new location from the platform. May return 0,0 which is
             // technically valid, though less likely real, as of writing.
             Loc loc = await LocationService.RetrieveLocation();
@@ -99,7 +99,7 @@ namespace MobiledgeX
         // Call once, or when the carrier changes. May throw DistributedMatchEngine.HttpException.
         public async Task<bool> Register()
         {
-            await ConfigureMobiledgeXSettings(LocationNeeded:false);
+            await ConfigureMobiledgeXSettings(LocationNeeded: false);
 
             RegisterClientRequest req = me.CreateRegisterClientRequest(orgName, appName, appVers);
             Debug.Log("OrgName: " + req.org_name);
@@ -128,7 +128,7 @@ namespace MobiledgeX
             // The return is not binary, but one can decide the particular app's policy
             // on pass or failing the location check. Not being verified or the country
             // not matching at all is on such policy decision:
-            
+
             // GPS and Tower Status:
             switch (reply.gps_location_status)
             {
@@ -169,12 +169,15 @@ namespace MobiledgeX
         /// <param name="path">string path for ex. roomId  </param>
         /// <param name="port">Integer TCP port </param>
         /// <returns>ClientWebSocket Connection</returns>
-        public async Task<ClientWebSocket> GetWebsocketConnection(string path = "", int port =0)
+        public async Task<ClientWebSocket> GetWebsocketConnection(string path = "", int port = 0)
         {
             await ConfigureMobiledgeXSettings();
-            if(port == 0){
-                port = tcpPort;
+
+            if (port == 0)
+            {
+                port = tcpPort == 0 ? -1 :tcpPort;
             }
+
 
             FindCloudletReply findCloudletReply = await me.RegisterAndFindCloudlet(orgName, appName, appVers, location, carrierName);
             if (findCloudletReply == null)
@@ -184,14 +187,14 @@ namespace MobiledgeX
 
             Dictionary<int, AppPort> appPortsDict = me.GetTCPAppPorts(findCloudletReply);
             AppPort appPort = appPortsDict[port];
-            return await me.GetWebsocketConnection(findCloudletReply, appPort, port,5000, path);
+            return await me.GetWebsocketConnection(findCloudletReply, appPort, port, 5000, path);
         }
 
         public async Task<String> GetURI()
         {
             await ConfigureMobiledgeXSettings();
-            string host="";
-            string port="";
+            string host = "";
+            string port = "";
             NetTest.Site site;
             Debug.Log("Calling DME to register client...");
             bool registered = false;
@@ -274,8 +277,8 @@ namespace MobiledgeX
                     port = reply.ports[0].public_port + reply.ports[0].path_prefix;
                 }
             }
-        
-            return  host + ":" + port;
+
+            return host + ":" + port;
         }
 
         /// <summary>
@@ -285,7 +288,7 @@ namespace MobiledgeX
         public bool IsEdgeEnabled()
         {
             if (me.useOnlyWifi)
-          {
+            {
 #if UNITY_EDITOR
                 Debug.LogWarning("MobiledgeX: Make sure useWifiOnly is not in production level Only for testing");
                 return true;
@@ -311,7 +314,7 @@ namespace MobiledgeX
                 Debug.LogError("MobiledgeX: Unable to find ip address for local cellular interface.");
                 return false;
             }
-        
+
             return true;
         }
 
@@ -320,10 +323,10 @@ namespace MobiledgeX
         /// </summary>
         public enum GetConnectionProtocols
         {
-          TCP,
-          UDP,
-          HTTP,
-          Websocket
+            TCP,
+            UDP,
+            HTTP,
+            Websocket
         }
 
         /// <summary>
