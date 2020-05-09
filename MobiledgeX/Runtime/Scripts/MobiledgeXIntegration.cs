@@ -172,6 +172,9 @@ namespace MobiledgeX
         public async Task<ClientWebSocket> GetWebsocketConnection(string path = "", int port =0)
         {
             await ConfigureMobiledgeXSettings();
+            if(port == 0){
+                port = tcpPort;
+            }
 
             FindCloudletReply findCloudletReply = await me.RegisterAndFindCloudlet(orgName, appName, appVers, location, carrierName);
             if (findCloudletReply == null)
@@ -180,10 +183,10 @@ namespace MobiledgeX
             }
 
             Dictionary<int, AppPort> appPortsDict = me.GetTCPAppPorts(findCloudletReply);
-            AppPort appPort = appPortsDict[tcpPort];
-            return await me.GetWebsocketConnection(findCloudletReply, appPort, tcpPort,5000, path);
+            AppPort appPort = appPortsDict[port];
+            return await me.GetWebsocketConnection(findCloudletReply, appPort, port,5000, path);
         }
-        
+
         public async Task<String> GetURI()
         {
             await ConfigureMobiledgeXSettings();
