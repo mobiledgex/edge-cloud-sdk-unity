@@ -162,8 +162,14 @@ namespace MobiledgeX
             return false;
         }
 
-        // Typical developer workflow to get connection to application backend
-        public async Task<ClientWebSocket> GetWebsocketConnection(string path)
+
+        /// <summary>
+        /// Gets WebsocketConnection Optional Params (string path for ex. roomId and/or specific TCP port)
+        /// </summary>
+        /// <param name="path">string path for ex. roomId  </param>
+        /// <param name="port">Integer TCP port </param>
+        /// <returns>ClientWebSocket Connection</returns>
+        public async Task<ClientWebSocket> GetWebsocketConnection(string path = "", int port =0)
         {
             await ConfigureMobiledgeXSettings();
 
@@ -174,11 +180,10 @@ namespace MobiledgeX
             }
 
             Dictionary<int, AppPort> appPortsDict = me.GetTCPAppPorts(findCloudletReply);
-            int public_port = findCloudletReply.ports[0].public_port; // We happen to know it's the first one.
-            AppPort appPort = appPortsDict[public_port];
-            return await me.GetWebsocketConnection(findCloudletReply, appPort, public_port, tcpPort, path);
+            AppPort appPort = appPortsDict[tcpPort];
+            return await me.GetWebsocketConnection(findCloudletReply, appPort, tcpPort,5000, path);
         }
-
+        
         public async Task<String> GetURI()
         {
             await ConfigureMobiledgeXSettings();

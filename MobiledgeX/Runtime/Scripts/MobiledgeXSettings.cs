@@ -8,7 +8,7 @@ namespace MobiledgeX
 	    public string orgName;
 	    public string appName;
 	    public string appVers;
-		public int TCP_Port;
-		public int UDP_Port;
+	    public int TCP_Port;
+	    public int UDP_Port;
 	}
 }
