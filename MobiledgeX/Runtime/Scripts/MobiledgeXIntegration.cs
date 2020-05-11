@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using DistributedMatchEngine.PerformanceMetrics;
 using System.Net.WebSockets;
 using System.Net.Http;
+using System.Linq;
 /*
  * MobiledgeX MatchingEngine SDK integration has an additional application side
  * "PlatformIntegration.cs/m" file for Android, IOS, or other platform integration
@@ -172,20 +173,25 @@ namespace MobiledgeX
         public async Task<ClientWebSocket> GetWebsocketConnection(string path = "", int port = 0)
         {
             await ConfigureMobiledgeXSettings();
-
-            if (port == 0)
-            {
-                port = tcpPort == 0 ? -1 :tcpPort;
-            }
-
-
+            port = tcpPort;
             FindCloudletReply findCloudletReply = await me.RegisterAndFindCloudlet(orgName, appName, appVers, location, carrierName);
             if (findCloudletReply == null)
             {
-                Debug.Log("cannot find findCloudletReply");
+                Debug.LogError("MobiledgeX: Couldn't Find findCloudletReply, Make Sure you created App Instances for your Application and they are deployed in the correct region.");
             }
 
             Dictionary<int, AppPort> appPortsDict = me.GetTCPAppPorts(findCloudletReply);
+            
+            if (appPortsDict.Keys.Count < 1)
+            {
+                Debug.LogError("MobiledgeX: Please make sure you defined the desired TCP Ports in your Application Port Mapping Section on MobiledgeX Console.");
+            }
+
+            if(port == 0)
+            {
+                port = appPortsDict.OrderBy(kvp => kvp.Key).First().Key;
+            }
+
             AppPort appPort = appPortsDict[port];
             return await me.GetWebsocketConnection(findCloudletReply, appPort, port, 5000, path);
         }
