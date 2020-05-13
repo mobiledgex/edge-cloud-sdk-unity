@@ -134,6 +134,10 @@ namespace MobiledgeX
             return reply;
         }
 
+        /// <summary>
+        /// Verification of Location based on the device location and the cell tower location
+        /// </summary>
+        /// <returns></returns>
         public async Task<bool> VerifyLocation()
         {
             await ConfigureMobiledgeXSettings();
@@ -287,27 +291,6 @@ namespace MobiledgeX
                         Debug.LogError("MobiledgeX: Please make sure you the desired " + protocol + " Ports is defined in your Application Port Mapping Section on MobiledgeX Console.");
                         throw new GetConnectionException("No ports mapped to " + protocol + " protocol.");
                     }
-                    foreach (AppPort ap in appPortsDict.Values) {
-                        if (ap.path_prefix == "")
-                            {
-                                site = new NetTest.Site
-                                {
-                                    host = ap.fqdn_prefix + reply.fqdn,
-                                    port = ap.public_port
-                                };
-                                site.testType = NetTest.TestType.CONNECT;
-                            }
-                            else
-                            {
-                                site = new NetTest.Site
-                                {
-                                    L7Path = ap.fqdn_prefix + reply.fqdn + ":" + ap.public_port + ap.path_prefix
-                                };
-                                site.testType = NetTest.TestType.CONNECT;
-                            }
-                        
-                    }
-                    netTest.doTest(true);
                     if (port == 0)
                     {
                         port = appPortsDict.OrderBy(kvp => kvp.Key).First().Key;
