@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using DistributedMatchEngine;
 using System.Threading.Tasks;
-using DistributedMatchEngine.PerformanceMetrics;
 using System.Net.WebSockets;
 using System.Net.Http;
 using System.Linq;
@@ -43,7 +42,6 @@ namespace MobiledgeX
         static MobiledgeXSettings settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
         PlatformIntegration pIntegration;
         public MatchingEngine me;
-        public NetTest netTest;
         public string carrierName { get; set; } = ""; // carrierName depends on the available subscriber SIM card and roaming carriers, and must be supplied by platform API.
         public static string orgName { get; set; } = ""; // Organization name
         public static string appName { get; set; } = ""; // Your appName, if you have created this in the MobiledgeX console.
@@ -64,9 +62,6 @@ namespace MobiledgeX
 
             // Platform integration needs to initialize first:
             me = new MatchingEngine(pIntegration.CarrierInfo, pIntegration.NetInterface, pIntegration.UniqueID);
-
-            // Optional NetTesting.
-            netTest = new NetTest(me);
         }
 
         /// <summary>
@@ -97,7 +92,6 @@ namespace MobiledgeX
             // Location is ephemeral, so retrieve a new location from the platform. May return 0,0 which is
             // technically valid, though less likely real, as of writing.
             Loc loc = await LocationService.RetrieveLocation();
-
             // If in UnityEditor, 0f and 0f are hard zeros as there is no location service.
             if (loc.longitude == 0f && loc.latitude == 0f)
             {
@@ -238,7 +232,6 @@ namespace MobiledgeX
             {
                 port = tcpPort;
             }
-            NetTest.Site site;
             Debug.Log("Calling DME to register client...");
             bool registered = false;
             registered = await Register();
