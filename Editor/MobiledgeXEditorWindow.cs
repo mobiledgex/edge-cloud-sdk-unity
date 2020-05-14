@@ -301,53 +301,65 @@ namespace MobiledgeX
               {
                   // Register and find cloudlet:
                   clog("Registering to DME ...", "");
-                 
-              }
-              catch (HttpException httpe) // HTTP status, and REST API call error codes.
+                  checkResult = await integration.Register();
+                  FindCloudletReply reply = await integration.FindCloudlet();
+                  if (reply == null)
+                  {
+                      Debug.LogError("MobiledgeX: Couldn't Find findCloudletReply, Make Sure you created App Instances for your Application and they are deployed in the correct region.");
+                      throw new FindCloudletException("No findCloudletReply");
+                  }
+                  if (reply.ports.Length > 1)
+                  {
+                      // mappedPorts size is presisted to since mappedPorts is exposed in the Inspector(used in OnValidation in MobiledgeXSettings)
+                      settings.mappedPortsSize = reply.ports.Length;
+                      foreach (AppPort appPort in reply.ports)
+                      {
+                          Port port = new Port(appPort);
+                          // check if port have already being added ,(In EditorWindow)  if Setup is pressed before
+                          // Port.ToString() returns "tlsProtocolPortNumber" > ex "SecureTCP6000" ,ex "UDP3000"
+                          if (!settings.mappedPorts.Any(mappedPort => mappedPort.ToString() == port.ToString()))
+                          {
+                              settings.mappedPorts.Add(port);
+                          }
+                      }
+                      // overwrites the TCPPorts enum or  UDPPorts enum
+                      // TCPPorts,UDPPorts scripts once the package is imported
+                      // Once the credential check passes enums are being created
+                      // enum values ex (TCP5000 = 5000) the integer value used in MobiledgeXIntegration with an integer cast
+                      CreateEnum("TCPPorts", Protocol.TCP);
+                      CreateEnum("UDPPorts", Protocol.UDP);
+                  }
+                  else
+                  {
+                      Debug.LogError("No Mapped Ports for your application backend");
+                  }
+                  return checkResult;
+
+
+            }
+            catch (HttpException httpe) // HTTP status, and REST API call error codes.
               {
                   // server error code, and human readable message:
-                  clog("RegisterClient Exception ", httpe.Message + ", HTTP StatusCode: " + httpe.HttpStatusCode + ", API ErrorCode: " + httpe.ErrorCode + "\nStack: " + httpe.StackTrace, true);
+                  clog("MobiledgeX: RegisterClient Exception ", httpe.Message + ", HTTP StatusCode: " + httpe.HttpStatusCode + ", API ErrorCode: " + httpe.ErrorCode + "\nStack: " + httpe.StackTrace, true);
                   return false;
               }
               catch (HttpRequestException httpre)
               {
-                  clog("RegisterClient HttpRequest Exception", httpre.Message + "\nStack Trace: " + httpre.StackTrace, true);
+                  clog("MobiledgeX: RegisterClient HttpRequest Exception", httpre.Message + "\nStack Trace: " + httpre.StackTrace, true);
                   return false;
               }
-              catch (Exception e)
+             catch (FindCloudletException findCloudletException)
+             {
+                 clog("MobiledgeX: Couldn't Find findCloudletReply, Make Sure you created App Instances for your Application and they are deployed in the correct region."
+                     findCloudletException.Message + "\nStack Trace: " + findCloudletException.StackTrace,true);
+                 return false;
+             }
+            catch (Exception e)
               {
                   clog("Unexpected Exception ", e.StackTrace, true);
                   return false;
               }
-              checkResult = await integration.Register();
-              FindCloudletReply reply = await integration.FindCloudlet();
-              if (reply.ports.Length > 1)
-              {
-                  // mappedPorts size is presisted to since mappedPorts is exposed in the Inspector(used in OnValidation in MobiledgeXSettings)
-                  settings.mappedPortsSize = reply.ports.Length;
-                  foreach (AppPort appPort in reply.ports)
-                  {
-                    Port port = new Port(appPort);
-                    // check if port have already being added ,(In EditorWindow)  if Setup is pressed before
-                    // Port.ToString() returns "tlsProtocolPortNumber" > ex "SecureTCP6000" ,ex "UDP3000"
-                    if (!settings.mappedPorts.Any(mappedPort => mappedPort.ToString() == port.ToString()))
-                      {
-                          settings.mappedPorts.Add(port);
-                      }
-                  }
-                  // overwrites the TCPPorts enum or  UDPPorts enum
-                  // TCPPorts,UDPPorts scripts once the package is imported
-                  // Once the credential check passes enums are being created
-                  // enum values ex (TCP5000 = 5000) the integer value used in MobiledgeXIntegration with an integer cast
-                  CreateEnum("TCPPorts", Protocol.TCP);
-                  CreateEnum("UDPPorts", Protocol.UDP);
-            }
-            else
-            {
-                Debug.LogError("No Mapped Ports for your application backend");
-            }
-            return checkResult;
-
+             
         }
 
           /// <summary>
