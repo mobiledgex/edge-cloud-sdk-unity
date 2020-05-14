@@ -92,6 +92,7 @@ namespace MobiledgeX
             // Location is ephemeral, so retrieve a new location from the platform. May return 0,0 which is
             // technically valid, though less likely real, as of writing.
             Loc loc = await LocationService.RetrieveLocation();
+
             // If in UnityEditor, 0f and 0f are hard zeros as there is no location service.
             if (loc.longitude == 0f && loc.latitude == 0f)
             {
@@ -188,7 +189,6 @@ namespace MobiledgeX
             {
                 port = tcpPort;
             }
-             
             FindCloudletReply findCloudletReply = await me.RegisterAndFindCloudlet(orgName, appName, appVers, location, carrierName);
             if (findCloudletReply == null)
             {
@@ -351,8 +351,8 @@ namespace MobiledgeX
             orgName = settings.orgName;
             appName = settings.appName;
             appVers = settings.appVers;
-            tcpPort = settings.TCP_Port;
-            udpPort = settings.UDP_Port;
+            tcpPort = (int)settings.TCP_Port;
+            udpPort = (int)settings.UDP_Port;
             // Checking if edge is enabled on the device used or not
             if (!IsEdgeEnabled())
             {
