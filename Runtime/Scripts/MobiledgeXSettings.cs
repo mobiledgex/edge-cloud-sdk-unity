@@ -2,12 +2,18 @@
 using UnityEngine;
 using DistributedMatchEngine;
 using System.Collections.Generic;
+using System.Linq;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 namespace MobiledgeX
 {
+    // Complier Directive if UNITY_EDITOR is used extensively since MobiledgeXSettings Object is used in production 
+    // Without this complier directive , Unity wont build the app
 #if UNITY_EDITOR
+
+    //using PropertyDrawer interface (used for creating custom views of fields in the inspector)
+    //ReadOnly Attribute makes mapped ports' fields immutable in the inspector
     public class ReadOnlyAttribute : PropertyAttribute{  }
 
     [CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
@@ -29,10 +35,15 @@ namespace MobiledgeX
         }
     }
 #endif
+    // MatchingEngine AppPort is not Serializable
+    // Protocol enum is used to override LProto easier to read
     [System.Serializable]
     public class Port
     {
-         public string tag;
+        /// <summary>
+        /// Tag to label certain tags, you can retrieve ports by tag 
+        /// </summary>
+        public string tag;
 
 #if UNITY_EDITOR
         [ReadOnly]
@@ -103,13 +114,22 @@ namespace MobiledgeX
         Unknown
     }
 
-	 public class MobiledgeXSettings: ScriptableObject
-	{
-	    public string orgName;
-	    public string appName;
-	    public string appVers;
+     public class MobiledgeXSettings: ScriptableObject
+    {
+        public string orgName;
+        public string appName;
+        public string appVers;
+        /// <summary>
+        /// Provide a Dropdown list of TCP ports mapped on the backend
+        /// </summary>
         public TCPPorts TCP_Port;
+        /// <summary>
+        /// Provide a Dropdown list of UDP ports mapped on the backend
+        /// </summary>
         public UDPPorts UDP_Port;
+        /// <summary>
+        /// Mapped Ports on the backend 
+        /// </summary>
         public List<Port> mappedPorts;
 #if UNITY_EDITOR
         [HideInInspector]
@@ -121,9 +141,26 @@ namespace MobiledgeX
             if (mappedPorts.Count != mappedPortsSize)
             {
                 Debug.LogError("MobiledgeX: Please,Don't change the size of mapped ports!, You can add more ports on MobiledgeX Console in the Port Mapping Section in Your Application ");
-                throw new System.Exception(" MobiledgeX: Please, use MobiledgeX Setup again");
+                throw new System.Exception(" MobiledgeX: Please, use MobiledgeX Setup again, to retrieve mapped ports");
             }
         }
 #endif
+        /// <summary>
+        /// Get Port by tag , tags can be defined in MobiledgeXSettings Inspector
+        /// </summary>
+        /// <param name="tag">string label for the port</param>
+        /// <returns></returns>
+        int getPortByTag(string tag)
+        {
+            try
+            {             
+                return mappedPorts.Where(i => i.tag == tag).FirstOrDefault().public_port;
+            }
+            catch (KeyNotFoundException)
+            {
+                Debug.LogError("MobiledgeX: Couldn't find "+ tag + " tag! , Make sure to tag the desired port in MobiledgeXSettings");
+                throw new KeyNotFoundException("Couldn't find any port with the "+ tag + " tag");
+            }
+        }
     }
 }
