@@ -17,3 +17,5 @@ MonoBehaviour:
   appVers: 
   TCP_Port: 0
   UDP_Port: 0
+  mappedPorts:
+  mappedPortsSize: 0

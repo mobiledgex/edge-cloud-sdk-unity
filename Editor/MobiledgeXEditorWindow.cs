@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using DistributedMatchEngine;
-
+using System.Linq;
+using System.Collections.Generic;
 namespace MobiledgeX
   {
       [ExecuteInEditMode]
@@ -132,15 +133,15 @@ namespace MobiledgeX
               }
           }
 
-              #endregion
+          #endregion
 
 
-              #region Private Helper Functions
+          #region Private Helper Functions
 
-              /// <summary>
+          /// <summary>
               /// Load Resources to be used in OnGUI
               /// </summary>
-              private void Init()
+          private void Init()
           {
               settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
               mexLogo = Resources.Load("mobiledgexLogo") as Texture2D;
@@ -182,8 +183,6 @@ namespace MobiledgeX
               settings.orgName = EditorGUILayout.TextField("Organization Name", settings.orgName);
               settings.appName = EditorGUILayout.TextField("App Name", settings.appName);
               settings.appVers = EditorGUILayout.TextField("App Version", settings.appVers);
-              settings.TCP_Port = EditorGUILayout.DelayedIntField("TCP Port", settings.TCP_Port);
-              settings.UDP_Port = EditorGUILayout.DelayedIntField("UDP Port", settings.UDP_Port);
               EditorGUILayout.BeginVertical(headerStyle);
               scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(300), GUILayout.Height(100));
               GUILayout.Label(progressText, labelStyle);
@@ -194,12 +193,13 @@ namespace MobiledgeX
                   MobiledgeXIntegration.orgName = settings.orgName;
                   MobiledgeXIntegration.appName = settings.appName;
                   MobiledgeXIntegration.appVers = settings.appVers;
-                  MobiledgeXIntegration.tcpPort = settings.TCP_Port;
-                  MobiledgeXIntegration.udpPort = settings.UDP_Port;
+                  MobiledgeXIntegration.tcpPort = (int)settings.TCP_Port;
+                  MobiledgeXIntegration.udpPort = (int)settings.UDP_Port;
                   progressText = "";
                   if (await CheckCredentials())
                   {
-                      progressText += "\nConnected,You are all set! ";
+                      progressText += "\nConnected !\nSet the desired ports in MobiledgeXSettings!";
+                      ShowSettings();
                       EditorUtility.SetDirty(settings);
                       AddMobiledgeXPlugins();
                   }
@@ -291,12 +291,13 @@ namespace MobiledgeX
           public async Task<bool> CheckCredentials()
           {
               MobiledgeXIntegration integration = new MobiledgeXIntegration();
+              bool checkResult = false;
               integration.useWifiOnly(true);
               try
               {
                   // Register and find cloudlet:
                   clog("Registering to DME ...", "");
-                  return await integration.Register();
+                 
               }
               catch (HttpException httpe) // HTTP status, and REST API call error codes.
               {
@@ -314,7 +315,23 @@ namespace MobiledgeX
                   clog("Unexpected Exception ", e.StackTrace, true);
                   return false;
               }
-          }
+              checkResult = await integration.Register();
+              FindCloudletReply reply = await integration.FindCloudlet();
+              settings.mappedPortsSize = reply.ports.Length;
+              foreach(AppPort appPort in reply.ports)
+               {
+                   Port port = new Port(appPort);
+                   if (!settings.mappedPorts.Any(mappedPort => mappedPort.ToString() == port.ToString()))
+                   {
+                       settings.mappedPorts.Add(port);
+                   }                  
+               }
+            CreateEnum("TCPPorts",Protocol.TCP);
+            CreateEnum("UDPPorts", Protocol.UDP);
+
+            return checkResult;
+
+        }
 
           /// <summary>
           /// Adds Mobiledgex Plugins to the Unity Project (SDK dll, IOS Plugin, link.xml and MobiledgeXSettings)
@@ -372,13 +389,45 @@ namespace MobiledgeX
               }
              }
 
-          }
+         }
 
           void SetUpLocationSettings()
           {
               PlayerSettings.iOS.locationUsageDescription = "Geo-Location is used by MobiledgeX SDK to locate the closest edge cloudlet server and (where supported) for carrier enhanced Verify Location services.";
           }
 
-          #endregion
-      }
-  }
+          /// <summary>
+          /// Creates Enum for Mapped Ports 
+          /// </summary>
+          /// <param name="enumName"></param>
+          /// <param name="protocol"></param>
+          public static void CreateEnum(string enumName, Protocol protocol)
+         {
+             List<string> enumEntries = new List<string>(settings.mappedPorts.Count);
+             foreach( Port port in settings.mappedPorts)
+             {
+                 if (port.ToString().Contains(protocol.ToString()))
+                 {
+                     enumEntries.Add(port.ToString());
+                 }
+             }
+             string filePathAndName = "Packages/com.mobiledgex.sdk/RunTime/Scripts/" + enumName + ".cs";
+             using (StreamWriter streamWriter = new StreamWriter(filePathAndName))
+             {
+                 streamWriter.WriteLine("namespace MobiledgeX{ \t ");
+                 streamWriter.WriteLine("public enum " + enumName);
+                 streamWriter.WriteLine("{ \t");
+                 for (int i = 0; i < enumEntries.Count; i++)
+                 {
+                     string portName = enumEntries[i];
+                     int portNumber;
+                     int.TryParse(new String(enumEntries[i].Where(Char.IsDigit).ToArray()),out portNumber);   
+                     streamWriter.WriteLine("\t" + portName + "=" + portNumber + ",");
+                 }
+                 streamWriter.WriteLine("}}");
+             }
+             AssetDatabase.Refresh();
+         }
+    #endregion
+}
+}
