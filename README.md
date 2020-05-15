@@ -19,7 +19,7 @@ The fastest way to import the MobiledgeX Unity SDK into your project is by using
 
 ![](https://developers.mobiledgex.com/assets/unity-sdk/add-git-url.png){.full}
 
-Enter [https://github.com/mobiledgex/edge-cloud-sdk-unity](https://github.com/mobiledgex/edge-cloud-sdk-unity) in the text field, which will automatically start the process of importing the package into your application. 
+Enter [https://github.com/mobiledgex/edge-cloud-sdk-unity.git](https://github.com/mobiledgex/edge-cloud-sdk-unity.git) in the text field, which will automatically start the process of importing the package into your application. 
 
 Once that finishes, you will now see the MobiledgeX SDK within your Package Manager and the SDK will be available under the Packages tab of your Project. 
 
