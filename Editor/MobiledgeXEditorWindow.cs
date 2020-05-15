@@ -350,7 +350,7 @@ namespace MobiledgeX
               }
              catch (FindCloudletException findCloudletException)
              {
-                 clog("MobiledgeX: Couldn't Find findCloudletReply, Make Sure you created App Instances for your Application and they are deployed in the correct region."
+                 clog("MobiledgeX: Couldn't Find findCloudletReply, Make Sure you created App Instances for your Application and they are deployed in the correct region.",
                      findCloudletException.Message + "\nStack Trace: " + findCloudletException.StackTrace,true);
                  return false;
              }
