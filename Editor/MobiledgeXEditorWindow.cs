@@ -73,7 +73,7 @@ namespace MobiledgeX
           [MenuItem("MobiledgeX/API References")]
           public static void OpenAPIReferencesURL()
           {
-              Application.OpenURL("https://swagger.mobiledgex.net/client-test/#section/Edge-SDK-Unity");
+              Application.OpenURL("https://api.mobiledgex.net/#section/Edge-SDK-Unity");
           }
 
           [MenuItem("MobiledgeX/Documentation")]
