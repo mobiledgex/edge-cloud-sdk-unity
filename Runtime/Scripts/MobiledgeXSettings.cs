@@ -119,6 +119,7 @@ namespace MobiledgeX
         public string orgName;
         public string appName;
         public string appVers;
+        public string authPublicKey;
         /// <summary>
         /// Provide a Dropdown list of TCP ports mapped on the backend
         /// </summary>

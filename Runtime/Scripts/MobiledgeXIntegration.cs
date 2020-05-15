@@ -112,7 +112,7 @@ namespace MobiledgeX
         {
             await ConfigureMobiledgeXSettings(LocationNeeded: false);
 
-            RegisterClientRequest req = me.CreateRegisterClientRequest(orgName, appName, appVers);
+            RegisterClientRequest req = me.CreateRegisterClientRequest(orgName, appName, appVers, developerAuthToken.Length > 1 ? developerAuthToken : null);
             Debug.Log("OrgName: " + req.org_name);
             Debug.Log("AppName: " + req.app_name);
             Debug.Log("AppVers: " + req.app_vers);
@@ -189,7 +189,7 @@ namespace MobiledgeX
             {
                 port = tcpPort;
             }
-            FindCloudletReply findCloudletReply = await me.RegisterAndFindCloudlet(orgName, appName, appVers, location, carrierName);
+            FindCloudletReply findCloudletReply = await me.RegisterAndFindCloudlet(orgName, appName, appVers, location, carrierName, developerAuthToken.Length > 1 ? developerAuthToken : null);
             if (findCloudletReply == null)
             {
                 Debug.LogError("MobiledgeX: Couldn't Find findCloudletReply, Make Sure you created App Instances for your Application and they are deployed in the correct region.");
@@ -351,6 +351,10 @@ namespace MobiledgeX
             orgName = settings.orgName;
             appName = settings.appName;
             appVers = settings.appVers;
+            if (settings.authPublicKey.Length > 1)
+            {
+                developerAuthToken = settings.authPublicKey;
+            }
             tcpPort = (int)settings.TCP_Port;
             udpPort = (int)settings.UDP_Port;
             // Checking if edge is enabled on the device used or not
