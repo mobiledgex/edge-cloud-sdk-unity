@@ -12,10 +12,10 @@ namespace MobiledgeX
       [ExecuteInEditMode]
       public class MobiledgeXEditorWindow : EditorWindow
       {
-      
 
-          #region Private Variables
-      
+
+        #region Private Variables
+
           Texture2D mexLogo;
           string progressText;
           Vector2 scrollPos;
@@ -90,7 +90,7 @@ namespace MobiledgeX
           private void Awake()
           {
           
-              if (PlayerSettings.iOS.locationUsageDescription.Length<1)
+              if (PlayerSettings.iOS.locationUsageDescription.Length < 1)
               {
                   SetUpLocationSettings();
               }
@@ -157,7 +157,6 @@ namespace MobiledgeX
               labelStyle = new GUIStyle(GUI.skin.label);
               labelStyle.normal.textColor = Color.white;
           }
-
           /// <summary>
           /// Draws MobiledgeX Logo.
           /// </summary>
@@ -227,7 +226,6 @@ namespace MobiledgeX
               GUILayout.TextArea(licenseText);
               EditorGUILayout.EndHorizontal();
           }
-
           /// <summary>
           /// Draw the Documentation Window
           /// </summary>
@@ -308,7 +306,7 @@ namespace MobiledgeX
                       Debug.LogError("MobiledgeX: Couldn't Find findCloudletReply, Make Sure you created App Instances for your Application and they are deployed in the correct region.");
                       throw new FindCloudletException("No findCloudletReply");
                   }
-                  if (reply.ports.Length > 1)
+                  if (reply.ports.Length > 0)
                   {
                       // mappedPorts size is presisted to since mappedPorts is exposed in the Inspector(used in OnValidation in MobiledgeXSettings)
                       settings.mappedPortsSize = reply.ports.Length;
