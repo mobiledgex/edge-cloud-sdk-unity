@@ -98,7 +98,7 @@ namespace MobiledgeX
           }
           private void OnGUI()
           {
-              AssetDatabase.Refresh();
+              
               Init();
               if (!editorPopUp && settings.orgName.Length < 1)
               {
