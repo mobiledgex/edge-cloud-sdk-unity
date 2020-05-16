@@ -111,13 +111,12 @@ namespace MobiledgeX
         public async Task<bool> Register()
         {
             await ConfigureMobiledgeXSettings(LocationNeeded: false);
-
+            me.SetMelMessaging(new MelMessaging(appName));
             RegisterClientRequest req = me.CreateRegisterClientRequest(orgName, appName, appVers, developerAuthToken.Length > 0 ? developerAuthToken : null);
             Debug.Log("OrgName: " + req.org_name);
             Debug.Log("AppName: " + req.app_name);
             Debug.Log("AppVers: " + req.app_vers);
             RegisterClientReply reply = await me.RegisterClient(req);
-
             return (reply.status == ReplyStatus.RS_SUCCESS);
         }
 
