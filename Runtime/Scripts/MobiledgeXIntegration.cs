@@ -57,9 +57,9 @@ namespace MobiledgeX
 
         public MobiledgeXIntegration()
         {
+            ConfigureMobiledgeXSettings();
             // Set the platform specific way to get SIM carrier information.
             pIntegration = new PlatformIntegration();
-
             // Platform integration needs to initialize first:
             me = new MatchingEngine(pIntegration.CarrierInfo, pIntegration.NetInterface, pIntegration.UniqueID);
         }
@@ -77,9 +77,23 @@ namespace MobiledgeX
         /// Returns the MccMnc (Mobile Country Code Mobile Network Code)
         /// </summary>
         /// <returns></returns>
-        public string GetCarrierName()
+        public void GetCarrierName()
         {
-            return me.carrierInfo.GetMccMnc();
+            // Getting Carrier Name
+            if (me.useOnlyWifi)
+            {
+                carrierName = MatchingEngine.wifiCarrier;
+            }
+            else
+            {
+                string CarrierNameFromDevice =  me.carrierInfo.GetMccMnc();
+                if (CarrierNameFromDevice == null)
+                {
+                    Debug.LogError("MobiledgeX: Missing CarrierName, Couldnt retrieve carrier name. ");
+                    throw new Exception("MobiledgeX: Missing CarrierName, Couldnt retrieve carrier name. ");
+                }
+                carrierName = CarrierNameFromDevice;
+            }
         }
 
         /// <summary>
@@ -88,7 +102,6 @@ namespace MobiledgeX
         /// <returns></returns>
         public async Task<Loc> GetLocationFromDevice()
         {
-
             // Location is ephemeral, so retrieve a new location from the platform. May return 0,0 which is
             // technically valid, though less likely real, as of writing.
             Loc loc = await LocationService.RetrieveLocation();
@@ -109,7 +122,8 @@ namespace MobiledgeX
         /// <returns>Boolean Value</returns>
         public async Task<bool> Register()
         {
-            await ConfigureMobiledgeXSettings();
+            location = await GetLocationFromDevice();
+            GetCarrierName();
             me.SetMelMessaging(new MelMessaging(appName));
             RegisterClientRequest req = me.CreateRegisterClientRequest(orgName, appName, appVers, developerAuthToken.Length > 0 ? developerAuthToken : null);
             Debug.Log("OrgName: " + req.org_name);
@@ -121,7 +135,8 @@ namespace MobiledgeX
 
         public async Task<FindCloudletReply> FindCloudlet()
         {
-            await ConfigureMobiledgeXSettings();
+            location = await GetLocationFromDevice();
+            GetCarrierName();
             FindCloudletRequest req = me.CreateFindCloudletRequest(location, carrierName);
             FindCloudletReply reply = await me.FindCloudlet(req);
             return reply;
@@ -135,8 +150,9 @@ namespace MobiledgeX
         /// <returns>ClientWebSocket Connection</returns>
         public async Task<ClientWebSocket> GetWebsocketConnection(string path = "", int port = 0)
         {
-            await ConfigureMobiledgeXSettings();
-            if(port == 0)
+            location = await GetLocationFromDevice();
+            GetCarrierName();
+            if (port == 0)
             {
                 port = tcpPort;
             }
@@ -152,11 +168,12 @@ namespace MobiledgeX
                 Debug.LogError("MobiledgeX: Please make sure you defined the desired TCP Ports in your Application Port Mapping Section on MobiledgeX Console.");
                 throw new FindCloudletException("No TCP ports available on your Application");
             }
-            if(port == 0)
+            if (port == 0)
             {
                 port = appPortsDict.OrderBy(kvp => kvp.Key).First().Key;
             }
-            try {
+            try
+            {
 
                 AppPort appPort = appPortsDict[port];
                 return await me.GetWebsocketConnection(findCloudletReply, appPort, port, 5000, path);
@@ -164,8 +181,8 @@ namespace MobiledgeX
             catch (KeyNotFoundException)
             {
                 Debug.LogError("MobiledgeX: Port supplied is not mapped to your Application, Make sure the desired port is defined in your Application Port Mapping Section on MobiledgeX Console.");
-                throw new GetConnectionException(  "TCP " + port + " is not defined on your Application Port Mapping section");
-            } 
+                throw new GetConnectionException("TCP " + port + " is not defined on your Application Port Mapping section");
+            }
         }
 
         /// <summary>
@@ -174,9 +191,10 @@ namespace MobiledgeX
         /// <param name="protocol">(LProto) Protocol (TCP, UDP)</param>
         /// <param name="port">(Integer) Desired Port </param>
         /// <returns></returns>
-        public async Task<String> GetURI(LProto protocol = LProto.L_PROTO_TCP, int port = 0 )
+        public async Task<String> GetURI(LProto protocol = LProto.L_PROTO_TCP, int port = 0)
         {
-            await ConfigureMobiledgeXSettings();
+            location = await GetLocationFromDevice();
+            GetCarrierName();
             string uri = "";
             string host = "";
             if (port == 0)
@@ -229,7 +247,7 @@ namespace MobiledgeX
                     Debug.Log("GPS location: longitude: " + reply.cloudlet_location.longitude + ", latitude: " + reply.cloudlet_location.latitude);
                     // Where is the URI for this app specific edge enabled cloud server:
                     Debug.Log("fqdn: " + reply.fqdn);
-                    Dictionary<int, AppPort> appPortsDict = me.GetAppPortsByProtocol(reply,protocol);
+                    Dictionary<int, AppPort> appPortsDict = me.GetAppPortsByProtocol(reply, protocol);
                     if (appPortsDict.Keys.Count < 1)
                     {
                         Debug.LogError("MobiledgeX: Please make sure you the desired " + protocol + " Ports is defined in your Application Port Mapping Section on MobiledgeX Console.");
@@ -248,16 +266,16 @@ namespace MobiledgeX
                     catch (KeyNotFoundException)
                     {
                         Debug.LogError("MobiledgeX: Port supplied is not mapped to your Application, Make sure the desired port is defined in  your Application Port Mapping Section on MobiledgeX Console.");
-                        throw new GetConnectionException( protocol + " " + port + " is not defined on your Application Port Mapping section." );
+                        throw new GetConnectionException(protocol + " " + port + " is not defined on your Application Port Mapping section.");
                     }
                 }
             }
             return uri;
-        }    
+        }
         /// <summary>
         /// Uses MobiledgeXSetting Scriptable object to load orgName, appName, appVers 
         /// </summary>
-        public async Task ConfigureMobiledgeXSettings()
+        public void ConfigureMobiledgeXSettings()
         {
             // Setting Application Definitions
             orgName = settings.orgName;
@@ -265,28 +283,10 @@ namespace MobiledgeX
             appVers = settings.appVers;
             if (settings.authPublicKey.Length > 0)
             {
-                developerAuthToken = settings.authPublicKey;
+             developerAuthToken = settings.authPublicKey;
             }
             tcpPort = (int)settings.TCP_Port;
             udpPort = (int)settings.UDP_Port;
-            // Get Location From Device
-            location = await GetLocationFromDevice();
-            // Getting Carrier Name
-            if (me.useOnlyWifi)
-            {
-                carrierName = MatchingEngine.wifiCarrier;
-            }
-            else
-            {
-                string CarrierNameFromDevice = GetCarrierName();
-                if (CarrierNameFromDevice == null)
-                {
-                    Debug.LogError("MobiledgeX: Missing CarrierName, Couldnt retrieve carrier name. ");
-                    return;
-                }
-                carrierName = CarrierNameFromDevice;
-            }
-
         }
     }
 }
