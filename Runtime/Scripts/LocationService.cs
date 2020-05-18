@@ -20,6 +20,7 @@ using UnityEngine;
 using System;
 using System.Threading.Tasks;
 using DistributedMatchEngine;
+using UnityEngine.Android;
 
 namespace MobiledgeX
 {
@@ -41,16 +42,6 @@ namespace MobiledgeX
     public class LocationService : MonoBehaviour
     {
 
-
-        public void Start()
-        {
-
-        }
-
-        public void Update()
-        {
-        }
-
         public static async Task<LocationInfo> UpdateLocation()
         {
             // Main thread check, so, submit to main thread.
@@ -60,8 +51,11 @@ namespace MobiledgeX
             {
                 // For UNITY_ANDROID, you will need to create an app specific UI to request access to sensitive permissions.
 #if UNITY_ANDROID
+        if(!Permission.HasUserAuthorizedPermission(Permission.CoarseLocation) || !Permission.HasUserAuthorizedPermission(Permission.FineLocation))
+                {
+                    Permission.RequestUserPermission(Permission.FineLocation);  
+                }
       print("Location Services Disabled");
-      // Per documentation, on iOS, CoreLocation asks the user for permission.
       return Input.location.lastData;
 #elif UNITY_IOS
                 print("CoreLocation.");
