@@ -272,6 +272,52 @@ namespace MobiledgeX
             }
             return uri;
         }
+
+        /// Verification of Location based on the device location and the cell tower location
+        /// </summary>
+        /// <returns></returns>
+        public async Task<bool> VerifyLocation()
+        {
+            location = await GetLocationFromDevice();
+            GetCarrierName();
+            VerifyLocationRequest req = me.CreateVerifyLocationRequest(location, carrierName);
+            VerifyLocationReply reply = await me.VerifyLocation(req);
+
+            // The return is not binary, but one can decide the particular app's policy
+            // on pass or failing the location check. Not being verified or the country
+            // not matching at all is on such policy decision:
+
+            // GPS and Tower Status:
+            switch (reply.gps_location_status)
+            {
+                case VerifyLocationReply.GPSLocationStatus.LOC_ROAMING_COUNTRY_MISMATCH:
+                case VerifyLocationReply.GPSLocationStatus.LOC_ERROR_UNAUTHORIZED:
+                case VerifyLocationReply.GPSLocationStatus.LOC_ERROR_OTHER:
+                case VerifyLocationReply.GPSLocationStatus.LOC_UNKNOWN:
+                    return false;
+            }
+
+            switch (reply.tower_status)
+            {
+                case VerifyLocationReply.TowerStatus.NOT_CONNECTED_TO_SPECIFIED_TOWER:
+                case VerifyLocationReply.TowerStatus.TOWER_UNKNOWN:
+                    return false;
+            }
+
+            // Distance? A negative value means no verification was done.
+            if (reply.gps_location_accuracy_km < 0f)
+            {
+                return false;
+            }
+
+            // A per app policy decision might be 0.5 km, or 25km, or 100km:
+            if (reply.gps_location_accuracy_km < 100f)
+            {
+                return true;
+            }
+            // Too far for this app.
+            return false;
+        }
         /// <summary>
         /// Uses MobiledgeXSetting Scriptable object to load orgName, appName, appVers 
         /// </summary>
