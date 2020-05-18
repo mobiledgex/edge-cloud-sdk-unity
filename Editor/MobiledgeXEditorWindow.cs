@@ -372,6 +372,7 @@ namespace MobiledgeX
               string iosPluginPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Runtime/Plugins/iOS/PlatformIntegration.m");
               string linkXMLPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/link.xml");
               string settingPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Resources/MobiledgeXSettings.asset");
+              string melAARPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Runtime/Plugins/Android/mel.aar");
               try
                   {
                       if (!Directory.Exists(@unityPluginsFolderPath))
@@ -388,6 +389,11 @@ namespace MobiledgeX
                           AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "iOS");
                       }
                       MoveFile(@iosPluginPath, Path.Combine(@mobiledgeXFolderPath, @"iOS/PlatformIntegration.m"), true);
+                      if (!Directory.Exists(Path.Combine(@mobiledgeXFolderPath, @"Android")))
+                      {
+                          AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "Android");
+                      }
+                      MoveFile(melAARPath, Path.Combine(@mobiledgeXFolderPath, @"Android/mel.aar"), true);
                       MoveFile(@linkXMLPath, Path.Combine(@mobiledgeXFolderPath, @"link.xml"), true);
                       if (!Directory.Exists(Path.Combine("Assets", @"Resources")))
                       {
