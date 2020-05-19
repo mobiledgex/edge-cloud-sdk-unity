@@ -62,6 +62,7 @@ namespace MobiledgeX
             pIntegration = new PlatformIntegration();
             // Platform integration needs to initialize first:
             me = new MatchingEngine(pIntegration.CarrierInfo, pIntegration.NetInterface, pIntegration.UniqueID);
+            me.SetMelMessaging(new MelMessaging(appName));
         }
 
         /// <summary>
@@ -123,8 +124,6 @@ namespace MobiledgeX
         public async Task<bool> Register()
         {
             location = await GetLocationFromDevice();
-            GetCarrierName();
-            me.SetMelMessaging(new MelMessaging(appName));
             RegisterClientRequest req = me.CreateRegisterClientRequest(orgName, appName, appVers, developerAuthToken.Length > 0 ? developerAuthToken : null);
             Debug.Log("OrgName: " + req.org_name);
             Debug.Log("AppName: " + req.app_name);
@@ -294,14 +293,14 @@ namespace MobiledgeX
                 case VerifyLocationReply.GPSLocationStatus.LOC_ERROR_UNAUTHORIZED:
                 case VerifyLocationReply.GPSLocationStatus.LOC_ERROR_OTHER:
                 case VerifyLocationReply.GPSLocationStatus.LOC_UNKNOWN:
-                    return false;
+                return false;
             }
 
             switch (reply.tower_status)
             {
                 case VerifyLocationReply.TowerStatus.NOT_CONNECTED_TO_SPECIFIED_TOWER:
                 case VerifyLocationReply.TowerStatus.TOWER_UNKNOWN:
-                    return false;
+                return false;
             }
 
             // Distance? A negative value means no verification was done.
