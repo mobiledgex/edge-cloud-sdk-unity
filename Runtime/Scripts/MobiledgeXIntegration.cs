@@ -78,7 +78,7 @@ namespace MobiledgeX
         /// Returns the MccMnc (Mobile Country Code Mobile Network Code)
         /// </summary>
         /// <returns></returns>
-        public void GetCarrierName()
+        public void UpdateCarrierName()
         {
             // Getting Carrier Name
             if (me.useOnlyWifi)
@@ -87,7 +87,7 @@ namespace MobiledgeX
             }
             else
             {
-                string CarrierNameFromDevice =  me.carrierInfo.GetMccMnc();
+                string CarrierNameFromDevice = me.carrierInfo.GetMccMnc();
                 if (CarrierNameFromDevice == null)
                 {
                     Debug.LogError("MobiledgeX: Missing CarrierName, Couldnt retrieve carrier name. ");
@@ -135,7 +135,7 @@ namespace MobiledgeX
         public async Task<FindCloudletReply> FindCloudlet()
         {
             location = await GetLocationFromDevice();
-            GetCarrierName();
+            UpdateCarrierName();
             FindCloudletRequest req = me.CreateFindCloudletRequest(location, carrierName);
             FindCloudletReply reply = await me.FindCloudlet(req);
             return reply;
@@ -150,7 +150,7 @@ namespace MobiledgeX
         public async Task<ClientWebSocket> GetWebsocketConnection(string path = "", int port = 0)
         {
             location = await GetLocationFromDevice();
-            GetCarrierName();
+            UpdateCarrierName();
             if (port == 0)
             {
                 port = tcpPort;
@@ -193,7 +193,7 @@ namespace MobiledgeX
         public async Task<String> GetURI(LProto protocol = LProto.L_PROTO_TCP, int port = 0)
         {
             location = await GetLocationFromDevice();
-            GetCarrierName();
+            UpdateCarrierName();
             string uri = "";
             string host = "";
             if (port == 0)
@@ -278,7 +278,7 @@ namespace MobiledgeX
         public async Task<bool> VerifyLocation()
         {
             location = await GetLocationFromDevice();
-            GetCarrierName();
+            UpdateCarrierName();
             VerifyLocationRequest req = me.CreateVerifyLocationRequest(location, carrierName);
             VerifyLocationReply reply = await me.VerifyLocation(req);
 
@@ -293,14 +293,14 @@ namespace MobiledgeX
                 case VerifyLocationReply.GPSLocationStatus.LOC_ERROR_UNAUTHORIZED:
                 case VerifyLocationReply.GPSLocationStatus.LOC_ERROR_OTHER:
                 case VerifyLocationReply.GPSLocationStatus.LOC_UNKNOWN:
-                return false;
+                    return false;
             }
 
             switch (reply.tower_status)
             {
                 case VerifyLocationReply.TowerStatus.NOT_CONNECTED_TO_SPECIFIED_TOWER:
                 case VerifyLocationReply.TowerStatus.TOWER_UNKNOWN:
-                return false;
+                    return false;
             }
 
             // Distance? A negative value means no verification was done.
@@ -328,7 +328,7 @@ namespace MobiledgeX
             appVers = settings.appVers;
             if (settings.authPublicKey.Length > 0)
             {
-             developerAuthToken = settings.authPublicKey;
+                developerAuthToken = settings.authPublicKey;
             }
             tcpPort = (int)settings.TCP_Port;
             udpPort = (int)settings.UDP_Port;
