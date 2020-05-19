@@ -51,18 +51,18 @@ namespace MobiledgeX
               return result;
           }
 
-          #endregion
+        #endregion
 
-          #region  Mobiledgex ToolBar Menu items
+        #region  Mobiledgex ToolBar Menu items
 
-          [MenuItem("MobiledgeX/Setup", priority = 100)]
+          [MenuItem("MobiledgeX/Setup")]
           public static void ShowWindow()
           {
-              Type[] dockerNextTo = new Type[2] { typeof(SceneView), typeof(InspectorMode) };
-          GetWindow<MobiledgeXEditorWindow>("MobiledgeX", dockerNextTo);
+            MobiledgeXEditorWindow window = (MobiledgeXEditorWindow)EditorWindow.GetWindow(typeof(MobiledgeXEditorWindow));
+            window.Show();
           }
 
-          [MenuItem("MobiledgeX/Settings", priority = 100)]
+          [MenuItem("MobiledgeX/Settings")]
           public static void ShowSettings()
           {
               settings = (MobiledgeXSettings)Resources.Load("MobiledgeXSettings", typeof(MobiledgeXSettings));
@@ -89,29 +89,31 @@ namespace MobiledgeX
 
           private void Awake()
           {
-          
-              if (PlayerSettings.iOS.locationUsageDescription.Length < 1)
+            settings = (MobiledgeXSettings)Resources.Load("MobiledgeXSettings", typeof(MobiledgeXSettings));
+            if (PlayerSettings.iOS.locationUsageDescription.Length < 1)
               {
                   SetUpLocationSettings();
               }
+            if (!editorPopUp && settings.orgName.Length < 1)
+            {
+                if (!EditorUtility.DisplayDialog("MobiledgeX",
+            "Have you already created an Account?", "Yes", "No"))
+                {
+                    Application.OpenURL("https://console.mobiledgex.net/");
+                }
+                else
+                {
+                    editorPopUp = true;
+                }
+
+            }
+            
 
           }
-          private void OnGUI()
-          {
-              
-              Init();
-              if (!editorPopUp && settings.orgName.Length < 1)
-              {
-                  if (!EditorUtility.DisplayDialog("MobiledgeX",
-              "Have you already created an Account?", "Yes", "No"))
-                  {
-                      Application.OpenURL("https://console.mobiledgex.net/");
-                  }else{
-                    editorPopUp = true;
-                  }
-                  
-              }
-              DrawLogo();
+          void OnGUI()
+    {
+     Init();
+     DrawLogo();
               int selectedTab = GUILayout.Toolbar(currentTab, tabTitles);
               if (selectedTab != currentTab)
               {
@@ -131,7 +133,7 @@ namespace MobiledgeX
                       LicenseWindow();
                       break;
               }
-          }
+    }
 
           #endregion
 
@@ -146,14 +148,7 @@ namespace MobiledgeX
               settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
               mexLogo = Resources.Load("mobiledgexLogo") as Texture2D;
               headerStyle = new GUIStyle();
-              if (Application.HasProLicense())
-              {
-                  headerStyle.normal.background = MakeTex(20, 20, new Color(0.05f, 0.05f, 0.05f));
-              }
-              else
-              {
-                  headerStyle.normal.background = MakeTex(20, 20, new Color(0.4f, 0.4f, 0.4f));
-              }
+              headerStyle.normal.background = MakeTex(20, 20, new Color(0.4f, 0.4f, 0.4f));
               labelStyle = new GUIStyle(GUI.skin.label);
               labelStyle.normal.textColor = Color.white;
           }
@@ -178,6 +173,7 @@ namespace MobiledgeX
           /// </summary>
           private async void SetupWindow()
           {
+
               EditorGUILayout.Space();
               if(settings.appName == "")
               {
@@ -394,7 +390,7 @@ namespace MobiledgeX
                           AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "Android");
                       }
                       MoveFile(melAARPath, Path.Combine(@mobiledgeXFolderPath, @"Android/mel.aar"), true);
-                      MoveFile(@linkXMLPath, Path.Combine(@mobiledgeXFolderPath, @"link.xml"), true);
+                      MoveFile(@linkXMLPath, Path.Combine("Assets", @"link.xml"), true);
                       if (!Directory.Exists(Path.Combine("Assets", @"Resources")))
                       {
                           AssetDatabase.CreateFolder("Assets", "Resources");
