@@ -6,24 +6,24 @@ The MobiledgeX Client Library enables an application to register and then locate
 
 The Matching Engine Unity C# SDK provides everything required to create applications for Unity devices.
 
-
 ## Prerequisites  
 
-* Unity 2018.2.x LTS or newer, along with selected platforms (iOS, Android) for your project
+* Unity 2019.x or newer, along with selected platforms (iOS, Android) for your project
 * .Net Standard 2.0
 * A running AppInst deployed on your edge server
+* Git installed
 
 ## Download the Unity SDK Package  
 
 The fastest way to import the MobiledgeX Unity SDK into your project is by using the Package Manager. You can open it from *Window > Package Manager* in Unity. To add our MobiledgeX Package, select the **+** icon and click on **“Add package from git URL…”** 
 
-![](https://developers.mobiledgex.com/assets/unity-sdk/add-git-url.png){.full}
+![](https://developers.mobiledgex.com/assets/unity-sdk/add-git-url.png)
 
 Enter [https://github.com/mobiledgex/edge-cloud-sdk-unity.git](https://github.com/mobiledgex/edge-cloud-sdk-unity.git) in the text field, which will automatically start the process of importing the package into your application. 
 
 Once that finishes, you will now see the MobiledgeX SDK within your Package Manager and the SDK will be available under the Packages tab of your Project. 
 
-![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-package.png){.full}
+![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-package.png)
 
 ## Using the MobiledgeX SDK
 
