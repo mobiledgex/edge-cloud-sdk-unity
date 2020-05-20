@@ -15,5 +15,8 @@ MonoBehaviour:
   orgName: 
   appName: 
   appVers: 
+  authPublicKey:
   TCP_Port: 0
   UDP_Port: 0
+  mappedPorts:
+  mappedPortsSize: 0
