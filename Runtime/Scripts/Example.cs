@@ -8,9 +8,11 @@ public class Example : MonoBehaviour
 
     #region Websocket Example using MobiledgeX
     MobiledgeXSocketClient wsClient;
+
     public Text RestURIText;
     public Text WebSocketText;
     public Button StartWebSocketButton;
+
     private void Start()
     {
         StartWebSocketButton.onClick.AddListener(StartWebSocket);
@@ -18,7 +20,12 @@ public class Example : MonoBehaviour
     async void StartWebSocket()
     {
         MobiledgeXIntegration mobiledgeXIntegration = new MobiledgeXIntegration();
-        wsClient = new MobiledgeXSocketClient (mobiledgeXIntegration);
+
+#if UNITY_EDITOR
+        mobiledgeXIntegration.useWifiOnly(true);
+#endif
+
+        wsClient = new MobiledgeXSocketClient(mobiledgeXIntegration);
         if (wsClient.isOpen())
         {
             wsClient.Dispose();
@@ -50,10 +57,14 @@ public class Example : MonoBehaviour
     async Task RestExample()
     {
         MobiledgeXIntegration integration = new MobiledgeXIntegration();
+
+#if UNITY_EDITOR
         integration.useWifiOnly(true);
-        string uri=  await integration.GetURI();
-        RestURIText.text = uri;
-        
+#endif
+
+        string uri =  await integration.GetURI();
+        Debug.Log("uri is " + uri);
+        RestURIText.text = uri; 
     }
  
     #endregion

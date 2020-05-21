@@ -186,9 +186,9 @@ namespace MobiledgeX
       return mccmnc;
     }
 
-    KeyValuePair<string, uint> GetCidKeyValuePair(AndroidJavaObject cellInfo)
+    KeyValuePair<string, ulong> GetCidKeyValuePair(AndroidJavaObject cellInfo)
     {
-      KeyValuePair<string, uint> pair = new KeyValuePair<string, uint>(null, 0);
+      KeyValuePair<string, ulong> pair = new KeyValuePair<string, ulong>(null, 0);
 
       string simpleName = PlatformIntegrationUtil.GetSimpleName(cellInfo);
       AndroidJavaObject cellIdentity = PlatformIntegrationUtil.Call<AndroidJavaObject>(cellInfo, "getCellIdentity");
@@ -203,15 +203,15 @@ namespace MobiledgeX
         int cid = PlatformIntegrationUtil.Call<int>(cellIdentity, "getCid");
         if (cid > 0)
         {
-          pair = new KeyValuePair<string, uint>(simpleName, (uint)cid);
+          pair = new KeyValuePair<string, ulong>(simpleName, (ulong)cid);
         }
       }
       else if (simpleName.Equals(cellInfoNrString))
       {
-        int nci = PlatformIntegrationUtil.Call<int>(cellIdentity, "getNci");
+        long nci = PlatformIntegrationUtil.Call<long>(cellIdentity, "getNci");
         if (nci > 0)
         {
-          pair = new KeyValuePair<string, uint>(simpleName, (uint)nci);
+          pair = new KeyValuePair<string, ulong>(simpleName, (ulong)nci);
         }
       }
       else if (simpleName.Equals(cellInfoLteString))
@@ -219,7 +219,7 @@ namespace MobiledgeX
         int ci = PlatformIntegrationUtil.Call<int>(cellIdentity, "getCi");
         if (ci > 0)
         {
-          pair = new KeyValuePair<string, uint>(simpleName, (uint)ci);
+          pair = new KeyValuePair<string, ulong>(simpleName, (ulong)ci);
         }
       }
       else if (simpleName.Equals(cellInfoGsmString))
@@ -227,7 +227,7 @@ namespace MobiledgeX
         int cid = PlatformIntegrationUtil.Call<int>(cellIdentity, "getCid");
         if (cid > 0)
         {
-          pair = new KeyValuePair<string, uint>(simpleName, (uint)cid);
+          pair = new KeyValuePair<string, ulong>(simpleName, (ulong)cid);
         }
       }
       else if (simpleName.Equals(cellInfoWcdmaString))
@@ -235,7 +235,7 @@ namespace MobiledgeX
         int cid = PlatformIntegrationUtil.Call<int>(cellIdentity, "getCid");
         if (cid > 0)
         { 
-          pair = new KeyValuePair<string, uint>(simpleName, (uint)cid);
+          pair = new KeyValuePair<string, ulong>(simpleName, (ulong)cid);
         }
       }
       else if (simpleName.Equals(cellInfoCdmaString))
@@ -243,7 +243,7 @@ namespace MobiledgeX
         int baseStationId = PlatformIntegrationUtil.Call<int>(cellIdentity, "getBaseStationId");
         if (baseStationId > 0)
         { 
-          pair = new KeyValuePair<string, uint>(simpleName, (uint)baseStationId);
+          pair = new KeyValuePair<string, ulong>(simpleName, (ulong)baseStationId);
         }
       }
       else
@@ -255,7 +255,7 @@ namespace MobiledgeX
 
     }
 
-    public List<KeyValuePair<String, uint>> GetCellInfoList()
+    public List<KeyValuePair<String, ulong>> GetCellInfoList()
     {
       if (Application.platform != RuntimePlatform.Android)
       {
@@ -289,9 +289,9 @@ namespace MobiledgeX
         return null;
       }
 
-      List<KeyValuePair<String, uint>> cellIDList = new List<KeyValuePair<string, uint>>();
+      List<KeyValuePair<String, ulong>> cellIDList = new List<KeyValuePair<string, ulong>>();
       // KeyValuePair to compare to in case GetCidKeyValuePair returns nothing
-      KeyValuePair<string,uint> empty = new KeyValuePair<string, uint>(null, 0);
+      KeyValuePair<string,ulong> empty = new KeyValuePair<string, ulong>(null, 0);
 
       for (int i = 0; i < length; i++)
       {
@@ -301,7 +301,7 @@ namespace MobiledgeX
         bool isRegistered = PlatformIntegrationUtil.Call<bool>(cellInfo, "isRegistered");
         if (isRegistered)
         {
-          KeyValuePair<string, uint> pair = GetCidKeyValuePair(cellInfo);
+          KeyValuePair<string, ulong> pair = GetCidKeyValuePair(cellInfo);
           if (!pair.Equals(empty))
           {
             cellIDList.Add(pair);
@@ -312,11 +312,11 @@ namespace MobiledgeX
       return cellIDList;
     }
 
-    public uint GetCellID()
+    public ulong GetCellID()
     {
-      uint cellID = 0;
+      ulong cellID = 0;
 
-      List<KeyValuePair<String, uint>> cellInfoList = GetCellInfoList();
+      List<KeyValuePair<String, ulong>> cellInfoList = GetCellInfoList();
 
       if (cellInfoList == null || cellInfoList.Count == 0)
       {
@@ -324,7 +324,7 @@ namespace MobiledgeX
         return cellID;
       }
 
-      KeyValuePair<String, uint> pair = cellInfoList[0]; // grab first value
+      KeyValuePair<String, ulong> pair = cellInfoList[0]; // grab first value
 
       return pair.Value;
     }
@@ -364,14 +364,14 @@ namespace MobiledgeX
       return mccmnc;
     }
 
-    public uint GetCellID()
+    public ulong GetCellID()
     {
       int cellID = 0;
       if (Application.platform == RuntimePlatform.IPhonePlayer)
       {
         cellID = _getCellID();
       }
-      return (uint)cellID;
+      return (ulong)cellID;
     }
 
 #else
@@ -389,7 +389,7 @@ namespace MobiledgeX
       return null;
     }
 
-    public uint GetCellID()
+    public ulong GetCellID()
     {
       Debug.Log("GetCellID is NOT IMPLEMENTED");
       return 0;
@@ -412,7 +412,7 @@ namespace MobiledgeX
       return "26201";
     }
 
-    public uint GetCellID()
+    public ulong GetCellID()
     {
       return 0;
     }

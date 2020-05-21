@@ -80,21 +80,8 @@ namespace MobiledgeX
         /// <returns></returns>
         public void UpdateCarrierName()
         {
-            // Getting Carrier Name
-            if (me.useOnlyWifi)
-            {
-                carrierName = MatchingEngine.wifiCarrier;
-            }
-            else
-            {
-                string CarrierNameFromDevice = me.carrierInfo.GetMccMnc();
-                if (CarrierNameFromDevice == null)
-                {
-                    Debug.LogError("MobiledgeX: Missing CarrierName, Couldnt retrieve carrier name. ");
-                    throw new Exception("MobiledgeX: Missing CarrierName, Couldnt retrieve carrier name. ");
-                }
-                carrierName = CarrierNameFromDevice;
-            }
+            carrierName = me.GetCarrierName();
+            Debug.Log("carriername is " + carrierName);
         }
 
         /// <summary>
@@ -123,11 +110,12 @@ namespace MobiledgeX
         /// <returns>Boolean Value</returns>
         public async Task<bool> Register()
         {
-            location = await GetLocationFromDevice();
             RegisterClientRequest req = me.CreateRegisterClientRequest(orgName, appName, appVers, developerAuthToken.Length > 0 ? developerAuthToken : null);
+
             Debug.Log("OrgName: " + req.org_name);
             Debug.Log("AppName: " + req.app_name);
             Debug.Log("AppVers: " + req.app_vers);
+
             RegisterClientReply reply = await me.RegisterClient(req);
             return (reply.status == ReplyStatus.RS_SUCCESS);
         }
@@ -136,6 +124,7 @@ namespace MobiledgeX
         {
             location = await GetLocationFromDevice();
             UpdateCarrierName();
+
             FindCloudletRequest req = me.CreateFindCloudletRequest(location, carrierName);
             FindCloudletReply reply = await me.FindCloudlet(req);
             return reply;
@@ -149,31 +138,40 @@ namespace MobiledgeX
         /// <returns>ClientWebSocket Connection</returns>
         public async Task<ClientWebSocket> GetWebsocketConnection(string path = "", int port = 0)
         {
+            if (!IsEdgeEnabled(GetConnectionProtocols.Websocket))
+            {
+                throw new Exception("Device is not edge enabled. Please switch to cellular connection or use server in public cloud");
+            }
+
             location = await GetLocationFromDevice();
             UpdateCarrierName();
+
             if (port == 0)
             {
                 port = tcpPort;
             }
+
             FindCloudletReply findCloudletReply = await me.RegisterAndFindCloudlet(orgName, appName, appVers, location, carrierName, developerAuthToken.Length > 0 ? developerAuthToken : null);
             if (findCloudletReply == null)
             {
                 Debug.LogError("MobiledgeX: Couldn't Find findCloudletReply, Make Sure you created App Instances for your Application and they are deployed in the correct region.");
                 throw new FindCloudletException("No findCloudletReply");
             }
+
             Dictionary<int, AppPort> appPortsDict = me.GetTCPAppPorts(findCloudletReply);
             if (appPortsDict.Keys.Count < 1)
             {
                 Debug.LogError("MobiledgeX: Please make sure you defined the desired TCP Ports in your Application Port Mapping Section on MobiledgeX Console.");
                 throw new FindCloudletException("No TCP ports available on your Application");
             }
+
             if (port == 0)
             {
                 port = appPortsDict.OrderBy(kvp => kvp.Key).First().Key;
             }
+
             try
             {
-
                 AppPort appPort = appPortsDict[port];
                 return await me.GetWebsocketConnection(findCloudletReply, appPort, port, 5000, path);
             }
@@ -194,12 +192,15 @@ namespace MobiledgeX
         {
             location = await GetLocationFromDevice();
             UpdateCarrierName();
+
             string uri = "";
             string host = "";
+
             if (port == 0)
             {
                 port = tcpPort;
             }
+
             Debug.Log("Calling DME to register client...");
             bool registered = false;
             registered = await Register();
@@ -279,6 +280,7 @@ namespace MobiledgeX
         {
             location = await GetLocationFromDevice();
             UpdateCarrierName();
+
             VerifyLocationRequest req = me.CreateVerifyLocationRequest(location, carrierName);
             VerifyLocationReply reply = await me.VerifyLocation(req);
 
@@ -317,6 +319,65 @@ namespace MobiledgeX
             // Too far for this app.
             return false;
         }
+
+        /// <summary>
+        /// Whether Edge is Enabled on the device or not, Edge requires connections to run over cellular interface
+        /// </summary>
+		/// <param name="proto">GetConnectionProtocol (TCP, UDP, HTTP, Websocket)</param>
+        /// <returns> boolean value </returns>
+        public  bool IsEdgeEnabled(GetConnectionProtocols proto)
+        {
+            if (me.useOnlyWifi)
+            {
+#if UNITY_EDITOR
+                Debug.Log("MobiledgeX: useWifiOnly must be false in production. useWifiOnly can be used only for testing");
+                return true;
+#else
+                Debug.Log("useOnlyWifi must be false to enable edge connection");
+                return false;
+#endif
+            }
+
+            if (proto == GetConnectionProtocols.TCP || proto == GetConnectionProtocols.UDP)
+            {
+                if (!me.netInterface.HasCellular())
+                {
+                    Debug.Log(proto + " connection requires a cellular interface to run connection over edge.");
+                    return false;
+                }
+            }
+            else
+            {
+                // Connections where we cannot bind to cellular interface default to wifi if wifi is up
+                // We need to make sure wifi is off
+                if (!me.netInterface.HasCellular() || me.netInterface.HasWifi())
+                {
+                    Debug.Log(proto + " connection requires the cellular interface to be up and the wifi interface to be off to run connection over edge.");
+                    return false;
+                }
+            }
+    
+            string cellularIPAddress = me.netInterface.GetIPAddress(me.netInterface.GetNetworkInterfaceName().CELLULAR);
+            if (cellularIPAddress == null)
+            {
+                Debug.Log("Unable to find ip address for local cellular interface.");
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Communication Protocols supported by MobiledgeX GetConnection
+        /// </summary>
+        public enum GetConnectionProtocols
+        {
+            TCP,
+            UDP,
+            HTTP,
+            Websocket
+        }
+
         /// <summary>
         /// Uses MobiledgeXSetting Scriptable object to load orgName, appName, appVers 
         /// </summary>
@@ -326,10 +387,12 @@ namespace MobiledgeX
             orgName = settings.orgName;
             appName = settings.appName;
             appVers = settings.appVers;
+
             if (settings.authPublicKey.Length > 0)
             {
                 developerAuthToken = settings.authPublicKey;
             }
+
             tcpPort = (int)settings.TCP_Port;
             udpPort = (int)settings.UDP_Port;
         }
