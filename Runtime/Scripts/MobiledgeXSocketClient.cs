@@ -52,7 +52,6 @@ namespace MobiledgeX
     {
       encoder = new UTF8Encoding();
       ws = new ClientWebSocket();
-     
     
       receiveQueue = new ConcurrentQueue<string>();
       receiveThread = new Thread(RunReceive);
