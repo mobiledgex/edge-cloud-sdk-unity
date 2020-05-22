@@ -56,7 +56,7 @@ namespace MobiledgeX
         return;
       }
 
-      if (sdkVersion >= 17) {
+      /*if (sdkVersion >= 17) {
         cellInfoLte = PlatformIntegrationUtil.GetAndroidJavaObject("android.telephony.CellInfoLte");
         cellInfoLteString = cellInfoLte != null ? PlatformIntegrationUtil.GetSimpleName(cellInfoLte) : "";
 
@@ -81,7 +81,7 @@ namespace MobiledgeX
       {
         cellInfoNr = PlatformIntegrationUtil.GetAndroidJavaObject("android.telephony.CellInfoNr");
         cellInfoNrString = cellInfoNr != null ? PlatformIntegrationUtil.GetSimpleName(cellInfoNr) : "";
-      }
+      }*/
     }
 
     public int getAndroidSDKVers()
@@ -314,19 +314,7 @@ namespace MobiledgeX
 
     public ulong GetCellID()
     {
-      ulong cellID = 0;
-
-      List<KeyValuePair<String, ulong>> cellInfoList = GetCellInfoList();
-
-      if (cellInfoList == null || cellInfoList.Count == 0)
-      {
-        Debug.Log("no cellID");
-        return cellID;
-      }
-
-      KeyValuePair<String, ulong> pair = cellInfoList[0]; // grab first value
-
-      return pair.Value;
+      return 0;
     }
 
 #elif UNITY_IOS
