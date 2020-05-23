@@ -58,7 +58,7 @@ namespace MobiledgeX
 
       /*
        * The following code is commented out to prevent Android JNI blacklist crashes.
-       * As of Android API 28, CellInfo interfaces and class reflection are not allowed.
+       * As of Android API 28, CellInfo interfaces and class reflection through JNI are not allowed.
        * (https://developer.android.com/distribute/best-practices/develop/restrictions-non-sdk-interfaces)
        * The following code can be used with older Android API versions.
        */
