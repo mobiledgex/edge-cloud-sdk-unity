@@ -314,6 +314,19 @@ namespace MobiledgeX
 
     public ulong GetCellID()
     {
+      /*ulong cellID = 0;
+
+      List<KeyValuePair<String, ulong>> cellInfoList = GetCellInfoList();
+
+      if (cellInfoList == null || cellInfoList.Count == 0)
+      {
+        Debug.Log("no cellID");
+        return cellID;
+      }
+
+      KeyValuePair<String, ulong> pair = cellInfoList[0]; // grab first value
+
+      return pair.Value;*/
       return 0;
     }
 
