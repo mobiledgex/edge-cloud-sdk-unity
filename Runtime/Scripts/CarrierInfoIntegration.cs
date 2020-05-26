@@ -56,7 +56,14 @@ namespace MobiledgeX
         return;
       }
 
-      if (sdkVersion >= 17) {
+      /*
+       * The following code is commented out to prevent Android JNI blacklist crashes.
+       * As of Android API 28, CellInfo interfaces and class reflection through JNI are not allowed.
+       * (https://developer.android.com/distribute/best-practices/develop/restrictions-non-sdk-interfaces)
+       * The following code can be used with older Android API versions.
+       */
+
+      /*if (sdkVersion >= 17) {
         cellInfoLte = PlatformIntegrationUtil.GetAndroidJavaObject("android.telephony.CellInfoLte");
         cellInfoLteString = cellInfoLte != null ? PlatformIntegrationUtil.GetSimpleName(cellInfoLte) : "";
 
@@ -81,7 +88,7 @@ namespace MobiledgeX
       {
         cellInfoNr = PlatformIntegrationUtil.GetAndroidJavaObject("android.telephony.CellInfoNr");
         cellInfoNrString = cellInfoNr != null ? PlatformIntegrationUtil.GetSimpleName(cellInfoNr) : "";
-      }
+      }*/
     }
 
     public int getAndroidSDKVers()
@@ -314,7 +321,7 @@ namespace MobiledgeX
 
     public ulong GetCellID()
     {
-      ulong cellID = 0;
+      /*ulong cellID = 0;
 
       List<KeyValuePair<String, ulong>> cellInfoList = GetCellInfoList();
 
@@ -326,7 +333,8 @@ namespace MobiledgeX
 
       KeyValuePair<String, ulong> pair = cellInfoList[0]; // grab first value
 
-      return pair.Value;
+      return pair.Value;*/
+      return 0;
     }
 
 #elif UNITY_IOS
