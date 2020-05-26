@@ -66,6 +66,24 @@ HttpClient http = await dme.GetHTTPClient(findCloudletReply, appPort, public_por
 HttpResponseMessage message = await http.GetAsync("/"); //makes a get request
 ```
 
+## Platform Specific
+
+### Android
+
+The minimum API we support for Android is API Version 24. In your player settings, make sure to set the minimum API to 24, otherwise you will be unable to build your project. 
+
+![](https://developers.mobiledgex.com/assets/unity-sdk/android_version_error.png)
+
+## Known Issues
+
+If you recieve the following error and cannot compile your Unity project, restart Unity.
+
+![](https://developers.mobiledgex.com/assets/unity-sdk/metadata_error.png)
+
+### iOS
+
+On iOS, if you are on a roaming network, the MCCMNC the SDK returns is the MCCMNC of your original network instead of the MCCMNC of your current roaming network, which is not the intended behavior. 
+
 ### Where to Go from Here  
 * Click [here](https://api.mobiledgex.net/#section/Edge-SDK-Unity) to view and familiarize with the Unity C# SDK APIs to start your MobiledgeX integration.
 
