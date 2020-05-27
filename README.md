@@ -8,12 +8,14 @@ The Matching Engine Unity C# SDK provides everything required to create applicat
 
 ## Prerequisites  
 
-* Unity 2019.x or newer, along with selected platforms (iOS, Android) for your project
+* Unity 2019.2 or newer, along with selected platforms (iOS, Android) for your project
 * .Net Standard 2.0
 * A running AppInst deployed on your edge server
 * Git installed
 
 ## Download the Unity SDK Package  
+
+### 2019.3.x and above
 
 The fastest way to import the MobiledgeX Unity SDK into your project is by using the Package Manager. You can open it from *Window > Package Manager* in Unity. To add our MobiledgeX Package, select the **+** icon and click on **“Add package from git URL…”** 
 
@@ -24,6 +26,36 @@ Enter [https://github.com/mobiledgex/edge-cloud-sdk-unity.git](https://github.co
 Once that finishes, you will now see the MobiledgeX SDK within your Package Manager and the SDK will be available under the Packages tab of your Project. 
 
 ![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-package.png)
+
+### 2019.2.x
+
+In order to import the MobiledgeX package into your project, you will need to edit the **manifest.json file**. This file is located at ***Unity_Project_Path/Packages/manifest.json***. When opened, the file will be in this format : 
+
+```
+{
+  "dependencies": {
+    "com.unity.*": "*.*.*",
+    .
+    .
+    .
+   }
+}
+```
+
+Under dependencies, add the following : ```"com.mobiledgex.sdk": "https://github.com/mobiledgex/edge-cloud-sdk-unity.git"```
+When you do, your manifest.json file should look like this (**minor** : do **NOT** include the comma if you add the mobiledgex line to the end of the dependency list):
+```
+{
+  "dependencies": {
+    "com.mobiledgex.sdk": "https://github.com/mobiledgex/edge-cloud-sdk-unity.git",
+    "com.unity.*": "*.*.*",
+    .
+    .
+    .
+   }
+}
+```
+After you finish editing and save the file, you can now click into the Unity editor and it will automatically begin the process of importing the package. 
 
 ## Using the MobiledgeX SDK
 
