@@ -133,6 +133,29 @@ namespace MobiledgeX
       }
 
       AndroidJavaObject telManager = PlatformIntegrationUtil.Call<AndroidJavaObject>(context, "getSystemService", new object[] {CONTEXT_TELEPHONY_SERVICE});
+
+      sdkVersion = getAndroidSDKVers();
+
+      if (sdkVersion < 24)
+      {
+        return telManager;
+      }
+
+      // Call SubscriptionManager to get a specific telManager:
+      AndroidJavaClass subscriptionManagerCls = PlatformIntegrationUtil.GetAndroidJavaClass("android.telephony.SubscriptionManager");
+      if (subscriptionManagerCls == null) {
+        Debug.Log("Can't get Subscription Manager Class.");
+        return null;
+      }
+      int subId = PlatformIntegrationUtil.CallStatic<int>(subscriptionManagerCls, "getDefaultDataSubscriptionId");
+      int invalidSubId = PlatformIntegrationUtil.GetStatic<int>(subscriptionManagerCls, "INVALID_SUBSCRIPTION_ID");
+      if (subId == invalidSubId) {
+        Debug.Log("The Subscription ID is invalid: " + subId);
+        return null;
+      }
+      object[] idParam = new object[1] { subId };
+      telManager = PlatformIntegrationUtil.Call<AndroidJavaObject>(telManager, "createForSubscriptionId", idParam);
+
       return telManager;
     }
 
