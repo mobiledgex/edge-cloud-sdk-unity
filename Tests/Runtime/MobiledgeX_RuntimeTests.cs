@@ -34,7 +34,7 @@ namespace MobiledgeX
             }
             else
             {
-                settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
+                // settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
                 integration = new MobiledgeXIntegration();
                 testLocation = new Loc
                 {
@@ -48,9 +48,9 @@ namespace MobiledgeX
         public void Clean()
         {
             integration = null;
-            settings.orgName = "";
-            settings.appName = "";
-            settings.appVers = "";
+            MobiledgeXIntegration.orgName = "";
+            MobiledgeXIntegration.appName = "";
+            MobiledgeXIntegration.appVers = "";
         }
 
         #endregion
@@ -61,24 +61,57 @@ namespace MobiledgeX
         [TestCase("MobiledgeX", "MobiledgeX SDK Demo", "2.0")]
         public void RegisterClient(string orgName, string appName, string appVers)
         {
-            settings.orgName = orgName;
-            settings.appName = appName;
-            settings.appVers = appVers;
+            MobiledgeXIntegration.orgName = orgName;
+            MobiledgeXIntegration.appName = appName;
+            MobiledgeXIntegration.appVers = appVers;
             var task = Task.Run(async () =>
             {
                 return await RegisterHelper();
             });
 
+            Debug.Log("result of registerClient is " + task.Result);
             Assert.True(task.Result);
         }
 
         [Test]
         [TestCase("MobiledgeX", "MobiledgeX SDK Demo", "2.0")]
+        public void FindCloudlet(string orgName, string appName, string appVers)
+		{
+            MobiledgeXIntegration.orgName = orgName;
+            MobiledgeXIntegration.appName = appName;
+            MobiledgeXIntegration.appVers = appVers;
+            var task = Task.Run(async () =>
+            {
+                bool registered = await RegisterHelper();
+                Assert.True(registered, "Unable to register");
+                return await FindCloudletHelper();
+            });
+
+            Debug.Log("findCloudletreply status is " + task.Result.status);
+            Assert.True(task.Result != null);
+		}
+
+        [Test]
+        [TestCase("MobiledgeX", "MobiledgeX SDK Demo", "2.0")]
+        public void VerifyLocation(string orgName, string appName, string appVers)
+		{
+            var task = Task.Run(async () =>
+            {
+                bool registered = await RegisterHelper();
+                Assert.True(registered, "Unable to register");
+                return await VerifyLocationHelper();
+            });
+
+            Assert.True(task.Result);
+		}
+
+        [Test]
+        [TestCase("MobiledgeX", "MobiledgeX SDK Demo", "2.0")]
         public void GetRestURI(string orgName, string appName, string appVers)
         {
-            settings.orgName = orgName;
-            settings.appName = appName;
-            settings.appVers = appVers;
+            MobiledgeXIntegration.orgName = orgName;
+            MobiledgeXIntegration.appName = appName;
+            MobiledgeXIntegration.appVers = appVers;
             var task = Task.Run(async () =>
             {
                 return await RegisterAndFindCloudletHelper( orgName, appName, appVers);
@@ -91,9 +124,9 @@ namespace MobiledgeX
         [TestCase("WrongCredentials", "WrongAppName", "WrongAppVersion")]
         public void GetRestURIException(string orgName, string appName, string appVers)
         {
-            settings.orgName = orgName;
-            settings.appName = appName;
-            settings.appVers = appVers;
+            MobiledgeXIntegration.orgName = orgName;
+            MobiledgeXIntegration.appName = appName;
+            MobiledgeXIntegration.appVers = appVers;
             try
             {
                 GetRestURI(orgName, appName, appVers);
@@ -116,12 +149,12 @@ namespace MobiledgeX
         }
 
         [Test]
-        [TestCase("MobiledgeX", "PingPong", "2020-02-03")]
+        [TestCase("MobiledgeX", "PingPong", "2.0")]
         public void WebSocketTest(string orgName, string appName, string appVers)
         {
-            settings.orgName = orgName;
-            settings.appName = appName;
-            settings.appVers = appVers;
+            MobiledgeXIntegration.orgName = orgName;
+            MobiledgeXIntegration.appName = appName;
+            MobiledgeXIntegration.appVers = appVers;
             var task = Task.Run(async () =>
             {
                 return await WebSocketTestHelper(orgName, appName, appVers);
@@ -135,9 +168,9 @@ namespace MobiledgeX
         [TestCase("WrongCredentials", "WrongAppName", "WrongAppVersion")]
         public void WebSocketTestExpectedException(string orgName, string appName, string appVers)
         {
-            settings.orgName = orgName;
-            settings.appName = appName;
-            settings.appVers = appVers;
+            MobiledgeXIntegration.orgName = orgName;
+            MobiledgeXIntegration.appName = appName;
+            MobiledgeXIntegration.appVers = appVers;
             try
             {
                 WebSocketTest(orgName, appName, appVers);
@@ -170,6 +203,22 @@ namespace MobiledgeX
 
             return check;
         }
+
+        public async Task<FindCloudletReply> FindCloudletHelper()
+		{
+            FindCloudletReply reply = await integration.FindCloudlet();
+            await Task.Delay(TimeSpan.FromMilliseconds(200));
+
+            return reply;
+		}
+
+        public async Task<bool> VerifyLocationHelper()
+		{
+            bool verified = await integration.VerifyLocation();
+            await Task.Delay(TimeSpan.FromMilliseconds(200));
+
+            return verified;
+		}
 
         public async Task<string> RegisterAndFindCloudletHelper(string orgName, string appName, string appVers)
         {
