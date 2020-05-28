@@ -6,24 +6,56 @@ The MobiledgeX Client Library enables an application to register and then locate
 
 The Matching Engine Unity C# SDK provides everything required to create applications for Unity devices.
 
-
 ## Prerequisites  
 
-* Unity 2018.2.x LTS or newer, along with selected platforms (iOS, Android) for your project
+* Unity 2019.2 or newer, along with selected platforms (iOS, Android) for your project
 * .Net Standard 2.0
 * A running AppInst deployed on your edge server
+* Git installed
 
 ## Download the Unity SDK Package  
 
+### 2019.3.x and above
+
 The fastest way to import the MobiledgeX Unity SDK into your project is by using the Package Manager. You can open it from *Window > Package Manager* in Unity. To add our MobiledgeX Package, select the **+** icon and click on **“Add package from git URL…”** 
 
-![](https://developers.mobiledgex.com/assets/unity-sdk/add-git-url.png){.full}
+![](https://developers.mobiledgex.com/assets/unity-sdk/add-git-url.png)
 
 Enter [https://github.com/mobiledgex/edge-cloud-sdk-unity.git](https://github.com/mobiledgex/edge-cloud-sdk-unity.git) in the text field, which will automatically start the process of importing the package into your application. 
 
 Once that finishes, you will now see the MobiledgeX SDK within your Package Manager and the SDK will be available under the Packages tab of your Project. 
 
-![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-package.png){.full}
+![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-package.png)
+
+### 2019.2.x
+
+In order to import the MobiledgeX package into your project, you will need to edit the **manifest.json file**. This file is located at ***Unity_Project_Path/Packages/manifest.json***. When opened, the file will be in this format : 
+
+```
+{
+  "dependencies": {
+    "com.unity.*": "*.*.*",
+    .
+    .
+    .
+   }
+}
+```
+
+Under dependencies, add the following : ```"com.mobiledgex.sdk": "https://github.com/mobiledgex/edge-cloud-sdk-unity.git"```
+When you do, your manifest.json file should look like this (**minor** : do **NOT** include the comma if you add the mobiledgex line to the end of the dependency list):
+```
+{
+  "dependencies": {
+    "com.mobiledgex.sdk": "https://github.com/mobiledgex/edge-cloud-sdk-unity.git",
+    "com.unity.*": "*.*.*",
+    .
+    .
+    .
+   }
+}
+```
+After you finish editing and save the file, you can now click into the Unity editor and it will automatically begin the process of importing the package. 
 
 ## Using the MobiledgeX SDK
 
@@ -65,6 +97,24 @@ AppPort appPort = appPortsDict[public_port];
 HttpClient http = await dme.GetHTTPClient(findCloudletReply, appPort, public_port, 5000);
 HttpResponseMessage message = await http.GetAsync("/"); //makes a get request
 ```
+
+## Platform Specific
+
+### Android
+
+The minimum API we support for Android is API Version 24. In your player settings, make sure to set the minimum API to 24, otherwise you will be unable to build your project. 
+
+![](https://developers.mobiledgex.com/assets/unity-sdk/android_version_error.png)
+
+## Known Issues
+
+If you recieve the following error and cannot compile your Unity project, restart Unity.
+
+![](https://developers.mobiledgex.com/assets/unity-sdk/metadata_error.png)
+
+### iOS
+
+On iOS, if you are on a roaming network, the MCCMNC the SDK returns is the MCCMNC of your original network instead of the MCCMNC of your current roaming network, which is not the intended behavior. 
 
 ### Where to Go from Here  
 * Click [here](https://api.mobiledgex.net/#section/Edge-SDK-Unity) to view and familiarize with the Unity C# SDK APIs to start your MobiledgeX integration.
