@@ -88,11 +88,11 @@ namespace MobiledgeX
         /// Gets the location from the cellular device, Location is needed for Finding Cloudlet and Location Verification
         /// </summary>
         /// <returns></returns>
-        public async Task<Loc> GetLocationFromDevice()
+        public Loc GetLocationFromDevice()
         {
             // Location is ephemeral, so retrieve a new location from the platform. May return 0,0 which is
             // technically valid, though less likely real, as of writing.
-            Loc loc = await LocationService.RetrieveLocation();
+            Loc loc = LocationService.RetrieveLocation();
             // If in UnityEditor, 0f and 0f are hard zeros as there is no location service.
             if (loc.longitude == 0f && loc.latitude == 0f)
             {
@@ -122,7 +122,7 @@ namespace MobiledgeX
 
         public async Task<FindCloudletReply> FindCloudlet()
         {
-            location = await GetLocationFromDevice();
+            location = GetLocationFromDevice();
             UpdateCarrierName();
 
             FindCloudletRequest req = me.CreateFindCloudletRequest(location, carrierName);
@@ -143,7 +143,7 @@ namespace MobiledgeX
                 throw new Exception("Device is not edge enabled. Please switch to cellular connection or use server in public cloud");
             }
 
-            location = await GetLocationFromDevice();
+            location = GetLocationFromDevice();
             UpdateCarrierName();
 
             if (port == 0)
@@ -190,7 +190,7 @@ namespace MobiledgeX
         /// <returns></returns>
         public async Task<String> GetURI(LProto protocol = LProto.L_PROTO_TCP, int port = 0)
         {
-            location = await GetLocationFromDevice();
+            location = GetLocationFromDevice();
             UpdateCarrierName();
 
             string uri = "";
@@ -278,7 +278,7 @@ namespace MobiledgeX
         /// <returns></returns>
         public async Task<bool> VerifyLocation()
         {
-            location = await GetLocationFromDevice();
+            location = GetLocationFromDevice();
             UpdateCarrierName();
 
             VerifyLocationRequest req = me.CreateVerifyLocationRequest(location, carrierName);
