@@ -7,6 +7,7 @@ using UnityEngine;
 using DistributedMatchEngine;
 using System.Linq;
 using System.Collections.Generic;
+
 namespace MobiledgeX
   {
       [ExecuteInEditMode]
@@ -290,23 +291,24 @@ namespace MobiledgeX
           {
               MobiledgeXIntegration integration = new MobiledgeXIntegration();
               bool checkResult = false;
-              integration.useWifiOnly(true);
+              integration.UseWifiOnly(true);
               try
               {
                   // Register and find cloudlet:
                   clog("Registering to DME ...", "");
                   checkResult = await integration.Register();
-                  FindCloudletReply reply = await integration.FindCloudlet();
-                  if (reply == null)
+                  bool foundCloudlet = await integration.FindCloudlet();
+                  if (!foundCloudlet)
                   {
                       Debug.LogError("MobiledgeX: Couldn't Find findCloudletReply, Make Sure you created App Instances for your Application and they are deployed in the correct region.");
                       throw new FindCloudletException("No findCloudletReply");
                   }
-                  if (reply.ports.Length > 0)
+                  AppPort[] appPortList = integration.AppPortList;
+                  if (appPortList != null && appPortList.Length > 0)
                   {
                       // mappedPorts size is presisted to since mappedPorts is exposed in the Inspector(used in OnValidation in MobiledgeXSettings)
-                      settings.mappedPortsSize = reply.ports.Length;
-                      foreach (AppPort appPort in reply.ports)
+                      settings.mappedPortsSize = appPortList.Length;
+                      foreach (AppPort appPort in appPortList)
                       {
                           Port port = new Port(appPort);
                           // check if port have already being added ,(In EditorWindow)  if Setup is pressed before
