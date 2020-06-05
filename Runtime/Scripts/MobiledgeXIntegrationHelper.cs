@@ -31,7 +31,7 @@ namespace MobiledgeX
         public AppPortException(string message)
             : base(message)
         {
-    }
+        }
 
         public AppPortException(string message, Exception innerException)
             : base(message, innerException)
@@ -62,18 +62,18 @@ namespace MobiledgeX
                 reply = await matchingEngine.RegisterClient(req);
             }
             catch (HttpException httpe)
-			{
+            {
                 throw new RegisterClientException("RegisterClient Exception: " + httpe.Message + ", HTTP StatusCode: " + httpe.HttpStatusCode + ", API ErrorCode: " + httpe.ErrorCode + "\nStack: " + httpe.StackTrace);
-			}
+            }
 
             if (reply == null)
-			{
+            {
                 throw new RegisterClientException("RegisterClient returned null.");
-			}
+            }
             if (reply.status != ReplyStatus.RS_SUCCESS)
-			{
+            {
                 throw new RegisterClientException("Bad RegisterClient. RegisterClient status is " + reply.status);
-			}
+            }
 
             latestRegisterStatus = true;
             return true;
@@ -89,10 +89,10 @@ namespace MobiledgeX
             latestFindCloudletReply = null;
 
             if (!latestRegisterStatus)
-			{
+            {
                 Debug.LogError("Last RegisterClient was unsuccessful. FindCloudlet requires a succesful RegisterClient");
                 throw new FindCloudletException("Last RegisterClient was unsuccessful. Call RegisterClient again before FindCloudlet");
-			}
+            }
 
             location = GetLocationFromDevice();
             UpdateCarrierName();
@@ -104,19 +104,19 @@ namespace MobiledgeX
                 reply = await matchingEngine.FindCloudlet(req, mode);
             }
             catch (HttpException httpe)
-			{
+            {
                 throw new FindCloudletException("FindCloudlet Exception: " + httpe.Message + ", HTTP StatusCode: " + httpe.HttpStatusCode + ", API ErrorCode: " + httpe.ErrorCode + "\nStack: " + httpe.StackTrace);
-			}
-            
+            }
+
 
             if (reply == null)
             {
                 throw new FindCloudletException("FindCloudletReply returned null. Make Sure you created App Instances for your Application and they are deployed in the correct region.");
             }
             if (reply.status != FindCloudletReply.FindStatus.FIND_FOUND)
-			{
+            {
                 throw new FindCloudletException("Unable to findCloudlet. Status is " + reply.status);
-			}
+            }
 
             latestFindCloudletReply = reply;
             latestAppPortList = reply.ports;
@@ -186,7 +186,7 @@ namespace MobiledgeX
                     return false;
                 }
             }
-    
+
             string cellularIPAddress = matchingEngine.netInterface.GetIPAddress(matchingEngine.netInterface.GetNetworkInterfaceName().CELLULAR);
             if (cellularIPAddress == null)
             {

@@ -47,7 +47,7 @@ namespace MobiledgeX
             udpPort = (int)settings.UDP_Port;
         }
 
-         /// <summary>
+        /// <summary>
         /// Use for testing In UnityEditor, Won't work in Production
         /// </summary>
         /// <param name="useWifi"></param>
@@ -63,9 +63,9 @@ namespace MobiledgeX
 		/// Performance Mode: Does latency test for all cloudlets and returns the fastest cloudlet. (takes longer to return)
         /// </summary>
         public void UseFindCloudletPerformanceMode(bool performanceMode)
-		{
+        {
             mode = performanceMode ? FindCloudletMode.PERFORMANCE : FindCloudletMode.PROXIMITY;
             Debug.Log("Setting FindCloudlet mode to " + mode);
-		}
+        }
     }
 }
