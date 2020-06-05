@@ -25,10 +25,11 @@ namespace MobiledgeX
         [OneTimeSetUp]
         public void SetupEditorWindow()
         {
-            if(!File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/iOS/PlatformIntegration.m")) &&
-            !File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/link.xml"))&&
-            !File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/MatchingEngineSDKRestLibrary.dll"))&&
-            !File.Exists(Path.Combine(Application.dataPath, "Resources/MobiledgeXSettings.asset"))){
+            if (!File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/iOS/PlatformIntegration.m")) &&
+            !File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/link.xml")) &&
+            !File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/MatchingEngineSDKRestLibrary.dll")) &&
+            !File.Exists(Path.Combine(Application.dataPath, "Resources/MobiledgeXSettings.asset")))
+            {
 
                 Assert.Fail("MobiledgeX Plugins are not loaded in the project, Can't preform tests");
             }
@@ -76,7 +77,7 @@ namespace MobiledgeX
         [Test]
         [TestCase("MobiledgeX", "MobiledgeX SDK Demo", "2.0")]
         public void FindCloudlet(string orgName, string appName, string appVers)
-		{
+        {
             MobiledgeXIntegration.orgName = orgName;
             MobiledgeXIntegration.appName = appName;
             MobiledgeXIntegration.appVers = appVers;
@@ -87,14 +88,14 @@ namespace MobiledgeX
                 return await FindCloudletHelper();
             });
 
-            Debug.Log("findCloudletreply status is " + task.Result.status);
-            Assert.True(task.Result != null);
-		}
+            Debug.Log("result of findCloudlet is " + task.Result);
+            Assert.True(task.Result);
+        }
 
         [Test]
         [TestCase("MobiledgeX", "MobiledgeX SDK Demo", "2.0")]
         public void VerifyLocation(string orgName, string appName, string appVers)
-		{
+        {
             var task = Task.Run(async () =>
             {
                 bool registered = await RegisterHelper();
@@ -103,7 +104,7 @@ namespace MobiledgeX
             });
 
             Assert.True(task.Result);
-		}
+        }
 
         [Test]
         [TestCase("MobiledgeX", "MobiledgeX SDK Demo", "2.0")]
@@ -114,7 +115,7 @@ namespace MobiledgeX
             MobiledgeXIntegration.appVers = appVers;
             var task = Task.Run(async () =>
             {
-                return await RegisterAndFindCloudletHelper( orgName, appName, appVers);
+                return await RegisterAndFindCloudletHelper(orgName, appName, appVers);
             });
 
             Assert.IsNotEmpty(task.Result);
@@ -204,26 +205,26 @@ namespace MobiledgeX
             return check;
         }
 
-        public async Task<FindCloudletReply> FindCloudletHelper()
-		{
-            FindCloudletReply reply = await integration.FindCloudlet();
+        public async Task<bool> FindCloudletHelper()
+        {
+            bool foundCloudlet = await integration.FindCloudlet();
             await Task.Delay(TimeSpan.FromMilliseconds(200));
 
-            return reply;
-		}
+            return foundCloudlet;
+        }
 
         public async Task<bool> VerifyLocationHelper()
-		{
+        {
             bool verified = await integration.VerifyLocation();
             await Task.Delay(TimeSpan.FromMilliseconds(200));
 
             return verified;
-		}
+        }
 
         public async Task<string> RegisterAndFindCloudletHelper(string orgName, string appName, string appVers)
         {
-            
-            FindCloudletReply reply = await integration.me.RegisterAndFindCloudlet( orgName, appName, appVers, testLocation, MatchingEngine.wifiCarrier);
+
+            FindCloudletReply reply = await integration.matchingEngine.RegisterAndFindCloudlet(orgName, appName, appVers, testLocation, MatchingEngine.wifiCarrier);
             await Task.Delay(TimeSpan.FromMilliseconds(200));
             string uri = reply.fqdn;
             return uri;
@@ -231,18 +232,18 @@ namespace MobiledgeX
 
         public async Task<string> WebSocketTestHelper(string orgName, string appName, string appVers)
         {
-            FindCloudletReply reply = await integration.me.RegisterAndFindCloudlet( orgName, appName, appVers, testLocation, MatchingEngine.wifiCarrier);
+            FindCloudletReply reply = await integration.matchingEngine.RegisterAndFindCloudlet(orgName, appName, appVers, testLocation, MatchingEngine.wifiCarrier);
             await Task.Delay(TimeSpan.FromMilliseconds(200));
-            Dictionary<int, AppPort> appPortsDict = integration.me.GetTCPAppPorts(reply);
+            Dictionary<int, AppPort> appPortsDict = integration.matchingEngine.GetTCPAppPorts(reply);
             int public_port = reply.ports[0].public_port;
             AppPort appPort = appPortsDict[public_port];
-            ClientWebSocket ws = await integration.me.GetWebsocketConnection(reply, appPort, public_port, 5000, "?roomid=testing&pName=MobiledgeX&pCharacter=2");
+            ClientWebSocket ws = await integration.matchingEngine.GetWebsocketConnection(reply, appPort, public_port, 5000, "?roomid=testing&pName=MobiledgeX&pCharacter=2");
             await Task.Delay(TimeSpan.FromMilliseconds(200));
             byte[] buf = new byte[4 * 1024];
             ArraySegment<byte> arrayBuf = new ArraySegment<byte>(buf);
             var ms = new MemoryStream();
             WebSocketReceiveResult chunkResult = null;
-            chunkResult =   await ws.ReceiveAsync(arrayBuf, CancellationToken.None);
+            chunkResult = await ws.ReceiveAsync(arrayBuf, CancellationToken.None);
             await Task.Delay(TimeSpan.FromMilliseconds(200));
             ms.Write(arrayBuf.Array, arrayBuf.Offset, chunkResult.Count);
             ms.Seek(0, SeekOrigin.Begin);
