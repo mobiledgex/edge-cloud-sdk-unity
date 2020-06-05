@@ -1,19 +1,19 @@
 /**
- * Copyright 2018-2020 MobiledgeX, Inc. All rights and licenses reserved.
- * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright 2018-2020 MobiledgeX, Inc. All rights and licenses reserved.
+* MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 using System;
 using System.Collections.Generic;
@@ -24,13 +24,13 @@ using System.Net.WebSockets;
 using System.Net.Http;
 using System.Linq;
 /*
- * MobiledgeX MatchingEngine SDK integration has an additional application side
- * "PlatformIntegration.cs/m" file for Android, IOS, or other platform integration
- * with Unity.
- *
- * This is necessary to retrieve carrier information so that the SDK can provide
- * Edge Cloudlet discovery.
- */
+* MobiledgeX MatchingEngine SDK integration has an additional application side
+* "PlatformIntegration.cs/m" file for Android, IOS, or other platform integration
+* with Unity.
+*
+* This is necessary to retrieve carrier information so that the SDK can provide
+* Edge Cloudlet discovery.
+*/
 namespace MobiledgeX
 {
     public partial class MobiledgeXIntegration
@@ -96,8 +96,8 @@ namespace MobiledgeX
         }
 
         /// <summary>
-	/// Wrapper for RegisterAndFindCloudlet. Returns false if either Register or FindCloudlet fails.
-	/// RegisterClientException and FindCloudletException will give more details on reason for failure
+        /// Wrapper for RegisterAndFindCloudlet. Returns false if either Register or FindCloudlet fails.
+        /// RegisterClientException and FindCloudletException will give more details on reason for failure
         /// </summary>
         /// <returns>bool Task</returns>
         public async Task<bool> RegisterAndFindCloudlet()
@@ -112,7 +112,7 @@ namespace MobiledgeX
         }
 
         /// <summary>
-		/// Wrapper for VerifyLocation. Verification of location based on the device location and the cell tower location
+        /// Wrapper for VerifyLocation. Verification of location based on the device location and the cell tower location
         /// </summary>
         /// <returns>bool Task</returns>
         public async Task<bool> VerifyLocation()
@@ -135,7 +135,6 @@ namespace MobiledgeX
             // The return is not binary, but one can decide the particular app's policy
             // on pass or failing the location check. Not being verified or the country
             // not matching at all is on such policy decision:
-
             // GPS and Tower Status:
             switch (reply.gps_location_status)
             {
@@ -169,11 +168,11 @@ namespace MobiledgeX
         }
 
         /// <summary>
-		/// Wrapper for Get[]AppPorts. This will return the AppPort object mapped to the given port.
-		/// If no port is given, this will return the first AppPort in the dictionary
+        /// Wrapper for Get[]AppPorts. This will return the AppPort object mapped to the given port.
+        /// If no port is given, this will return the first AppPort in the dictionary
         /// </summary>
         /// <param name="proto">LProto protocol (L_PROTO_TCP, L_PROTO_UDP, or L_PROTO_HTTP)</param>
-		/// <param name="port">port for developer specific backend service</param>
+        /// <param name="port">port for developer specific backend service</param>
         /// <returns>AppPort</returns>
         public AppPort GetAppPort(LProto proto, int port = 0)
         {
@@ -226,11 +225,11 @@ namespace MobiledgeX
         }
 
         /// <summary>
-		/// Wrapper for CreateUrl. Returns the L7 url for application backend
+        /// Wrapper for CreateUrl. Returns the L7 url for application backend
         /// </summary>
-		/// <param name="appPort">AppPort (from GetAppPort)</param>
+        /// <param name="appPort">AppPort (from GetAppPort)</param>
         /// <param name="l7Proto">Layer 7 communication protocol (eg. http, https, ws, wss)</param>
-		/// <param name="port">port for developer specific backend service</param>
+        /// <param name="port">port for developer specific backend service</param>
         /// <param name="path">optional path to append to end of url</param>
         /// <returns>string</returns>
         public string GetUrl(string l7Proto, AppPort appPort = null, int port = 0, string path = "")
@@ -254,9 +253,9 @@ namespace MobiledgeX
         }
 
         /// <summary>
-		/// Wrapper for GetPort. Returns the port of specified service in the application backend (use with GetHost)
+        /// Wrapper for GetPort. Returns the port of specified service in the application backend (use with GetHost)
         /// </summary>
-		/// <param name="appPort">AppPort (from GetAppPort)</param>
+        /// <param name="appPort">AppPort (from GetAppPort)</param>
         /// <param name="port">port for developer specific backend service</param>
         /// <returns>string</returns>
         public string GetHost(AppPort appPort = null)
@@ -280,9 +279,9 @@ namespace MobiledgeX
         }
 
         /// <summary>
-		/// Wrapper for GetHost. Returns the host of the application backend (use with GetPort)
+        /// Wrapper for GetHost. Returns the host of the application backend (use with GetPort)
         /// </summary>
-		/// <param name="appPort">AppPort (from GetAppPort)</param>
+        /// <param name="appPort">AppPort (from GetAppPort)</param>
         /// <returns>int</returns>
         public int GetPort(AppPort appPort = null, int port = 0)
         {
@@ -300,7 +299,7 @@ namespace MobiledgeX
         }
 
         /// <summary>
-		/// Wrapper for GetWebsocketConnection
+        /// Wrapper for GetWebsocketConnection
         /// </summary>
         /// <param name="path">string path for ex. roomId  </param>
         /// <param name="port">Integer TCP port </param>

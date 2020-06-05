@@ -1,19 +1,19 @@
 /**
- * Copyright 2018-2020 MobiledgeX, Inc. All rights and licenses reserved.
- * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright 2018-2020 MobiledgeX, Inc. All rights and licenses reserved.
+* MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 using System;
 using UnityEngine;
@@ -21,20 +21,20 @@ using DistributedMatchEngine;
 using System.Threading.Tasks;
 
 /*
- * Helper functions, private functions, and exceptions used to implement MobiledgeXIntegration wrapper functions
- */
+* Helper functions, private functions, and exceptions used to implement MobiledgeXIntegration wrapper functions
+*/
 
 namespace MobiledgeX
 {
     public class AppPortException : Exception
     {
         public AppPortException(string message)
-            : base(message)
+        : base(message)
         {
         }
 
         public AppPortException(string message, Exception innerException)
-            : base(message, innerException)
+        : base(message, innerException)
         {
         }
     }
@@ -81,7 +81,7 @@ namespace MobiledgeX
 
         /// <summary>
         /// Wrapper for FindCloudlet. Will find the "nearest" cloudlet hosting the application backend
-		/// To use Performance mode. Call UseFindCloudletPerformanceMode(true)
+        /// To use Performance mode. Call UseFindCloudletPerformanceMode(true)
         /// </summary>
         /// <returns>FindCloudletReply Task</returns>
         public async Task<bool> FindCloudlet()
@@ -153,7 +153,7 @@ namespace MobiledgeX
         /// <summary>
         /// Checks whether Edge is Enabled on the device or not, Edge requires connections to run over cellular interface
         /// </summary>
-		/// <param name="proto">GetConnectionProtocol (TCP, UDP, HTTP, Websocket)</param>
+        /// <param name="proto">GetConnectionProtocol (TCP, UDP, HTTP, Websocket)</param>
         /// <returns>bool</returns>
         private bool IsEdgeEnabled(GetConnectionProtocol proto)
         {

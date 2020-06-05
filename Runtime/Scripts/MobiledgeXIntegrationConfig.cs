@@ -1,19 +1,19 @@
 /**
- * Copyright 2018-2020 MobiledgeX, Inc. All rights and licenses reserved.
- * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright 2018-2020 MobiledgeX, Inc. All rights and licenses reserved.
+* MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 using System;
 using UnityEngine;
@@ -21,8 +21,8 @@ using DistributedMatchEngine;
 using System.Threading.Tasks;
 
 /*
- * Utility functions to help developer configure their MobiledgeXIntegration object
- */
+* Utility functions to help developer configure their MobiledgeXIntegration object
+*/
 
 namespace MobiledgeX
 {
@@ -59,8 +59,8 @@ namespace MobiledgeX
 
         /// <summary>
         /// Changes how FindCloudlet will find the "nearest" cloudlet
-		/// Proximity Mode: Default. Gets the cloudlet that is nearest based on gps
-		/// Performance Mode: Does latency test for all cloudlets and returns the fastest cloudlet. (takes longer to return)
+        /// Proximity Mode: Default. Gets the cloudlet that is nearest based on gps
+        /// Performance Mode: Does latency test for all cloudlets and returns the fastest cloudlet. (takes longer to return)
         /// </summary>
         public void UseFindCloudletPerformanceMode(bool performanceMode)
         {
