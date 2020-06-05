@@ -96,7 +96,7 @@ namespace MobiledgeX
             // If in UnityEditor, 0f and 0f are hard zeros as there is no location service.
             if (loc.longitude == 0f && loc.latitude == 0f)
             {
-                // Likely not in the ocean. We'll chose something for demo FindCloudlet purposes:
+                // Likely not in the ocean. Chose something for demo FindCloudlet purposes, or put your own here if desired:
                 loc.longitude = -121.8863286;
                 loc.latitude = 37.3382082;
             }
