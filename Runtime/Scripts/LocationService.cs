@@ -22,122 +22,132 @@ using System.Threading.Tasks;
 using DistributedMatchEngine;
 using UnityEngine.Android;
 using System.Diagnostics;
+using System.Collections;
 
 namespace MobiledgeX
 {
-    public class LocationException : Exception
-{
-  public LocationException(string message) : base(message)
+
+  // Unity Location Service, based on the documentation example:
+  public class LocationService : MonoBehaviour
   {
-  }
-}
+    // LocationService enabled continuously?
 
-public class LocationTimeoutException : Exception
-{
-  public LocationTimeoutException(string message) : base(message)
-  {
-  }
-}
-
-// Unity Location Service, based on the documentation example:
-public class LocationService : MonoBehaviour
-{
-  static LocationInfo locationInfo;
-  Stopwatch stopWatch = new Stopwatch();
-  TimeSpan interval = new TimeSpan(0, 0, 10);
-  bool enabledByUser = false;
-
-  // LocationService enabled continuously?
-  bool locationServiceEnabled { get; set; } = true;
-
-  public void Start()
-  {
-    enabledByUser = Input.location.isEnabledByUser;
-    if (!enabledByUser)
+    public static IEnumerator InitalizeLocationService(int maxWait = 20, bool continuousLocationService = true)
     {
-      return;
+      // First, check if user has location service enabled
+      if (!Input.location.isEnabledByUser)
+      {
+        UnityEngine.Debug.Log("Location Service disabled by user.");
+        yield break;
+      }
+
+      // Start service before querying location
+      Input.location.Start();
+
+      // Wait until service initializes
+      while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
+      {
+        yield return new WaitForSeconds(1);
+        maxWait--;
+      }
+
+      // Service didn't initialize in 20 seconds
+      if (maxWait < 1)
+      {
+        print("Timed out");
+        yield break;
+      }
+
+      // Connection has failed
+      if (Input.location.status == LocationServiceStatus.Failed)
+      {
+        print("Unable to determine device location");
+        yield break;
+      }
+      else
+      {
+        // Access granted and location value could be retrieved
+        print("Location Service has location: " + Input.location.lastData.latitude + " " + Input.location.lastData.longitude + " " + Input.location.lastData.altitude + " " + Input.location.lastData.horizontalAccuracy + " " + Input.location.lastData.timestamp);
+      }
+
+      // Stop service if there is no need to query location updates continuously
+      if (!continuousLocationService)
+      {
+        Input.location.Stop();
+      }
     }
-    Input.location.Start();
-  }
 
-  public void Update()
-  {
-    enabledByUser = Input.location.isEnabledByUser;
-    if (!enabledByUser)
+    public IEnumerator Start()
     {
-      return;
+      yield return StartCoroutine(InitalizeLocationService());
     }
 
-    switch (Input.location.status)
+    public void Update()
     {
-      case LocationServiceStatus.Failed:
-        break;
-      case LocationServiceStatus.Initializing:
-        if (stopWatch.Elapsed > interval)
-        {
-          // Failed.
-          stopWatch.Stop();
-        }
-        break;
-      case LocationServiceStatus.Running:
-        locationInfo = Input.location.lastData;
-        if (!locationServiceEnabled)
-        {
-          Input.location.Stop();
-        }
-        break;
-      case LocationServiceStatus.Stopped:
-        stopWatch.Reset();
-        stopWatch.Start();
-        Input.location.Start();
-        break;
+
     }
-  }
 
-
-  public static LocationInfo UpdateLocation()
-  {
-    Input.location.Start();
-    return locationInfo;
-  }
-
-  // Retrieve the lastest location, without restarting locationService.
-  public static Loc RetrieveLocation()
-  {
-    return ConvertUnityLocationToDMELoc(locationInfo);
-  }
-
-  public static DistributedMatchEngine.Timestamp ConvertTimestamp(double timeInSeconds)
-  {
-    DistributedMatchEngine.Timestamp ts;
-
-    int nanos;
-    long sec = (long)(timeInSeconds); // Truncate.
-    double remainder = timeInSeconds - (double)sec;
-
-    nanos = (int)(remainder * 1e9);
-    ts = new DistributedMatchEngine.Timestamp { seconds = sec.ToString(), nanos = nanos };
-    return ts;
-  }
-
-  public static DistributedMatchEngine.Loc ConvertUnityLocationToDMELoc(UnityEngine.LocationInfo info)
-  {
-    DistributedMatchEngine.Timestamp ts = ConvertTimestamp(info.timestamp);
-
-    Loc loc = new Loc
+    public static void ensurePermissions()
     {
-      latitude = info.latitude,
-      longitude = info.longitude,
-      horizontal_accuracy = info.horizontalAccuracy,
-      vertical_accuracy = info.verticalAccuracy,
-      altitude = info.altitude,
-      course = 0f,
-      speed = 0f,
-      timestamp = ts
-    };
+#if PLATFORM_ANDROID
+      if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
+      {
+        Permission.RequestUserPermission(Permission.FineLocation);
+      }
+#endif
+    }
 
-    return loc;
+    public void OnApplicationFocus(bool hasFocus)
+    {
+      if (hasFocus)
+      {
+        ensurePermissions();
+      }
+    }
+
+    // Retrieve the lastest location, without restarting locationService.
+    public static Loc RetrieveLocation()
+    {
+      if (Input.location.status != LocationServiceStatus.Running)
+      {
+        UnityEngine.Debug.Log("Warning: Location Status must be in running state to get a valid location! Current Status: " + Input.location.status);
+      }
+      LocationInfo locationInfo = Input.location.lastData;
+      UnityEngine.Debug.Log("Location Info: [" + locationInfo.longitude + "," + locationInfo.latitude + "]");
+      return ConvertUnityLocationToDMELoc(locationInfo);
+    }
+
+    public static DistributedMatchEngine.Timestamp ConvertTimestamp(double timeInSeconds)
+    {
+      DistributedMatchEngine.Timestamp ts;
+
+      int nanos;
+      long sec = (long)(timeInSeconds); // Truncate.
+      double remainder = timeInSeconds - (double)sec;
+
+      nanos = (int)(remainder * 1e9);
+      ts = new DistributedMatchEngine.Timestamp { seconds = sec.ToString(), nanos = nanos };
+      return ts;
+    }
+
+    public static DistributedMatchEngine.Loc ConvertUnityLocationToDMELoc(UnityEngine.LocationInfo info)
+    {
+      DistributedMatchEngine.Timestamp ts = ConvertTimestamp(info.timestamp);
+
+      Loc loc = new Loc
+      {
+        latitude = info.latitude,
+        longitude = info.longitude,
+        horizontal_accuracy = info.horizontalAccuracy,
+        vertical_accuracy = info.verticalAccuracy,
+        altitude = info.altitude,
+        course = 0f,
+        speed = 0f,
+        timestamp = ts
+      };
+
+      return loc;
+    }
+
   }
-
-}
 }
