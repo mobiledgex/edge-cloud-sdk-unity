@@ -330,14 +330,6 @@ namespace MobiledgeX
                     Debug.LogError("No Mapped Ports for your application backend");
                 }
                 return checkResult;
-
-
-            }
-            catch (HttpException httpe) // HTTP status, and REST API call error codes.
-            {
-                // server error code, and human readable message:
-                clog("MobiledgeX: RegisterClient Exception ", httpe.Message + ", HTTP StatusCode: " + httpe.HttpStatusCode + ", API ErrorCode: " + httpe.ErrorCode + "\nStack: " + httpe.StackTrace, true);
-                return false;
             }
             catch (HttpRequestException httpre)
             {
