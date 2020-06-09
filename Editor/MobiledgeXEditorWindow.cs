@@ -344,10 +344,15 @@ namespace MobiledgeX
                 clog("MobiledgeX: RegisterClient HttpRequest Exception", httpre.Message + "\nStack Trace: " + httpre.StackTrace, true);
                 return false;
             }
-            catch (FindCloudletException findCloudletException)
+            catch (RegisterClientException rce) 
+			{
+                clog("MobiledgeX: RegisterClientException", rce.Message, true);
+                return false;
+			}
+            catch (FindCloudletException fce)
             {
                 clog("MobiledgeX: Couldn't Find findCloudletReply, Make Sure you created App Instances for your Application and they are deployed in the correct region.",
-                findCloudletException.Message + "\nStack Trace: " + findCloudletException.StackTrace, true);
+                fce.Message + "\nStack Trace: " + fce.StackTrace, true);
                 return false;
             }
             catch (Exception e)
