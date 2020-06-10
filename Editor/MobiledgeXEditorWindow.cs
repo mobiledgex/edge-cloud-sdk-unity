@@ -330,24 +330,21 @@ namespace MobiledgeX
                     Debug.LogError("No Mapped Ports for your application backend");
                 }
                 return checkResult;
-
-
-            }
-            catch (HttpException httpe) // HTTP status, and REST API call error codes.
-            {
-                // server error code, and human readable message:
-                clog("MobiledgeX: RegisterClient Exception ", httpe.Message + ", HTTP StatusCode: " + httpe.HttpStatusCode + ", API ErrorCode: " + httpe.ErrorCode + "\nStack: " + httpe.StackTrace, true);
-                return false;
             }
             catch (HttpRequestException httpre)
             {
                 clog("MobiledgeX: RegisterClient HttpRequest Exception", httpre.Message + "\nStack Trace: " + httpre.StackTrace, true);
                 return false;
             }
-            catch (FindCloudletException findCloudletException)
+            catch (RegisterClientException rce)
+            {
+                clog("MobiledgeX: RegisterClientException", rce.Message, true);
+                return false;
+            }
+            catch (FindCloudletException fce)
             {
                 clog("MobiledgeX: Couldn't Find findCloudletReply, Make Sure you created App Instances for your Application and they are deployed in the correct region.",
-                findCloudletException.Message + "\nStack Trace: " + findCloudletException.StackTrace, true);
+                fce.Message + "\nStack Trace: " + fce.StackTrace, true);
                 return false;
             }
             catch (Exception e)
