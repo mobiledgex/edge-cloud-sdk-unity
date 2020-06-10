@@ -198,7 +198,7 @@ namespace MobiledgeX
                 progressText = "";
                 if (await CheckCredentials())
                 {
-                    progressText += "\nConnected !\nSet the desired ports in MobiledgeXSettings!";
+                    progressText += "\nConnected !\nSee App Information in MobiledgeXSettings!";
                     ShowSettings();
                     EditorUtility.SetDirty(settings);
                     AddMobiledgeXPlugins();
