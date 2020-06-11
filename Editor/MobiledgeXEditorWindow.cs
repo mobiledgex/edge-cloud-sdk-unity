@@ -191,8 +191,8 @@ namespace MobiledgeX
                 MobiledgeXIntegration.orgName = settings.orgName;
                 MobiledgeXIntegration.appName = settings.appName;
                 MobiledgeXIntegration.appVers = settings.appVers;
-                MobiledgeXIntegration.tcpPort = (int)settings.TCP_Port;
-                MobiledgeXIntegration.udpPort = (int)settings.UDP_Port;
+                // MobiledgeXIntegration.tcpPort = (int)settings.TCP_Port;
+                // MobiledgeXIntegration.udpPort = (int)settings.UDP_Port;
                 progressText = "";
                 if (await CheckCredentials())
                 {
