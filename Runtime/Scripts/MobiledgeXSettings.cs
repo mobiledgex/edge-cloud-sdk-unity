@@ -123,7 +123,7 @@ namespace MobiledgeX
         /// <summary>
         /// Provide a Dropdown list of TCP ports mapped on the backend
         /// </summary>
-        public TCPPorts TCP_Port;
+        /*public TCPPorts TCP_Port;
         /// <summary>
         /// Provide a Dropdown list of UDP ports mapped on the backend
         /// </summary>
@@ -162,6 +162,6 @@ namespace MobiledgeX
                 Debug.LogError("MobiledgeX: Couldn't find "+ tag + " tag! , Make sure to tag the desired port in MobiledgeXSettings");
                 throw new KeyNotFoundException("Couldn't find any port with the "+ tag + " tag");
             }
-        }
+        }*/
     }
 }

@@ -13,8 +13,6 @@ namespace MobiledgeX
     [ExecuteInEditMode]
     public class MobiledgeXEditorWindow : EditorWindow
     {
-
-
         #region Private Variables
 
         Texture2D mexLogo;
@@ -193,8 +191,8 @@ namespace MobiledgeX
                 MobiledgeXIntegration.orgName = settings.orgName;
                 MobiledgeXIntegration.appName = settings.appName;
                 MobiledgeXIntegration.appVers = settings.appVers;
-                MobiledgeXIntegration.tcpPort = (int)settings.TCP_Port;
-                MobiledgeXIntegration.udpPort = (int)settings.UDP_Port;
+                // MobiledgeXIntegration.tcpPort = (int)settings.TCP_Port;
+                // MobiledgeXIntegration.udpPort = (int)settings.UDP_Port;
                 progressText = "";
                 if (await CheckCredentials())
                 {
@@ -303,7 +301,7 @@ namespace MobiledgeX
                     Debug.LogError("MobiledgeX: Couldn't Find findCloudletReply, Make Sure you created App Instances for your Application and they are deployed in the correct region.");
                     throw new FindCloudletException("No findCloudletReply");
                 }
-                AppPort[] appPortList = integration.AppPortList;
+                /*AppPort[] appPortList = integration.AppPortList;
                 if (appPortList != null && appPortList.Length > 0)
                 {
                     // mappedPorts size is presisted to since mappedPorts is exposed in the Inspector(used in OnValidation in MobiledgeXSettings)
@@ -328,7 +326,7 @@ namespace MobiledgeX
                 else
                 {
                     Debug.LogError("No Mapped Ports for your application backend");
-                }
+                }*/
                 return checkResult;
             }
             catch (HttpRequestException httpre)
@@ -430,7 +428,7 @@ namespace MobiledgeX
         /// <param name="enumName">will be the name of the file</param>
         /// <param name="protocol">TCP, UDP</param>
         /// Protocol enum exists in MobiledgeXSettings
-        public static void CreateEnum(string enumName, Protocol protocol)
+        /*public static void CreateEnum(string enumName, Protocol protocol)
         {
             List<string> enumEntries = new List<string>(settings.mappedPorts.Count);
             foreach (Port port in settings.mappedPorts)
@@ -457,7 +455,7 @@ namespace MobiledgeX
             }
             // refresh assets to update MobiledgeX Assembly definition using the default ImportAssetOptions.Default
             AssetDatabase.Refresh();
-        }
+        }*/
         #endregion
     }
 }
