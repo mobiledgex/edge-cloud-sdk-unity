@@ -43,8 +43,8 @@ namespace MobiledgeX
                 developerAuthToken = settings.authPublicKey;
             }
 
-            tcpPort = (int)settings.TCP_Port;
-            udpPort = (int)settings.UDP_Port;
+            // tcpPort = (int)settings.TCP_Port;
+            // udpPort = (int)settings.UDP_Port;
         }
 
         /// <summary>
