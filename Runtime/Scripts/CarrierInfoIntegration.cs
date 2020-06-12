@@ -435,12 +435,12 @@ namespace MobiledgeX
     // Implement CarrierInfo
     public string GetCurrentCarrierName()
     {
-      return "wifi";
+      return "";
     }
 
     public string GetMccMnc()
     {
-      return "26201";
+      return "";
     }
 
     public ulong GetCellID()
