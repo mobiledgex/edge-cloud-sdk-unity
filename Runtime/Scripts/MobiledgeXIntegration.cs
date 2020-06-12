@@ -202,7 +202,7 @@ namespace MobiledgeX
             if (appPortsDict.Keys.Count < 1)
             {
                 Debug.LogError("MobiledgeX: Please make sure you defined the desired Ports in your Application Port Mapping Section on MobiledgeX Console.");
-                throw new AppPortException("No AppPorts available on your Application");
+                throw new AppPortException("No AppPorts available for your Application");
             }
 
             if (port == 0)
@@ -219,8 +219,8 @@ namespace MobiledgeX
             }
             catch (KeyNotFoundException)
             {
-                Debug.LogError("MobiledgeX: Port supplied is not mapped for your Application, Make sure the desired port is defined in your Application Port Mapping Section on MobiledgeX Console.");
-                throw new AppPortException(proto + " " + port + " is not defined for your Application);
+                Debug.LogError("MobiledgeX: Port supplied is not mapped for your Application, Make sure the desired port are defined in your Application Port Mapping Section on MobiledgeX Console.");
+                throw new AppPortException(proto + " " + port + " is not defined for your Application");
             }
         }
 
@@ -269,8 +269,8 @@ namespace MobiledgeX
             {
                 if (latestAppPort == null)
                 {
-                    Debug.LogError("Unable to find AppPort. Supply an AppPort or call GetAppPort before calling GetHost");
-                    throw new GetConnectionException("Unable to find AppPort. Supply an AppPort or call GetAppPort before calling GetHost");
+                    Debug.LogError("Unable to find AppPort. Call GetAppPort before calling GetHost");
+                    throw new GetConnectionException("Unable to find AppPort. Call GetAppPort before calling GetHost");
                 }
                 appPort = latestAppPort;
             }
@@ -289,8 +289,8 @@ namespace MobiledgeX
             {
                 if (latestAppPort == null)
                 {
-                    Debug.LogError("Unable to find AppPort. Supply an AppPort or call GetAppPort before calling GetPort");
-                    throw new GetConnectionException("Unable to find AppPort. Supply an AppPort or call GetAppPort before calling GetPort");
+                    Debug.LogError("Unable to find AppPort. Call GetAppPort before calling GetPort");
+                    throw new GetConnectionException("Unable to find AppPort. Call GetAppPort before calling GetPort");
                 }
                 appPort = latestAppPort;
             }
@@ -321,8 +321,8 @@ namespace MobiledgeX
             {
                 if (latestAppPort == null)
                 {
-                    Debug.LogError("Unable to find AppPort. Supply an AppPort or call GetAppPort before calling GetWebsocketConnection");
-                    throw new GetConnectionException("Unable to find AppPort. Supply an AppPort or call GetAppPort before calling GetWebsocketConnection");
+                    Debug.LogError("Unable to find AppPort. Call GetAppPort before calling GetWebsocketConnection");
+                    throw new GetConnectionException("Unable to find AppPort. Call GetAppPort before calling GetWebsocketConnection");
                 }
                 appPort = latestAppPort;
             }
