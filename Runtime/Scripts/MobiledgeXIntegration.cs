@@ -219,8 +219,8 @@ namespace MobiledgeX
             }
             catch (KeyNotFoundException)
             {
-                Debug.LogError("MobiledgeX: Port supplied is not mapped to your Application, Make sure the desired port is defined in your Application Port Mapping Section on MobiledgeX Console.");
-                throw new AppPortException(proto + " " + port + " is not defined on your Application Port Mapping section");
+                Debug.LogError("MobiledgeX: Port supplied is not mapped for your Application, Make sure the desired port is defined in your Application Port Mapping Section on MobiledgeX Console.");
+                throw new AppPortException(proto + " " + port + " is not defined for your Application);
             }
         }
 
