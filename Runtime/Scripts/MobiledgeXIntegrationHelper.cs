@@ -131,15 +131,23 @@ namespace MobiledgeX
         {
             // Location is ephemeral, so retrieve a new location from the platform. May return 0,0 which is
             // technically valid, though less likely real, as of writing.
+#if UNITY_EDITOR
+            Debug.Log("MobiledgeX: Cannot Get location in Unity Editor. Returning dummy location.");
+            return new Loc{
+                latitude = 37.3382082,
+                longitude = -121.8863286
+            };          
+#else
             Loc loc = LocationService.RetrieveLocation();
-            // If in UnityEditor, 0f and 0f are hard zeros as there is no location service.
+            // 0f and 0f are hard zeros if no location service.
             if (loc.longitude == 0f && loc.latitude == 0f)
             {
                 // Likely not in the ocean. We'll chose something for demo FindCloudlet purposes:
                 loc.longitude = -121.8863286;
                 loc.latitude = 37.3382082;
             }
-            return loc;
+            return loc;               
+#endif        
         }
 
         /// <summary>
