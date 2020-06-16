@@ -22,19 +22,24 @@ public class Example : MonoBehaviour
 
     async void StartWebSocket()
     {
-        MobiledgeXIntegration mobiledgeXIntegration = new MobiledgeXIntegration();
+        MobiledgeXIntegration mxi = new MobiledgeXIntegration();
 
 #if UNITY_EDITOR
-        mobiledgeXIntegration.UseWifiOnly(true);
+        mxi.UseWifiOnly(true);
 #endif
 
-        wsClient = new MobiledgeXSocketClient(mobiledgeXIntegration);
+        wsClient = new MobiledgeXSocketClient(mxi);
         if (wsClient.isOpen())
         {
             wsClient.Dispose();
-            wsClient = new MobiledgeXSocketClient(mobiledgeXIntegration);
+            wsClient = new MobiledgeXSocketClient(mxi);
         }
-        await wsClient.Connect("?roomid=testing&pName=Ahmed&pCharacter=2");
+
+        String url = await MobiledgeXIntegrationWorkflow(mxi, "ws");
+        Debug.Log("GetWebsocket url is " + url);
+
+        Uri uri = new Uri(url);
+        await wsClient.Connect(uri);
     }
 
     // Update is called evey frame
@@ -58,11 +63,25 @@ public class Example : MonoBehaviour
     #region Rest Example using MobiledgeX
     async Task RestExample()
     {
-        MobiledgeXIntegration integration = new MobiledgeXIntegration();
+        MobiledgeXIntegration mxi = new MobiledgeXIntegration();
 
 #if UNITY_EDITOR
-        integration.UseWifiOnly(true);
+        mxi.UseWifiOnly(true);
 #endif
+        String url = await MobiledgeXIntegrationWorkflow(mxi, "http");
+
+        Debug.Log("RestExample url is " + url);
+    }
+    #endregion
+
+    // test case
+    private async void OnEnable()
+    {
+        await RestExample();
+    }
+
+    private async Task<String> MobiledgeXIntegrationWorkflow(MobiledgeXIntegration integration, String proto)
+	{
         // RegisterAndFindCloudlet
         bool registeredAndFoundCloudlet;
         try
@@ -72,27 +91,27 @@ public class Example : MonoBehaviour
         catch (RegisterClientException rce)
         {
             Debug.LogError("RegisterClientException: " + rce.Message + ". Make sure OrgName, AppName, and AppVers are correct.");
-            return;
+            return null;
         }
         catch (FindCloudletException fce)
         {
             Debug.LogError("FindCloudletException: " + fce.Message + ". Make sure you have an app instance deployed to your region and carrier network");
-            return;
+            return null;
         }
         catch (DmeDnsException dde)
         {
             Debug.LogError("Unable to connect to DME to make RegisterClient call. Exception: " + dde.Message + ". Make sure MobiledgeX supports your carrier.");
-            return;
+            return null;
         }
         catch (NotImplementedException nie)
         {
             Debug.LogError("NotImplementedException: " + nie.Message); // This should not occur, since the constructor supplies the Integration classes
-            return;
+            return null;
         }
         if (!registeredAndFoundCloudlet)
         {
             Debug.LogError("Unable to register and find cloudlet");
-            return;
+            return null;
         }
 
         // GetAppPort
@@ -104,12 +123,12 @@ public class Example : MonoBehaviour
         catch (AppPortException ape)
         {
             Debug.LogError("Unabled to get AppPort. AppPortException: " + ape.Message);
-            return;
+            return null;
         }
         if (appPort == null)
         {
             Debug.LogError("GetAppPort returned null");
-            return;
+            return null;
         }
 
         // GetUrl
@@ -121,16 +140,9 @@ public class Example : MonoBehaviour
         catch (GetConnectionException gce)
         {
             Debug.Log("Unabled to get url. GetConnectionException " + gce.Message);
-            return;
+            return null;
         }
 
-        Debug.Log("RestExample url is " + url);
-    }
-    #endregion
-
-    // test case
-    private async void OnEnable()
-    {
-        await RestExample();
-    }
+        return url;
+	}
 }
