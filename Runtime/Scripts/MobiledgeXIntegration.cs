@@ -82,6 +82,7 @@ namespace MobiledgeX
         FindCloudletMode mode = FindCloudletMode.PROXIMITY; // FindCloudlet mode
         AppPort latestAppPort = null;
         AppPort[] latestAppPortList = null;
+        Location fallbackLocation = new Location(-121.8863286, 37.3382082);
 
         /// <summary>
         /// Constructor for MobiledgeXIntegration. This class has functions that wrap DistributedMatchEngine functions for ease of use

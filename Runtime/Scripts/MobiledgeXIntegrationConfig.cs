@@ -67,5 +67,14 @@ namespace MobiledgeX
             mode = performanceMode ? FindCloudletMode.PERFORMANCE : FindCloudletMode.PROXIMITY;
             Debug.Log("Setting FindCloudlet mode to " + mode);
         }
+
+        /// <summary>
+        /// Fallback Location will be used if LocationServices is down or if running in UnityEditor
+        /// </summary>
+        public void SetFallbackLocation(double longitude, double latitude)
+        {
+            fallbackLocation.Longitude = longitude;
+            fallbackLocation.Latitude = latitude;
+        }
     }
 }
