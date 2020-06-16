@@ -39,6 +39,18 @@ namespace MobiledgeX
         }
     }
 
+    public struct Location
+    {
+        public Location(double longitude, double latitude)
+        {
+            Longitude = longitude;
+            Latitude = latitude;
+        }
+
+        public double Longitude { get; set; }
+        public double Latitude { get; set; }
+    }
+
     public partial class MobiledgeXIntegration
     {
         /// Call once, or when the carrier changes. May throw DistributedMatchEngine.HttpException.
@@ -131,15 +143,22 @@ namespace MobiledgeX
         {
             // Location is ephemeral, so retrieve a new location from the platform. May return 0,0 which is
             // technically valid, though less likely real, as of writing.
-            Loc loc = LocationService.RetrieveLocation();
-            // If in UnityEditor, 0f and 0f are hard zeros as there is no location service.
+            Loc loc = new Loc();
+
+#if UNITY_EDITOR
+            Debug.Log("MobiledgeX: Cannot Get location in Unity Editor. Returning fallback location. Developer can configure fallback location with SetFallbackLocation");
+            loc.longitude = fallbackLocation.Longitude;
+            loc.latitude = fallbackLocation.Latitude;
+            return loc;
+#else
+            loc = LocationService.RetrieveLocation();
+            // 0f and 0f are hard zeros if no location service.
             if (loc.longitude == 0f && loc.latitude == 0f)
             {
-                // Likely not in the ocean. We'll chose something for demo FindCloudlet purposes:
-                loc.longitude = -121.8863286;
-                loc.latitude = 37.3382082;
+                Debug.ErrorLog("LocationServices returned a location at (0,0)");
             }
-            return loc;
+            return loc;               
+#endif        
         }
 
         /// <summary>
