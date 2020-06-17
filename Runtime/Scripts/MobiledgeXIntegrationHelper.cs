@@ -155,7 +155,7 @@ namespace MobiledgeX
             // 0f and 0f are hard zeros if no location service.
             if (loc.longitude == 0f && loc.latitude == 0f)
             {
-                Debug.ErrorLog("LocationServices returned a location at (0,0)");
+                Debug.LogError("LocationServices returned a location at (0,0)");
             }
             return loc;               
 #endif        
