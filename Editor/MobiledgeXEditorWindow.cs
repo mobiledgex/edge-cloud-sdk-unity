@@ -7,6 +7,8 @@ using UnityEngine;
 using DistributedMatchEngine;
 using System.Linq;
 using System.Collections.Generic;
+using UnityEditor.PackageManager.Requests;
+using UnityEditor.PackageManager;
 
 namespace MobiledgeX
 {
@@ -21,7 +23,8 @@ namespace MobiledgeX
         GUIStyle headerStyle;
         GUIStyle labelStyle;
         static MobiledgeXSettings settings;
-        static bool editorPopUp;
+        static bool editorPopUp;      
+        static RemoveRequest Request; // used for removing MobiledgeX Package from the Unity project
 
         /// <summary>
         /// The titles of the tabs in Mobiledgex window.
@@ -79,6 +82,24 @@ namespace MobiledgeX
         public static void OpenDocumentationURL()
         {
             Application.OpenURL("https://developers.mobiledgex.com/sdk-libraries/unity-sdk");
+        }
+
+        [MenuItem("MobiledgeX/Remove MobiledgeX")]
+        public static void RemoveMobiledgeX()
+        {
+             if (EditorUtility.DisplayDialog("MobiledgeX",
+                "Choosing Remove will delete MobiledgeX package and close Unity Editor", "Remove", "Cancel"))
+                {
+                    DeleteFile(Path.Combine("Assets", "Resources/MobiledgeXSettings.asset"), true);
+                    DeleteFile(Path.Combine("Assets", "link.xml"), true);
+                    if(Directory.Exists(Path.Combine("Assets", "Plugins/MobiledgeX"))){
+                         Directory.Delete(Path.Combine("Assets", "Plugins/MobiledgeX"), true);
+                         DeleteFile(Path.Combine("Assets", "Plugins/MobiledgeX")+".meta", true);
+                    }
+                    AssetDatabase.Refresh();
+                    Client.Remove("com.mobiledgex.sdk");
+                    EditorApplication.Exit(0);
+                }
         }
 
         #endregion
@@ -416,6 +437,20 @@ namespace MobiledgeX
             }
 
         }
+        static void DeleteFile(string filePath, bool DeleteMetaFiles)
+        {
+            if (File.Exists(filePath))
+            {
+                FileUtil.DeleteFileOrDirectory(filePath);
+                if (DeleteMetaFiles)
+                {
+                    string fileMetaPath = filePath + ".meta";
+                    FileUtil.DeleteFileOrDirectory(fileMetaPath);
+                }
+            }
+
+        }
+
 
         void SetUpLocationSettings()
         {
