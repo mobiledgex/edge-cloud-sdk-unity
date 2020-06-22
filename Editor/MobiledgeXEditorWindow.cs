@@ -87,10 +87,10 @@ namespace MobiledgeX
         [MenuItem("MobiledgeX/Remove MobiledgeX")]
         public static void RemoveMobiledgeX()
         {
-             if (EditorUtility.DisplayDialog("MobiledgeX",
-                "Choosing Remove will delete MobiledgeX package and close Unity Editor", "Remove", "Cancel"))
+             if (EditorUtility.DisplayDialog("MobiledgeX","Choosing Remove will delete MobiledgeX package and close Unity Editor", "Remove", "Cancel"))
                 {
-                    if(Directory.Exists(Path.Combine("Assets", "Plugins/MobiledgeX"))){
+                    if(Directory.Exists(Path.Combine("Assets", "Plugins/MobiledgeX")))
+                    {
                          Directory.Delete(Path.Combine("Assets", "Plugins/MobiledgeX"), true);
                          File.Delete(Path.Combine("Assets", "Plugins/MobiledgeX")+".meta");
                     }
@@ -396,8 +396,8 @@ namespace MobiledgeX
                     AssetDatabase.CreateFolder("Assets/Plugins", "MobiledgeX");
                 }
                 MoveFile(@linkXMLPath, Path.Combine(@mobiledgeXFolderPath, @"link.xml"), true);
-                if (!Directory.Exists(Path.Combine(@mobiledgeXFolderPath, @"Resources"))){
-
+                if (!Directory.Exists(Path.Combine(@mobiledgeXFolderPath, @"Resources")))
+                {
                     AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "Resources"); 
                 }
                 MoveFile(@settingPath, Path.Combine(@mobiledgeXFolderPath, @"Resources/MobiledgeXSettings.asset"), true);
@@ -424,7 +424,6 @@ namespace MobiledgeX
         {
             if (!File.Exists(Path.Combine(targetPath)) && File.Exists(srcPath))
             {
-
                 FileUtil.MoveFileOrDirectory(srcPath, targetPath);
                 if (MoveMetaFiles)
                 {
