@@ -7,6 +7,8 @@ using UnityEngine;
 using DistributedMatchEngine;
 using System.Linq;
 using System.Collections.Generic;
+using UnityEditor.PackageManager.Requests;
+using UnityEditor.PackageManager;
 
 namespace MobiledgeX
 {
@@ -21,7 +23,8 @@ namespace MobiledgeX
         GUIStyle headerStyle;
         GUIStyle labelStyle;
         static MobiledgeXSettings settings;
-        static bool editorPopUp;
+        static bool editorPopUp;      
+        static RemoveRequest Request; // used for removing MobiledgeX Package from the Unity project
 
         /// <summary>
         /// The titles of the tabs in Mobiledgex window.
@@ -79,6 +82,22 @@ namespace MobiledgeX
         public static void OpenDocumentationURL()
         {
             Application.OpenURL("https://developers.mobiledgex.com/sdk-libraries/unity-sdk");
+        }
+
+        [MenuItem("MobiledgeX/Remove MobiledgeX")]
+        public static void RemoveMobiledgeX()
+        {
+             if (EditorUtility.DisplayDialog("MobiledgeX","Choosing Remove will delete MobiledgeX package and close Unity Editor", "Remove", "Cancel"))
+                {
+                    if(Directory.Exists(Path.Combine("Assets", "Plugins/MobiledgeX")))
+                    {
+                         Directory.Delete(Path.Combine("Assets", "Plugins/MobiledgeX"), true);
+                         File.Delete(Path.Combine("Assets", "Plugins/MobiledgeX")+".meta");
+                    }
+                    AssetDatabase.Refresh();
+                    Client.Remove("com.mobiledgex.sdk");
+                    EditorApplication.Exit(0);
+                }
         }
 
         #endregion
@@ -376,6 +395,12 @@ namespace MobiledgeX
                 {
                     AssetDatabase.CreateFolder("Assets/Plugins", "MobiledgeX");
                 }
+                MoveFile(@linkXMLPath, Path.Combine(@mobiledgeXFolderPath, @"link.xml"), true);
+                if (!Directory.Exists(Path.Combine(@mobiledgeXFolderPath, @"Resources")))
+                {
+                    AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "Resources"); 
+                }
+                MoveFile(@settingPath, Path.Combine(@mobiledgeXFolderPath, @"Resources/MobiledgeXSettings.asset"), true);
                 MoveFile(@sdkPath, Path.Combine(@mobiledgeXFolderPath, @"MatchingEngineSDKRestLibrary.dll"), true);
                 if (!Directory.Exists(Path.Combine(@mobiledgeXFolderPath, @"iOS")))
                 {
@@ -387,12 +412,6 @@ namespace MobiledgeX
                     AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "Android");
                 }
                 MoveFile(melAARPath, Path.Combine(@mobiledgeXFolderPath, @"Android/mel.aar"), true);
-                MoveFile(@linkXMLPath, Path.Combine("Assets", @"link.xml"), true);
-                if (!Directory.Exists(Path.Combine("Assets", @"Resources")))
-                {
-                    AssetDatabase.CreateFolder("Assets", "Resources");
-                }
-                MoveFile(@settingPath, Path.Combine(@resourcesFolderPath, @"MobiledgeXSettings.asset"), true);
                 AssetDatabase.Refresh();
             }
             catch (Exception e)
@@ -405,7 +424,6 @@ namespace MobiledgeX
         {
             if (!File.Exists(Path.Combine(targetPath)) && File.Exists(srcPath))
             {
-
                 FileUtil.MoveFileOrDirectory(srcPath, targetPath);
                 if (MoveMetaFiles)
                 {
