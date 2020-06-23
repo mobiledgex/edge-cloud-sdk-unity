@@ -237,7 +237,7 @@ namespace MobiledgeX
         {
             if (latestFindCloudletReply == null)
             {
-                throw new GetConnectionException("Last FindCloudlet returned null. Call FindCloudlet again before GetAppPort");
+                throw new GetConnectionException("Last FindCloudlet returned null. Call FindCloudlet again before GetUrl");
             }
 
             if (appPort == null)
