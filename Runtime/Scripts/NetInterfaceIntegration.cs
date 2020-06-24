@@ -101,9 +101,12 @@ namespace MobiledgeX
       NetworkInterface[] netInterfaces = GetInterfaces();
       foreach (NetworkInterface iface in netInterfaces)
       {
-        if (iface.Name.Equals(networkInterfaceName.CELLULAR))
+        foreach (string cellularName in networkInterfaceName.CELLULAR)
         {
-          return iface.OperationalStatus == OperationalStatus.Up;
+          if (iface.Name.Equals(cellularName))
+          {
+            return iface.OperationalStatus == OperationalStatus.Up;
+          }
         }
       }
       return false;
@@ -114,9 +117,12 @@ namespace MobiledgeX
       NetworkInterface[] netInterfaces = GetInterfaces();
       foreach (NetworkInterface iface in netInterfaces)
       {
-        if (iface.Name.Equals(networkInterfaceName.WIFI))
+        foreach (string wifiName in networkInterfaceName.WIFI)
         {
-          return iface.OperationalStatus == OperationalStatus.Up;
+          if (iface.Name.Equals(wifiName))
+          {
+            return iface.OperationalStatus == OperationalStatus.Up;
+          }
         }
       }
       return false;
