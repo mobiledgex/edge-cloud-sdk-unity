@@ -206,7 +206,8 @@ namespace MobiledgeX
                 }
             }
 
-            string cellularIPAddress = matchingEngine.netInterface.GetIPAddress(matchingEngine.netInterface.GetNetworkInterfaceName().CELLULAR);
+            string cellularIPAddress = matchingEngine.netInterface.GetIPAddress(
+                    matchingEngine.GetAvailableCelluarName(matchingEngine.netInterface.GetNetworkInterfaceName()));
             if (cellularIPAddress == null)
             {
                 Debug.Log("Unable to find ip address for local cellular interface.");
