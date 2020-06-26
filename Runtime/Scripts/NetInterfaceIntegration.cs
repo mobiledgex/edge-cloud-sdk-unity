@@ -99,29 +99,77 @@ namespace MobiledgeX
     public bool HasCellular()
     {
       NetworkInterface[] netInterfaces = GetInterfaces();
+      bool foundByIp = false;
+
       foreach (NetworkInterface iface in netInterfaces)
       {
         foreach (string cellularName in networkInterfaceName.CELLULAR)
         {
           if (iface.Name.Equals(cellularName))
           {
-            return iface.OperationalStatus == OperationalStatus.Up;
+            // unreliable.
+            if (iface.OperationalStatus == OperationalStatus.Up)
+            {
+              return true;
+            }
+          }
+
+          // First one with both IPv4 and IPv6 is a heuristic without NetTest. OperationStatus seems inaccurate or "unknown".
+          if (GetIPAddress(cellularName, AddressFamily.InterNetwork) != null &&
+              GetIPAddress(cellularName, AddressFamily.InterNetworkV6) != null)
+          {
+            foundByIp = true;
+          }
+          else if (GetIPAddress(cellularName, AddressFamily.InterNetworkV6) != null)
+          {
+            // No-op. Every interface has IpV6.
+          }
+          else if (GetIPAddress(cellularName, AddressFamily.InterNetwork) != null)
+          {
+            foundByIp = true;
+          }
+          if (foundByIp)
+          {
+            return true;
           }
         }
       }
       return false;
     }
 
+
     public bool HasWifi()
     {
       NetworkInterface[] netInterfaces = GetInterfaces();
+      bool foundByIp = false;
+
       foreach (NetworkInterface iface in netInterfaces)
       {
         foreach (string wifiName in networkInterfaceName.WIFI)
         {
-          if (iface.Name.Equals(wifiName))
+          // unreliable.
+          if (iface.Name.Equals(wifiName) && iface.OperationalStatus == OperationalStatus.Up)
           {
-            return iface.OperationalStatus == OperationalStatus.Up;
+            return true;
+          }
+
+          // First one with both IPv4 and IPv6 is a heuristic without NetTest. OperationStatus seems inaccurate or "unknown".
+          if (GetIPAddress(wifiName, AddressFamily.InterNetwork) != null &&
+              GetIPAddress(wifiName, AddressFamily.InterNetworkV6) != null)
+          {
+            foundByIp = true;
+          }
+          else if (GetIPAddress(wifiName, AddressFamily.InterNetworkV6) != null)
+          {
+            // No-op. Every interface has IpV6.
+          }
+          else if (GetIPAddress(wifiName, AddressFamily.InterNetwork) != null)
+          {
+            foundByIp = true;
+          }
+          if (foundByIp)
+          {
+            return true;
           }
         }
       }

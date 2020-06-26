@@ -19,6 +19,7 @@ using System;
 using UnityEngine;
 using DistributedMatchEngine;
 using System.Threading.Tasks;
+using System.Net.Sockets;
 
 /*
 * Helper functions, private functions, and exceptions used to implement MobiledgeXIntegration wrapper functions
@@ -170,6 +171,30 @@ namespace MobiledgeX
         }
 
         /// <summary>
+        /// Checks whether the default netowrk data path Edge is Enabled on the device or not, Edge requires connections to run over cellular interface.
+        /// This status is independent of the UseWiFiOnly setting.
+        /// </summary>
+        /// <returns>bool</returns>
+        public bool IsNetworkDataPathEdgeEnabled() {
+            string wifiIpV4 = null;
+            string wifiIpV6 = null;
+            string cellIp = null;
+
+            if (matchingEngine.netInterface.HasWifi())
+            {
+                string wifi = matchingEngine.GetAvailableWiFiName(matchingEngine.netInterface.GetNetworkInterfaceName());
+                wifiIpV6 = matchingEngine.netInterface.GetIPAddress(wifi, AddressFamily.InterNetwork);
+                wifiIpV4 = matchingEngine.netInterface.GetIPAddress(wifi, AddressFamily.InterNetworkV6);
+            }
+
+            // HasCellular() is best effort due to variable network names and queriable status.
+            if (matchingEngine.netInterface.HasCellular() && wifiIpV4 == null && wifiIpV6 == null) {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Checks whether Edge is Enabled on the device or not, Edge requires connections to run over cellular interface
         /// </summary>
         /// <param name="proto">GetConnectionProtocol (TCP, UDP, HTTP, Websocket)</param>
@@ -207,7 +232,7 @@ namespace MobiledgeX
             }
 
             string cellularIPAddress = matchingEngine.netInterface.GetIPAddress(
-                    matchingEngine.GetAvailableCelluarName(matchingEngine.netInterface.GetNetworkInterfaceName()));
+                    matchingEngine.GetAvailableCellularName(matchingEngine.netInterface.GetNetworkInterfaceName()));
             if (cellularIPAddress == null)
             {
                 Debug.Log("Unable to find ip address for local cellular interface.");
