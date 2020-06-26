@@ -135,7 +135,7 @@ public class Example : MonoBehaviour
         string url;
         try
         {
-            url = integration.GetUrl("http");
+            url = integration.GetUrl(proto);
         }
         catch (GetConnectionException gce)
         {
