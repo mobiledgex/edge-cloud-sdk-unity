@@ -253,5 +253,22 @@ char* _getISOCountryCodeFromGPS()
 
 char* _getISOCountryCodeFromCarrier()
 {
-    return convertToCStr("carrier");
+    _ensureMatchingEnginePlatformIntegration();
+    CTCarrier *carrier;
+
+    if (@available(iOS 12.1, *))
+    {
+        carrier = [networkState.lastCarrier];
+    }
+    else
+    {
+        CTTelephonyNetworkInfo *netinfo = [[CTTelephonyNetworkInfo alloc] init];
+        carrier = [netinfo subscriberCellularProvider]; // s for dual SIM?
+        NSLog(@"Carrier Name: %@", [carrier carrierName]);
+        // Ref counted.
+
+        nsstr = [carrier carrierName];
+    }
+    NSLog(@"ISO Country code: %@", carrier.isoCountryCode);
+    return convertToCStr(carrier.isoCountryCode);
 }
