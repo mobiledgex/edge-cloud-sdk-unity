@@ -258,7 +258,7 @@ char* _getISOCountryCodeFromCarrier()
 
     if (@available(iOS 12.1, *))
     {
-        carrier = [networkState.lastCarrier];
+        carrier = networkState.lastCarrier;
     }
     else
     {
@@ -266,9 +266,7 @@ char* _getISOCountryCodeFromCarrier()
         carrier = [netinfo subscriberCellularProvider]; // s for dual SIM?
         NSLog(@"Carrier Name: %@", [carrier carrierName]);
         // Ref counted.
-
-        nsstr = [carrier carrierName];
     }
     NSLog(@"ISO Country code: %@", carrier.isoCountryCode);
-    return convertToCStr(carrier.isoCountryCode);
+    return convertToCStr([carrier.isoCountryCode UTF8String]);
 }
