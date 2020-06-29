@@ -375,6 +375,12 @@ namespace MobiledgeX
     [DllImport("__Internal")]
     private static extern int _getCellID();
 
+    [DllImport("__Internal")]
+    private static extern string _getISOCountryCodeFromGPS();
+
+    [DllImport("__Internal")]
+    private static extern string _getISOCountryCodeFromCarrier();
+
     public string GetCurrentCarrierName()
     {
       string networkOperatorName = "";
@@ -403,6 +409,33 @@ namespace MobiledgeX
         cellID = _getCellID();
       }
       return (ulong)cellID;
+    }
+
+    public bool IsRoaming()
+    {
+      Debug.Log("iso from country is " + GetISOCountryCodeFromGPS());
+      Debug.Log("iso from carrier is " + GetISOCountryCodeFromCarrier());
+      return true;
+    }
+
+    private string GetISOCountryCodeFromGPS()
+    {
+      string isoCC = null;
+      if (Application.platform == RuntimePlatform.IPhonePlayer)
+      {
+        isoCC = _getISOCountryCodeFromGPS();
+      }
+      return isoCC;
+    }
+
+    private string GetISOCountryCodeFromCarrier()
+    {
+      string isoCC = null;
+      if (Application.platform == RuntimePlatform.IPhonePlayer)
+      {
+        isoCC = _getISOCountryCodeFromCarrier();
+      }
+      return isoCC;
     }
 
 #else

@@ -243,5 +243,15 @@ char* _getUniqueID()
 
 char* _getUniqueIDType()
 {
-    return "";
+    return convertToCStr("");
+}
+
+char* _getISOCountryCodeFromGPS()
+{
+    return convertToCStr("gps");
+}
+
+char* _getISOCountryCodeFromCarrier()
+{
+    return convertToCStr("carrier");
 }
