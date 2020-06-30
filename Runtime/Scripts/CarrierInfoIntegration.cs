@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Android;
 using DistributedMatchEngine;
@@ -379,6 +380,9 @@ namespace MobiledgeX
     private static extern string _getISOCountryCodeFromGPS();
 
     [DllImport("__Internal")]
+    private static extern void _convertGPSToISOCountryCode(double longitude, double latitude);
+
+    [DllImport("__Internal")]
     private static extern string _getISOCountryCodeFromCarrier();
 
     public string GetCurrentCarrierName()
@@ -411,12 +415,35 @@ namespace MobiledgeX
       return (ulong)cellID;
     }
 
-    public bool IsRoaming()
+    public async Task<bool> IsRoaming(double longitude, double latitude)
     {
-      Debug.Log("iso from country is " + GetISOCountryCodeFromGPS());
-      Debug.Log("iso from carrier is " + GetISOCountryCodeFromCarrier());
-      return true;
+      if (Application.platform == RuntimePlatform.IPhonePlayer)
+      {  
+        string isoCCFromGPS = await ConvertGPSToISOCountryCode(longitude, latitude);
+        string isoCCFromCarrier = GetISOCountryCodeFromCarrier();
+        Debug.Log("iso from country is " + isoCCFromGPS);
+        Debug.Log("iso from carrier is " + isoCCFromCarrier);
+        return isoCCFromGPS == isoCCFromCarrier;
+      }
+      return false;
     }
+
+    private async Task<string> ConvertGPSToISOCountryCode(double longitude, double latitude)
+    {
+      if (Application.platform == RuntimePlatform.IPhonePlayer)
+      {
+        _convertGPSToISOCountryCode(longitude, latitude);
+        return await Task.Run(() => {
+          string isoCC = "";
+          while(isoCC == "" || isoCC == null)
+          {
+            isoCC = GetISOCountryCodeFromGPS();
+          }
+          return isoCC;
+         });
+      }
+      return "";
+    }  
 
     private string GetISOCountryCodeFromGPS()
     {

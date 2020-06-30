@@ -64,6 +64,8 @@ public class Example : MonoBehaviour
     async Task RestExample()
     {
         MobiledgeXIntegration mxi = new MobiledgeXIntegration();
+        CarrierInfoClass ci = new CarrierInfoClass();
+        await ci.IsRoaming(-121.243, 37.443);
 
 #if UNITY_EDITOR
         mxi.UseWifiOnly(true);
