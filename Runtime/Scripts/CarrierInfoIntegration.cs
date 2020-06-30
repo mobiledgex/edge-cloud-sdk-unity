@@ -443,7 +443,6 @@ namespace MobiledgeX
           // Timeout
           throw new CarrierInfoException("Timeout: unable to get ISO country code from gps");
         }
-
         if (isoCCFromGPS == null)
         {
           Debug.LogError("Unable to get ISO country code from gps");
