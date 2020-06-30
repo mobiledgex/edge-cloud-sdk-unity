@@ -433,23 +433,29 @@ namespace MobiledgeX
       if (Application.platform == RuntimePlatform.IPhonePlayer)
       {  
         Task<string> task = ConvertGPSToISOCountryCode(longitude, latitude);
-        if (!task.Wait(5000))
+        string isoCCFromGPS = null;
+        if (await Task.WhenAny(task, Task.Delay(5000)) == task)
         {
-            throw new CarrierInfoException("Timeout: unable to get ISO country code from gps");
+          isoCCFromGPS = await task; 
         }
-        string isoCCFromGPS = await task;
+        else
+        {
+          // Timeout
+          throw new CarrierInfoException("Timeout: unable to get ISO country code from gps");
+        }
+
         if (isoCCFromGPS == null)
         {
-            Debug.LogError("Unable to get ISO country code from gps");
-            throw new CarrierInfoException("Unable to get ISO country code from gps");
+          Debug.LogError("Unable to get ISO country code from gps");
+          throw new CarrierInfoException("Unable to get ISO country code from gps");
         }
         Debug.Log("ISO country code from gps location is " + isoCCFromGPS);
 
         string isoCCFromCarrier = GetISOCountryCodeFromCarrier();
         if (isoCCFromCarrier == null)
         {
-            Debug.LogError("Unable to get ISO country code from carrier");
-            throw new CarrierInfoException("Unable to get ISO country code from carrier");
+          Debug.LogError("Unable to get ISO country code from carrier");
+          throw new CarrierInfoException("Unable to get ISO country code from carrier");
         }
         Debug.Log("ISO country code from carrier is " + isoCCFromCarrier);
 
@@ -472,7 +478,7 @@ namespace MobiledgeX
             isoCC = GetISOCountryCodeFromGPS();
           }
           return isoCC;
-         });
+         }).ConfigureAwait(false);
       }
 
       return null;

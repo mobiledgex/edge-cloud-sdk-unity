@@ -65,7 +65,26 @@ public class Example : MonoBehaviour
     {
         MobiledgeXIntegration mxi = new MobiledgeXIntegration();
         CarrierInfoClass ci = new CarrierInfoClass();
-        await ci.IsRoaming(-121.243, 37.443);
+
+        try
+        {
+            bool isRoaming = await ci.IsRoaming(-121.243, 37.443);
+            Debug.Log("ISO:: isRoaming in US: " + isRoaming);
+        }
+        catch (CarrierInfoException cie)
+		{
+            Debug.Log("ISO:: carrierinfo exception: " + cie.Message);
+		}
+
+        try
+        {
+            bool isRoaming = await ci.IsRoaming(0.0, -27.0);
+            Debug.Log("ISO:: isRoaming in Ocean: " + isRoaming);
+        }
+        catch (CarrierInfoException cie)
+		{
+            Debug.Log("ISO:: ocean carrierinfo exception: " + cie.Message);
+		}
 
 #if UNITY_EDITOR
         mxi.UseWifiOnly(true);
