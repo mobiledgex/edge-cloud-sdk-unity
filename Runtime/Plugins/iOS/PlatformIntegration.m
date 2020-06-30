@@ -260,14 +260,14 @@ void _convertGPSToISOCountryCode(double longitude, double latitude)
              CLPlacemark *placemark= [placemarks objectAtIndex:0];
 
              isoCountryCode = [placemark ISOcountryCode];
-             NSLog(@"ISO Country code in completion handler: %@", isoCountryCode);
          }
      }];
 }
 
 char* _getISOCountryCodeFromGPS()
 {
-    return convertToCStr([isoCountryCode UTF8String]);
+    NSString* capitalizedISOCC = [isoCountryCode uppercaseString];
+    return convertToCStr([capitalizedISOCC UTF8String]);
 }
 
 char* _getISOCountryCodeFromCarrier()
@@ -282,13 +282,8 @@ char* _getISOCountryCodeFromCarrier()
     else
     {
         CTTelephonyNetworkInfo *netinfo = [[CTTelephonyNetworkInfo alloc] init];
-        carrier = [netinfo subscriberCellularProvider]; // s for dual SIM?
+        carrier = [netinfo subscriberCellularProvider];
     }
-    NSLog(@"ISO Country code: %@", carrier.isoCountryCode);
-    return convertToCStr([carrier.isoCountryCode UTF8String]);
-}
-
-char* capitalizeString(char* str)
-{
-    return convertToCStr(str);
+    NSString* capitalizedISOCC = [carrier.isoCountryCode uppercaseString];
+    return convertToCStr([capitalizedISOCC UTF8String]);
 }
