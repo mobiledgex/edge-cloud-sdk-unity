@@ -23,6 +23,7 @@
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <CoreTelephony/CTCarrier.h>
 #import <UIKit/UIKit.h>
+#import <CoreLocation/CoreLocation.h>
 
 #import <ifaddrs.h>
 #import <sys/socket.h>
@@ -40,6 +41,7 @@
 @end
 
 NetworkState *networkState = NULL;
+NSString* isoCountryCode = NULL;
 
 void _ensureMatchingEnginePlatformIntegration() {
     if (networkState == NULL)
@@ -246,9 +248,26 @@ char* _getUniqueIDType()
     return convertToCStr("");
 }
 
+void _convertGPSToISOCountryCode(double longitude, double latitude)
+{
+    CLLocation *location = [[CLLocation alloc] initWithLatitude:latitude longitude:longitude];
+    CLGeocoder *geocoder = [[CLGeocoder alloc] init];
+    [geocoder reverseGeocodeLocation:location completionHandler:^(NSArray *placemarks, NSError
+    *error)
+     {
+         if(placemarks && placemarks.count > 0)
+         {
+             CLPlacemark *placemark= [placemarks objectAtIndex:0];
+
+             isoCountryCode = [placemark ISOcountryCode];
+             NSLog(@"ISO Country code in completion handler: %@", isoCountryCode);
+         }
+     }];
+}
+
 char* _getISOCountryCodeFromGPS()
 {
-    return convertToCStr("gps");
+    return convertToCStr([isoCountryCode UTF8String]);
 }
 
 char* _getISOCountryCodeFromCarrier()
@@ -264,9 +283,12 @@ char* _getISOCountryCodeFromCarrier()
     {
         CTTelephonyNetworkInfo *netinfo = [[CTTelephonyNetworkInfo alloc] init];
         carrier = [netinfo subscriberCellularProvider]; // s for dual SIM?
-        NSLog(@"Carrier Name: %@", [carrier carrierName]);
-        // Ref counted.
     }
     NSLog(@"ISO Country code: %@", carrier.isoCountryCode);
     return convertToCStr([carrier.isoCountryCode UTF8String]);
+}
+
+char* capitalizeString(char* str)
+{
+    return convertToCStr(str);
 }
