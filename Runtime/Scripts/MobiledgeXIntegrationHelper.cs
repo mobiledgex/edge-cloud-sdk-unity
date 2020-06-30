@@ -178,7 +178,6 @@ namespace MobiledgeX
         public bool IsNetworkDataPathEdgeEnabled() {
             string wifiIpV4 = null;
             string wifiIpV6 = null;
-            string cellIp = null;
 
             if (matchingEngine.netInterface.HasWifi())
             {
