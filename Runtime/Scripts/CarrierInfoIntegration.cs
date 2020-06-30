@@ -459,7 +459,7 @@ namespace MobiledgeX
         }
         Debug.Log("ISO country code from carrier is " + isoCCFromCarrier);
 
-        return isoCCFromGPS == isoCCFromCarrier;
+        return isoCCFromGPS != isoCCFromCarrier;
       }
 
       // If in UnityEditor, return not roaming
