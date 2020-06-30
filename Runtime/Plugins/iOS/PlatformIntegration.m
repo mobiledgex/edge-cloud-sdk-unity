@@ -250,6 +250,8 @@ char* _getUniqueIDType()
 
 void _convertGPSToISOCountryCode(double longitude, double latitude)
 {
+    // reset isoCountryCode, so we don't get previous country code
+    isoCountryCode = NULL;
     CLLocation *location = [[CLLocation alloc] initWithLatitude:latitude longitude:longitude];
     CLGeocoder *geocoder = [[CLGeocoder alloc] init];
     [geocoder reverseGeocodeLocation:location completionHandler:^(NSArray *placemarks, NSError
