@@ -23,21 +23,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using UnityEngine;
-using DistributedMatchEngine;
+
 
 namespace MobiledgeX
 {
+    // MobiledgeXWebSocketClient is a WebSocket Implementation offered with MobiledgeX Unity Package
+    // To see examples of using MobiledgeXWebSocketClient check MobiledgeX unity sample apps
+    // at ("https://github.com/mobiledgex/edge-cloud-sampleapps/tree/master/unity")
     // C#'s built in WebSockets concurrency model supports the use a single queue for
-    // send, and another queue for recieve. MobiledgeXSokcetClient here has 1 independent thread
+    // send, and another queue for recieve. MobiledgeXWebSocketClient here has 1 independent thread
     // per send or receive direction of communication.
-    public class MobiledgeXSocketClient : IDisposable
+    public class MobiledgeXWebSocketClient : IDisposable
     {
         // Life of MobiledgeXSocketClient:
-        private static string proto = "ws";
-        private static string host = "localhost";
-        private static int port = 3000;
-        private static string server = proto + "://" + host + ":" + port;
-        public Uri uri = new Uri(server);
         private ClientWebSocket ws = new ClientWebSocket();
         static UTF8Encoding encoder; // For websocket text message encoding.
         const UInt64 MAXREADSIZE = 1 * 1024 * 1024;
@@ -46,31 +44,16 @@ namespace MobiledgeX
         Thread receiveThread { get; set; }
         Thread sendThread { get; set; }
         private bool run = true;
-        MobiledgeXIntegration integration;
+        public WebSocketMessageType webSocketMessageType;
 
-        // For testing
-        public MobiledgeXSocketClient()
+        public MobiledgeXWebSocketClient(WebSocketMessageType webSocketMessageType = WebSocketMessageType.Text)
         {
             encoder = new UTF8Encoding();
             ws = new ClientWebSocket();
-
             receiveQueue = new ConcurrentQueue<string>();
             receiveThread = new Thread(RunReceive);
             receiveThread.Start();
-
-            sendQueue = new BlockingCollection<ArraySegment<byte>>();
-            sendThread = new Thread(RunSend);
-            sendThread.Start();
-        }
-
-        public MobiledgeXSocketClient(MobiledgeXIntegration integration)
-        {
-            encoder = new UTF8Encoding();
-            ws = new ClientWebSocket();
-            this.integration = integration;
-            receiveQueue = new ConcurrentQueue<string>();
-            receiveThread = new Thread(RunReceive);
-            receiveThread.Start();
+            this.webSocketMessageType = webSocketMessageType;
             sendQueue = new BlockingCollection<ArraySegment<byte>>();
             sendThread = new Thread(RunSend);
             sendThread.Start();
@@ -108,7 +91,12 @@ namespace MobiledgeX
             byte[] buffer = encoder.GetBytes(message);
             //Debug.Log("Message to queue for send: " + buffer.Length + ", message: " + message);
             var sendBuf = new ArraySegment<byte>(buffer);
-
+            sendQueue.Add(sendBuf);
+        }
+        public void Send(byte[] binary)
+        {
+            //Debug.Log("Message to queue for send: " + buffer.Length + ", message: " + message);
+            var sendBuf = new ArraySegment<byte>(binary);
             sendQueue.Add(sendBuf);
         }
 
@@ -123,7 +111,7 @@ namespace MobiledgeX
                     msg = sendQueue.Take();
                     long count = sendQueue.Count;
                     //Debug.Log("Dequeued this message to send: " + msg + ", queueSize: " + count);
-                    await ws.SendAsync(msg, WebSocketMessageType.Text, true /* is last part of message */, CancellationToken.None);
+                    await ws.SendAsync(msg, webSocketMessageType, true /* is last part of message */, CancellationToken.None);
                 }
             }
         }
