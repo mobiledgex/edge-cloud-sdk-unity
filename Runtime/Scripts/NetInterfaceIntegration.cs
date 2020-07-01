@@ -63,7 +63,7 @@ namespace MobiledgeX
       string ipAddress = null;
       string ipAddressV4 = null;
       string ipAddressV6 = null;
-      Debug.Log("Looking for: " + sourceNetInterfaceName + ", known Wifi: " + networkInterfaceName.WIFI + ", known Cellular: " + networkInterfaceName.CELLULAR);
+      Debug.Log("Looking for: " + sourceNetInterfaceName);
 
       foreach (NetworkInterface iface in netInterfaces)
       {
