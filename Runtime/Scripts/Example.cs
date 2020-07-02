@@ -9,7 +9,7 @@ public class Example : MonoBehaviour
 {
 
     #region Websocket Example using MobiledgeX
-    MobiledgeXSocketClient wsClient;
+    MobiledgeXWebSocketClient wsClient;
 
     public Text RestURIText;
     public Text WebSocketText;
@@ -28,11 +28,11 @@ public class Example : MonoBehaviour
         mxi.UseWifiOnly(true);
 #endif
 
-        wsClient = new MobiledgeXSocketClient();
+        wsClient = new MobiledgeXWebSocketClient();
         if (wsClient.isOpen())
         {
             wsClient.Dispose();
-            wsClient = new MobiledgeXSocketClient();
+            wsClient = new MobiledgeXWebSocketClient();
         }
 
         String url = await MobiledgeXIntegrationWorkflow(mxi, "ws");
