@@ -219,13 +219,13 @@ namespace MobiledgeX
             switch (proto)
 	    {
                 case "http":
-                     appPort = integration.GetAppPort(DistributedMatchEngine.LProto.L_PROTO_TCP);
+                     appPort = integration.GetAppPort(DistributedMatchEngine.LProto.L_PROTO_HTTP);
                     break;
                 case "ws":
                      appPort = integration.GetAppPort(DistributedMatchEngine.LProto.L_PROTO_TCP);
                     break;
                 default:
-                    appPort = integration.GetAppPort(DistributedMatchEngine.LProto.L_PROTO_TCP);
+                    appPort = integration.GetAppPort(DistributedMatchEngine.LProto.L_PROTO_HTTP);
                     break;
             }
             string url = integration.GetUrl(proto, appPort);
@@ -234,7 +234,7 @@ namespace MobiledgeX
 
         public async Task<string> WebSocketTestHelper(string orgName, string appName, string appVers)
         {
-            FindCloudletReply reply = await integration.matchingEngine.RegisterAndFindCloudlet(orgName, appName, appVers, testLocation, "");
+            FindCloudletReply reply = await integration.matchingEngine.RegisterAndFindCloudlet(orgName, appName, appVers, testLocation);
             await Task.Delay(TimeSpan.FromMilliseconds(200));
 	    Dictionary<int, AppPort> appPortsDict = integration.matchingEngine.GetTCPAppPorts(reply);
 	    int public_port = reply.ports[0].public_port;
