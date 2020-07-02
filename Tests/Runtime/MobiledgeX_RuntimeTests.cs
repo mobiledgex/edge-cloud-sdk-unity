@@ -99,7 +99,7 @@ namespace MobiledgeX
             MobiledgeXIntegration.appVers = appVers;
             var task = Task.Run(async () =>
             {
-                return await GetUrlHelper(orgName, appName, appVers,"http");
+                return await GetUrlHelper(orgName, appName, appVers, "http");
             });
 
             Assert.AreEqual(task.Result, "http://mobiledgexsdkdemo-tcp.mobiledgexmobiledgexsdkdemo20.sdkdemo-app-cluster.us-los-angeles.gcp.mobiledgex.net:8008"); 
@@ -197,10 +197,8 @@ namespace MobiledgeX
 
         public async Task<bool> RegisterHelper()
         {
-
             bool check = await integration.Register();
             await Task.Delay(TimeSpan.FromMilliseconds(200));
-
             return check;
         }
 
@@ -208,7 +206,6 @@ namespace MobiledgeX
         {
             bool foundCloudlet = await integration.FindCloudlet();
             await Task.Delay(TimeSpan.FromMilliseconds(200));
-
             return foundCloudlet;
         }
 
@@ -220,15 +217,15 @@ namespace MobiledgeX
             DistributedMatchEngine.AppPort appPort;
 
             switch (proto)
-			{
+	    {
                 case "http":
-                     appPort = integration.GetAppPort(DistributedMatchEngine.LProto.L_PROTO_HTTP);
+                     appPort = integration.GetAppPort(DistributedMatchEngine.LProto.L_PROTO_TCP);
                     break;
                 case "ws":
                      appPort = integration.GetAppPort(DistributedMatchEngine.LProto.L_PROTO_TCP);
                     break;
                 default:
-                    appPort = integration.GetAppPort(DistributedMatchEngine.LProto.L_PROTO_HTTP);
+                    appPort = integration.GetAppPort(DistributedMatchEngine.LProto.L_PROTO_TCP);
                     break;
             }
             string url = integration.GetUrl(proto, appPort);
@@ -239,11 +236,11 @@ namespace MobiledgeX
         {
             FindCloudletReply reply = await integration.matchingEngine.RegisterAndFindCloudlet(orgName, appName, appVers, testLocation, "");
             await Task.Delay(TimeSpan.FromMilliseconds(200));
-			Dictionary<int, AppPort> appPortsDict = integration.matchingEngine.GetTCPAppPorts(reply);
-			int public_port = reply.ports[0].public_port;
-			AppPort appPort = appPortsDict[public_port];
-			ClientWebSocket ws = await integration.matchingEngine.GetWebsocketConnection(reply, appPort, public_port, 5000, "?roomid=testing");
-			await Task.Delay(TimeSpan.FromMilliseconds(200));
+	    Dictionary<int, AppPort> appPortsDict = integration.matchingEngine.GetTCPAppPorts(reply);
+	    int public_port = reply.ports[0].public_port;
+	    AppPort appPort = appPortsDict[public_port];
+	    ClientWebSocket ws = await integration.matchingEngine.GetWebsocketConnection(reply, appPort, public_port, 5000, "?roomid=testing");
+	    await Task.Delay(TimeSpan.FromMilliseconds(200));
             byte[] buf = new byte[4 * 1024];
             ArraySegment<byte> arrayBuf = new ArraySegment<byte>(buf);
             var ms = new MemoryStream();
@@ -270,7 +267,6 @@ namespace MobiledgeX
                     readString = reader.ReadToEnd();
                 }
             }
-
             return readString;
         }
 
