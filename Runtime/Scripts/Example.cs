@@ -64,27 +64,18 @@ public class Example : MonoBehaviour
     async Task RestExample()
     {
         MobiledgeXIntegration mxi = new MobiledgeXIntegration();
-        CarrierInfoClass ci = new CarrierInfoClass();
 
+#if UNITY_IOS
         try
         {
-            bool isRoaming = await ci.IsRoaming(-121.243, 37.443);
-            Debug.Log("isRoaming in US: " + isRoaming);
+            bool isRoaming = await mxi.IsRoaming();
+            Debug.Log("isRoaming " + isRoaming);
         }
         catch (CarrierInfoException cie)
         {
             Debug.Log("carrierinfo exception in US: " + cie.Message);
         }
-
-        try
-        {
-            bool isRoaming = await ci.IsRoaming(0.0, -27.0);
-            Debug.Log("isRoaming in Ocean: " + isRoaming);
-        }
-        catch (CarrierInfoException cie)
-        {
-            Debug.Log("carrierinfo exception in Ocean: " + cie.Message);
-        }
+#endif
 
 #if UNITY_EDITOR
         mxi.UseWifiOnly(true);

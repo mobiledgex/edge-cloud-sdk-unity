@@ -193,6 +193,18 @@ namespace MobiledgeX
             return false;
         }
 
+#if UNITY_IOS
+        /// <summary>
+        /// Function for IOS that checks if device is in different country from carrier network
+        /// </summary>
+        /// <returns>bool</returns>
+        public async Task<bool> IsRoaming()
+        {
+            location = GetLocationFromDevice();
+            return await carrierInfoClass.IsRoaming(location.longitude, location.latitude);
+        }
+#endif
+
         /// <summary>
         /// Checks whether Edge is Enabled on the device or not, Edge requires connections to run over cellular interface
         /// </summary>

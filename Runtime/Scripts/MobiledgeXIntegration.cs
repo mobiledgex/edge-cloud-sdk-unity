@@ -83,6 +83,7 @@ namespace MobiledgeX
         AppPort latestAppPort = null;
         AppPort[] latestAppPortList = null;
         Location fallbackLocation = new Location(-121.8863286, 37.3382082);
+        CarrierInfoClass carrierInfoClass = new CarrierInfoClass(); // used for IsRoaming check
 
         /// <summary>
         /// Constructor for MobiledgeXIntegration. This class has functions that wrap DistributedMatchEngine functions for ease of use

@@ -260,7 +260,6 @@ void _convertGPSToISOCountryCode(double longitude, double latitude)
          if(placemarks && placemarks.count > 0)
          {
              CLPlacemark *placemark= [placemarks objectAtIndex:0];
-
              isoCountryCode = [placemark ISOcountryCode];
          }
      }];
