@@ -7,6 +7,8 @@ using UnityEngine;
 using DistributedMatchEngine;
 using System.Linq;
 using System.Collections.Generic;
+using UnityEditor.PackageManager.Requests;
+using UnityEditor.PackageManager;
 
 namespace MobiledgeX
 {
@@ -21,7 +23,8 @@ namespace MobiledgeX
         GUIStyle headerStyle;
         GUIStyle labelStyle;
         static MobiledgeXSettings settings;
-        static bool editorPopUp;
+        static bool editorPopUp;      
+        static RemoveRequest Request; // used for removing MobiledgeX Package from the Unity project
 
         /// <summary>
         /// The titles of the tabs in Mobiledgex window.
@@ -79,6 +82,22 @@ namespace MobiledgeX
         public static void OpenDocumentationURL()
         {
             Application.OpenURL("https://developers.mobiledgex.com/sdk-libraries/unity-sdk");
+        }
+
+        [MenuItem("MobiledgeX/Remove MobiledgeX")]
+        public static void RemoveMobiledgeX()
+        {
+             if (EditorUtility.DisplayDialog("MobiledgeX","Choosing Remove will delete MobiledgeX package and close Unity Editor", "Remove", "Cancel"))
+                {
+                    if(Directory.Exists(Path.Combine("Assets", "Plugins/MobiledgeX")))
+                    {
+                         Directory.Delete(Path.Combine("Assets", "Plugins/MobiledgeX"), true);
+                         File.Delete(Path.Combine("Assets", "Plugins/MobiledgeX")+".meta");
+                    }
+                    AssetDatabase.Refresh();
+                    Client.Remove("com.mobiledgex.sdk");
+                    EditorApplication.Exit(0);
+                }
         }
 
         #endregion
@@ -191,8 +210,6 @@ namespace MobiledgeX
                 MobiledgeXIntegration.orgName = settings.orgName;
                 MobiledgeXIntegration.appName = settings.appName;
                 MobiledgeXIntegration.appVers = settings.appVers;
-                // MobiledgeXIntegration.tcpPort = (int)settings.TCP_Port;
-                // MobiledgeXIntegration.udpPort = (int)settings.UDP_Port;
                 progressText = "";
                 if (await CheckCredentials())
                 {
@@ -301,32 +318,6 @@ namespace MobiledgeX
                     Debug.LogError("MobiledgeX: Couldn't Find findCloudletReply, Make Sure you created App Instances for your Application and they are deployed in the correct region.");
                     throw new FindCloudletException("No findCloudletReply");
                 }
-                /*AppPort[] appPortList = integration.AppPortList;
-                if (appPortList != null && appPortList.Length > 0)
-                {
-                    // mappedPorts size is presisted to since mappedPorts is exposed in the Inspector(used in OnValidation in MobiledgeXSettings)
-                    settings.mappedPortsSize = appPortList.Length;
-                    foreach (AppPort appPort in appPortList)
-                    {
-                        Port port = new Port(appPort);
-                        // check if port have already being added ,(In EditorWindow)  if Setup is pressed before
-                        // Port.ToString() returns "tlsProtocolPortNumber" > ex "SecureTCP6000" ,ex "UDP3000"
-                        if (!settings.mappedPorts.Any(mappedPort => mappedPort.ToString() == port.ToString()))
-                        {
-                            settings.mappedPorts.Add(port);
-                        }
-                    }
-                    // overwrites the TCPPorts enum or  UDPPorts enum
-                    // TCPPorts,UDPPorts scripts once the package is imported
-                    // Once the credential check passes enums are being created
-                    // enum values ex (TCP5000 = 5000) the integer value used in MobiledgeXIntegration with an integer cast
-                    CreateEnum("TCPPorts", Protocol.TCP);
-                    CreateEnum("UDPPorts", Protocol.UDP);
-                }
-                else
-                {
-                    Debug.LogError("No Mapped Ports for your application backend");
-                }*/
                 return checkResult;
             }
             catch (HttpRequestException httpre)
@@ -376,6 +367,12 @@ namespace MobiledgeX
                 {
                     AssetDatabase.CreateFolder("Assets/Plugins", "MobiledgeX");
                 }
+                MoveFile(@linkXMLPath, Path.Combine(@mobiledgeXFolderPath, @"link.xml"), true);
+                if (!Directory.Exists(Path.Combine(@mobiledgeXFolderPath, @"Resources")))
+                {
+                    AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "Resources"); 
+                }
+                MoveFile(@settingPath, Path.Combine(@mobiledgeXFolderPath, @"Resources/MobiledgeXSettings.asset"), true);
                 MoveFile(@sdkPath, Path.Combine(@mobiledgeXFolderPath, @"MatchingEngineSDKRestLibrary.dll"), true);
                 if (!Directory.Exists(Path.Combine(@mobiledgeXFolderPath, @"iOS")))
                 {
@@ -387,12 +384,6 @@ namespace MobiledgeX
                     AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "Android");
                 }
                 MoveFile(melAARPath, Path.Combine(@mobiledgeXFolderPath, @"Android/mel.aar"), true);
-                MoveFile(@linkXMLPath, Path.Combine("Assets", @"link.xml"), true);
-                if (!Directory.Exists(Path.Combine("Assets", @"Resources")))
-                {
-                    AssetDatabase.CreateFolder("Assets", "Resources");
-                }
-                MoveFile(@settingPath, Path.Combine(@resourcesFolderPath, @"MobiledgeXSettings.asset"), true);
                 AssetDatabase.Refresh();
             }
             catch (Exception e)
@@ -405,7 +396,6 @@ namespace MobiledgeX
         {
             if (!File.Exists(Path.Combine(targetPath)) && File.Exists(srcPath))
             {
-
                 FileUtil.MoveFileOrDirectory(srcPath, targetPath);
                 if (MoveMetaFiles)
                 {
@@ -422,40 +412,6 @@ namespace MobiledgeX
             PlayerSettings.iOS.locationUsageDescription = "Geo-Location is used by MobiledgeX SDK to locate the closest edge cloudlet server and (where supported) for carrier enhanced Verify Location services.";
         }
 
-        /// <summary>
-        /// Creates Enum for Mapped Ports 
-        /// </summary>
-        /// <param name="enumName">will be the name of the file</param>
-        /// <param name="protocol">TCP, UDP</param>
-        /// Protocol enum exists in MobiledgeXSettings
-        /*public static void CreateEnum(string enumName, Protocol protocol)
-        {
-            List<string> enumEntries = new List<string>(settings.mappedPorts.Count);
-            foreach (Port port in settings.mappedPorts)
-            {
-                if (port.ToString().Contains(protocol.ToString()))
-                {
-                    enumEntries.Add(port.ToString());
-                }
-            }
-            string filePathAndName = "Packages/com.mobiledgex.sdk/RunTime/Scripts/" + enumName + ".cs";
-            using (StreamWriter streamWriter = new StreamWriter(filePathAndName))
-            {
-                streamWriter.WriteLine("namespace MobiledgeX{ \t ");
-                streamWriter.WriteLine("public enum " + enumName);
-                streamWriter.WriteLine("{ \t");
-                for (int i = 0; i < enumEntries.Count; i++)
-                {
-                    string portName = enumEntries[i];
-                    int portNumber;
-                    int.TryParse(new String(enumEntries[i].Where(Char.IsDigit).ToArray()), out portNumber);
-                    streamWriter.WriteLine("\t" + portName + "=" + portNumber + ",");
-                }
-                streamWriter.WriteLine("}}");
-            }
-            // refresh assets to update MobiledgeX Assembly definition using the default ImportAssetOptions.Default
-            AssetDatabase.Refresh();
-        }*/
         #endregion
     }
 }
