@@ -85,6 +85,8 @@ namespace MobiledgeX
         Location fallbackLocation = new Location(-121.8863286, 37.3382082);
         CarrierInfoClass carrierInfoClass = new CarrierInfoClass(); // used for IsRoaming check
 
+        MelMessaging melMessaging;
+
         /// <summary>
         /// Constructor for MobiledgeXIntegration. This class has functions that wrap DistributedMatchEngine functions for ease of use
         /// </summary>
@@ -94,7 +96,8 @@ namespace MobiledgeX
             // Set the platform specific way to get SIM carrier information.
             pIntegration = new PlatformIntegration();
             matchingEngine = new MatchingEngine(pIntegration.CarrierInfo, pIntegration.NetInterface, pIntegration.UniqueID);
-            matchingEngine.SetMelMessaging(new MelMessaging(appName));
+            melMessaging = new MelMessaging(appName);
+            matchingEngine.SetMelMessaging(melMessaging);
         }
 
         /// <summary>
@@ -184,6 +187,11 @@ namespace MobiledgeX
                 throw new AppPortException("Last FindCloudlet returned null. Call FindCloudlet again before GetAppPort");
             }
 
+            if (AppPortForMel(latestFindCloudletReply, proto, port))
+            {
+                Debug.Log("Updated public port.");
+            }
+
             Dictionary<int, AppPort> appPortsDict = new Dictionary<int, AppPort>();
 
             switch (proto)
@@ -224,6 +232,46 @@ namespace MobiledgeX
                 Debug.LogError("MobiledgeX: Port supplied is not mapped for your Application, Make sure the desired port are defined in your Application Port Mapping Section on MobiledgeX Console.");
                 throw new AppPortException(proto + " " + port + " is not defined for your Application");
             }
+        }
+
+        /// <summary>
+        /// Updates the public port, if necessary, if this AppPort is in Mel Mode.
+        /// </summary>
+        private bool AppPortForMel(FindCloudletReply reply, LProto proto, int defaultPort)
+        {
+            if (IsNetworkDataPathEdgeEnabled() && melMessaging.IsMelEnabled())
+            {
+                if (reply.ports.Length > 1)
+                {
+                    throw new Exception("MobiledgeX: Unexpected Port length for MEL mode.");
+                }
+
+                AppPort appPort = reply.ports[0];
+                if (appPort.internal_port != 0)
+                {
+                    return true; // Update only once.
+                }
+
+                if (defaultPort == 0 && appPort.internal_port == 0)
+                {
+                    throw new AppPortException("MobiledgeX: The AppPort's internal port is 0, the app must specify the default protocol port to use.");
+                }
+
+                // Internal Port of 0 is updated to lookup public port.
+                appPort.public_port = defaultPort;
+                appPort.internal_port = defaultPort;
+                switch (proto)
+                {
+                  case LProto.L_PROTO_HTTP:
+                      appPort.proto = LProto.L_PROTO_TCP;
+                      break;
+                  default:
+                      appPort.proto = proto;
+                      break;
+                }
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
