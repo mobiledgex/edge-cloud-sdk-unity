@@ -65,6 +65,18 @@ public class Example : MonoBehaviour
     {
         MobiledgeXIntegration mxi = new MobiledgeXIntegration();
 
+#if UNITY_IOS
+        try
+        {
+            bool isRoaming = await mxi.IsRoaming();
+            Debug.Log("isRoaming " + isRoaming);
+        }
+        catch (CarrierInfoException cie)
+        {
+            Debug.Log("carrierinfo exception in US: " + cie.Message);
+        }
+#endif
+
 #if UNITY_EDITOR
         mxi.UseWifiOnly(true);
 #endif
