@@ -27,7 +27,7 @@ using UnityEngine;
 
 namespace MobiledgeX
 {
-    // MobiledgeXWebSocketClient is a WebSocket Implementation offered with MobiledgeX Unity Package
+    // MobiledgeXWebSocketClient is a Helper class offered with MobiledgeX Unity Package
     // To see examples of using MobiledgeXWebSocketClient check MobiledgeX unity sample apps
     // at ("https://github.com/mobiledgex/edge-cloud-sampleapps/tree/master/unity")
     // C#'s built in WebSockets concurrency model supports the use a single queue for
@@ -44,16 +44,14 @@ namespace MobiledgeX
         Thread receiveThread { get; set; }
         Thread sendThread { get; set; }
         private bool run = true;
-        public WebSocketMessageType webSocketMessageType;
 
-        public MobiledgeXWebSocketClient(WebSocketMessageType webSocketMessageType = WebSocketMessageType.Text)
+        public MobiledgeXWebSocketClient()
         {
             encoder = new UTF8Encoding();
             ws = new ClientWebSocket();
             receiveQueue = new ConcurrentQueue<string>();
             receiveThread = new Thread(RunReceive);
             receiveThread.Start();
-            this.webSocketMessageType = webSocketMessageType;
             sendQueue = new BlockingCollection<ArraySegment<byte>>();
             sendThread = new Thread(RunSend);
             sendThread.Start();
@@ -93,11 +91,11 @@ namespace MobiledgeX
             var sendBuf = new ArraySegment<byte>(buffer);
             sendQueue.Add(sendBuf);
         }
-        public void Send(byte[] binary)
+       public async void Send(byte[] binary)
         {
             //Debug.Log("Message to queue for send: " + buffer.Length + ", message: " + message);
             var sendBuf = new ArraySegment<byte>(binary);
-            sendQueue.Add(sendBuf);
+            await ws.SendAsync(sendBuf, WebSocketMessageType.Binary, true /* is last part of message */, CancellationToken.None);
         }
 
         public async void RunSend()
@@ -111,7 +109,7 @@ namespace MobiledgeX
                     msg = sendQueue.Take();
                     long count = sendQueue.Count;
                     //Debug.Log("Dequeued this message to send: " + msg + ", queueSize: " + count);
-                    await ws.SendAsync(msg, webSocketMessageType, true /* is last part of message */, CancellationToken.None);
+                    await ws.SendAsync(msg, WebSocketMessageType.Text, true /* is last part of message */, CancellationToken.None);
                 }
             }
         }
