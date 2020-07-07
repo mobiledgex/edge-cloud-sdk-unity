@@ -27,7 +27,7 @@ using UnityEngine;
 
 namespace MobiledgeX
 {
-    // MobiledgeXWebSocketClient is a Helper class offered with MobiledgeX Unity Package
+    // MobiledgeXWebSocketClient is a WebSocket Implementation offered with MobiledgeX Unity Package
     // To see examples of using MobiledgeXWebSocketClient check MobiledgeX unity sample apps
     // at ("https://github.com/mobiledgex/edge-cloud-sampleapps/tree/master/unity")
     // C#'s built in WebSockets concurrency model supports the use a single queue for
@@ -41,8 +41,10 @@ namespace MobiledgeX
         const UInt64 MAXREADSIZE = 1 * 1024 * 1024;
         public ConcurrentQueue<String> receiveQueue { get; }
         public BlockingCollection<ArraySegment<byte>> sendQueue { get; }
+        public BlockingCollection<ArraySegment<byte>> sendQueueBinary { get; }
         Thread receiveThread { get; set; }
         Thread sendThread { get; set; }
+        Thread sendThreadBinary { get; set; }
         private bool run = true;
 
         public MobiledgeXWebSocketClient()
@@ -53,8 +55,11 @@ namespace MobiledgeX
             receiveThread = new Thread(RunReceive);
             receiveThread.Start();
             sendQueue = new BlockingCollection<ArraySegment<byte>>();
+            sendQueueBinary = new BlockingCollection<ArraySegment<byte>>();
             sendThread = new Thread(RunSend);
             sendThread.Start();
+            sendThreadBinary = new Thread(RunSendBinary);
+            sendThreadBinary.Start();
         }
 
         public bool isConnecting()
@@ -91,11 +96,11 @@ namespace MobiledgeX
             var sendBuf = new ArraySegment<byte>(buffer);
             sendQueue.Add(sendBuf);
         }
-       public async void Send(byte[] binary)
+
+        public void Send(byte[] binary)
         {
-            //Debug.Log("Message to queue for send: " + buffer.Length + ", message: " + message);
             var sendBuf = new ArraySegment<byte>(binary);
-            await ws.SendAsync(sendBuf, WebSocketMessageType.Binary, true /* is last part of message */, CancellationToken.None);
+            sendQueueBinary.Add(sendBuf);
         }
 
         public async void RunSend()
@@ -110,6 +115,22 @@ namespace MobiledgeX
                     long count = sendQueue.Count;
                     //Debug.Log("Dequeued this message to send: " + msg + ", queueSize: " + count);
                     await ws.SendAsync(msg, WebSocketMessageType.Text, true /* is last part of message */, CancellationToken.None);
+                }
+            }
+        }
+
+        public async void RunSendBinary()
+        {
+            ArraySegment<byte> msg;
+            Debug.Log("RunSend entered.");
+            while (run)
+            {
+                while (!sendQueueBinary.IsCompleted)
+                {
+                    msg = sendQueueBinary.Take();
+                    long count = sendQueueBinary.Count;
+                    //Debug.Log("Dequeued this message to send: " + msg + ", queueSize: " + count);
+                    await ws.SendAsync(msg, WebSocketMessageType.Binary, true /* is last part of message */, CancellationToken.None);
                 }
             }
         }
