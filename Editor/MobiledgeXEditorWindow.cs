@@ -23,8 +23,7 @@ namespace MobiledgeX
         GUIStyle headerStyle;
         GUIStyle labelStyle;
         static MobiledgeXSettings settings;
-        static bool editorPopUp;      
-        static RemoveRequest Request; // used for removing MobiledgeX Package from the Unity project
+        static bool editorPopUp;
 
         /// <summary>
         /// The titles of the tabs in Mobiledgex window.
@@ -210,6 +209,7 @@ namespace MobiledgeX
                 MobiledgeXIntegration.orgName = settings.orgName;
                 MobiledgeXIntegration.appName = settings.appName;
                 MobiledgeXIntegration.appVers = settings.appVers;
+                MobiledgeXIntegration.developerAuthToken = settings.authPublicKey;
                 progressText = "";
                 if (await CheckCredentials())
                 {
