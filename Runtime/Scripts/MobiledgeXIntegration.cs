@@ -15,14 +15,12 @@
 * limitations under the License.
 */
 
-using System;
-using System.Collections.Generic;
 using UnityEngine;
-using DistributedMatchEngine;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Net.WebSockets;
-using System.Net.Http;
 using System.Linq;
+using DistributedMatchEngine; //MobiledgeX MatchingEngine
 /*
 * MobiledgeX MatchingEngine SDK integration has an additional application side
 * "PlatformIntegration.cs/m" file for Android, IOS, or other platform integration
@@ -54,9 +52,7 @@ namespace MobiledgeX
         public static string orgName { get; set; } = ""; // Organization name
         public static string appName { get; set; } = ""; // Your appName, if you have created this in the MobiledgeX console.
         public static string appVers { get; set; } = ""; // Your app version uploaded to the docker registry.
-        public static int tcpPort { get; set; } = 0; // Your exposed TCP port mapped at MobiledgeX Console.
-        public static int udpPort { get; set; } = 0; // Your exposed UDP port mapped at MobiledgeX Console.
-        public string developerAuthToken { get; set; } = ""; // This is an opaque string value supplied by the developer.
+        public static string developerAuthToken { get; set; } = ""; // This is an opaque string value supplied by the developer.
         public uint cellID { get; set; } = 0;
         public string uniqueIDType { get; set; } = "";
         public string uniqueID { get; set; } = "";
@@ -84,7 +80,6 @@ namespace MobiledgeX
         AppPort[] latestAppPortList = null;
         Location fallbackLocation = new Location(-121.8863286, 37.3382082);
         CarrierInfoClass carrierInfoClass = new CarrierInfoClass(); // used for IsRoaming check
-
         MelMessaging melMessaging;
 
         /// <summary>
@@ -126,16 +121,15 @@ namespace MobiledgeX
 
             if (!latestRegisterStatus)
             {
-                Debug.LogError("Last RegisterClient was unsuccessful. Call RegisterClient again before VerifyLocation");
+                Debug.LogError("MobiledgeX: Last RegisterClient was unsuccessful. Call RegisterClient again before VerifyLocation");
                 return false;
             }
 
             location = GetLocationFromDevice();
             UpdateCarrierName();
-
+            
             VerifyLocationRequest req = matchingEngine.CreateVerifyLocationRequest(location, carrierName);
             VerifyLocationReply reply = await matchingEngine.VerifyLocation(req);
-
 
             // The return is not binary, but one can decide the particular app's policy
             // on pass or failing the location check. Not being verified or the country
@@ -183,10 +177,10 @@ namespace MobiledgeX
         {
             if (latestFindCloudletReply == null)
             {
-                Debug.Log("Last FindCloudlet returned null. Call FindCloudlet again before GetAppPort");
+                Debug.Log("MobiledgeX: Last FindCloudlet returned null. Call FindCloudlet again before GetAppPort");
                 throw new AppPortException("Last FindCloudlet returned null. Call FindCloudlet again before GetAppPort");
             }
-
+            
             if (AppPortForMel(latestFindCloudletReply, proto, port))
             {
                 Debug.Log("Updated public port.");
@@ -217,7 +211,7 @@ namespace MobiledgeX
 
             if (port == 0)
             {
-                Debug.Log("No port specified. Grabbing first AppPort in dictionary");
+                Debug.Log("MobiledgeX: No port specified. Grabbing first AppPort in dictionary");
                 port = appPortsDict.OrderBy(kvp => kvp.Key).First().Key;
             }
 
@@ -233,7 +227,7 @@ namespace MobiledgeX
                 throw new AppPortException(proto + " " + port + " is not defined for your Application");
             }
         }
-
+        
         /// <summary>
         /// Updates the public port, if necessary, if this AppPort is in Mel Mode.
         /// </summary>
@@ -273,7 +267,7 @@ namespace MobiledgeX
             }
             return false;
         }
-
+        
         /// <summary>
         /// Wrapper for CreateUrl. Returns the L7 url for application backend
         /// </summary>
@@ -293,7 +287,7 @@ namespace MobiledgeX
             {
                 if (latestAppPort == null)
                 {
-                    Debug.LogError("Unable to find AppPort. Supply an AppPort or call GetAppPort before calling GetUrl");
+                    Debug.LogError("MobiledgeX: Unable to find AppPort. Supply an AppPort or call GetAppPort before calling GetUrl");
                     throw new GetConnectionException("Unable to find AppPort. Supply an AppPort or call GetAppPort before calling GetUrl");
                 }
                 appPort = latestAppPort;
@@ -319,7 +313,7 @@ namespace MobiledgeX
             {
                 if (latestAppPort == null)
                 {
-                    Debug.LogError("Unable to find AppPort. Call GetAppPort before calling GetHost");
+                    Debug.LogError("MobiledgeX: Unable to find AppPort. Call GetAppPort before calling GetHost");
                     throw new GetConnectionException("Unable to find AppPort. Call GetAppPort before calling GetHost");
                 }
                 appPort = latestAppPort;
@@ -339,7 +333,7 @@ namespace MobiledgeX
             {
                 if (latestAppPort == null)
                 {
-                    Debug.LogError("Unable to find AppPort. Call GetAppPort before calling GetPort");
+                    Debug.LogError("MobiledgeX: Unable to find AppPort. Call GetAppPort before calling GetPort");
                     throw new GetConnectionException("Unable to find AppPort. Call GetAppPort before calling GetPort");
                 }
                 appPort = latestAppPort;
@@ -363,7 +357,7 @@ namespace MobiledgeX
 
             if (latestFindCloudletReply == null)
             {
-                Debug.LogError("Last FindCloudlet returned null. Call FindCloudlet again before GetAppPort");
+                Debug.LogError("MobiledgeX: Last FindCloudlet returned null. Call FindCloudlet again before GetAppPort");
                 throw new GetConnectionException("Last RegisterClient was unsuccessful. Call RegisterClient again before FindCloudlet");
             }
 
@@ -371,7 +365,7 @@ namespace MobiledgeX
             {
                 if (latestAppPort == null)
                 {
-                    Debug.LogError("Unable to find AppPort. Call GetAppPort before calling GetWebsocketConnection");
+                    Debug.LogError("MobiledgeX: Unable to find AppPort. Call GetAppPort before calling GetWebsocketConnection");
                     throw new GetConnectionException("Unable to find AppPort. Call GetAppPort before calling GetWebsocketConnection");
                 }
                 appPort = latestAppPort;
