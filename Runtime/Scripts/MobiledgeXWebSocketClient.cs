@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
@@ -38,8 +39,9 @@ namespace MobiledgeX
         // Life of MobiledgeXSocketClient:
         private ClientWebSocket ws = new ClientWebSocket();
         static UTF8Encoding encoder; // For websocket text message encoding.
-        const UInt64 MAXREADSIZE = 1 * 1024 * 1024;
-        public ConcurrentQueue<String> receiveQueue { get; }
+        const ulong MAXREADSIZE = 1 * 1024 * 1024;
+        public ConcurrentQueue<string> receiveQueue { get; }
+        public ConcurrentQueue<byte[]> receiveQueueBinary { get; }
         public BlockingCollection<ArraySegment<byte>> sendQueue { get; }
         public BlockingCollection<ArraySegment<byte>> sendQueueBinary { get; }
         Thread receiveThread { get; set; }
@@ -52,6 +54,7 @@ namespace MobiledgeX
             encoder = new UTF8Encoding();
             ws = new ClientWebSocket();
             receiveQueue = new ConcurrentQueue<string>();
+            receiveQueueBinary = new ConcurrentQueue<byte[]>();
             receiveThread = new Thread(RunReceive);
             receiveThread.Start();
             sendQueue = new BlockingCollection<ArraySegment<byte>>();
@@ -89,6 +92,10 @@ namespace MobiledgeX
             run = true;
         }
 
+        /// <summary>
+        /// For Sending Text Messages to the server (ex. JSON)
+        /// </summary>
+        /// <param name="message"></param>
         public void Send(string message)
         {
             byte[] buffer = encoder.GetBytes(message);
@@ -97,12 +104,19 @@ namespace MobiledgeX
             sendQueue.Add(sendBuf);
         }
 
+        /// <summary>
+        /// For Sending Binary to the server
+        /// </summary>
+        /// <param name="binary"></param>
         public void Send(byte[] binary)
         {
             var sendBuf = new ArraySegment<byte>(binary);
             sendQueueBinary.Add(sendBuf);
         }
 
+        /// <summary>
+        /// RunSend is used in sendThread
+        /// </summary>
         public async void RunSend()
         {
             ArraySegment<byte> msg;
@@ -119,6 +133,9 @@ namespace MobiledgeX
             }
         }
 
+        /// <summary>
+        /// RunSendBinary is used in sendThreadBinary
+        /// </summary>
         public async void RunSendBinary()
         {
             ArraySegment<byte> msg;
@@ -135,15 +152,14 @@ namespace MobiledgeX
             }
         }
 
-        // This belongs in a background thread posting queued results for the UI thread to pick up.
-        public async Task<string> Receive(UInt64 maxSize = MAXREADSIZE)
+        //This belongs in a background thread posting queued results for the UI thread to pick up.
+        public async Task<Dictionary<WebSocketMessageType, MemoryStream>> Receive(ulong maxSize = MAXREADSIZE)
         {
             // A read buffer, and a memory stream to stuff unknown number of chunks into:
             byte[] buf = new byte[4 * 1024];
             var ms = new MemoryStream();
             ArraySegment<byte> arrayBuf = new ArraySegment<byte>(buf);
             WebSocketReceiveResult chunkResult = null;
-
             if (ws.State == WebSocketState.Open)
             {
                 do
@@ -156,31 +172,48 @@ namespace MobiledgeX
                         Console.Error.WriteLine("Warning: Message is bigger than expected!");
                     }
                 } while (!chunkResult.EndOfMessage);
+                
                 ms.Seek(0, SeekOrigin.Begin);
-
-                // Looking for UTF-8 JSON type messages.
-                if (chunkResult.MessageType == WebSocketMessageType.Text)
-                {
-                    return StreamToString(ms, Encoding.UTF8);
-                }
-
+                return new Dictionary<WebSocketMessageType, MemoryStream>(){ [chunkResult.MessageType]= ms };
             }
 
-            return "";
+            return null;
         }
 
+        /// <summary>
+        /// RunReceive is used in receive thread
+        /// RunReceive receives websocket messages asynchronously and add it to either receiveQueue or receiveQueueBinary ...
+        /// dependent on the MessageType
+        /// </summary>
         public async void RunReceive()
         {
             Debug.Log("WebSocket Message Receiver looping.");
-            string result;
+            Dictionary<WebSocketMessageType, MemoryStream> response = new Dictionary<WebSocketMessageType, MemoryStream>(1);
             while (run)
             {
                 //Debug.Log("Awaiting Receive...");
-                result = await Receive();
-                if (result != null && result.Length > 0)
+                response = await Receive();
+                if (response != null && response.Keys.Count > 0)
                 {
                     //Debug.Log("Received: " + result);
-                    receiveQueue.Enqueue(result);
+                    if (response.Keys.First() == WebSocketMessageType.Text)
+                    {
+                        string result = StreamToString(response.Values.First(), Encoding.UTF8);
+                        if (result != null && result.Length > 0)
+                        {
+                            Debug.Log("Received: " + result);
+                            receiveQueue.Enqueue(result);
+                        }
+                    }
+                    if (response.Keys.First() == WebSocketMessageType.Binary)
+                    {
+                        byte[] result = response.Values.First().GetBuffer();
+                        if (result != null && result.Length > 0)
+                        {
+                            Debug.Log("Received: " + result);
+                            receiveQueueBinary.Enqueue(result);
+                        }
+                    }
                 }
                 else
                 {
@@ -199,7 +232,6 @@ namespace MobiledgeX
                     readString = reader.ReadToEnd();
                 }
             }
-
             return readString;
         }
 
