@@ -17,7 +17,6 @@
 
 using UnityEngine;
 using DistributedMatchEngine;
-
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
