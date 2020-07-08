@@ -125,9 +125,8 @@ namespace MobiledgeX
                 return false;
             }
 
-            location = GetLocationFromDevice();
-            UpdateCarrierName();
-            
+            await UpdateLocationAndCarrierInfo();
+
             VerifyLocationRequest req = matchingEngine.CreateVerifyLocationRequest(location, carrierName);
             VerifyLocationReply reply = await matchingEngine.VerifyLocation(req);
 
