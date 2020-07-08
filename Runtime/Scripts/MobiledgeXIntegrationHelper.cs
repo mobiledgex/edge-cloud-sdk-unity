@@ -65,9 +65,9 @@ namespace MobiledgeX
 
             RegisterClientRequest req = matchingEngine.CreateRegisterClientRequest(orgName, appName, appVers, developerAuthToken.Length > 0 ? developerAuthToken : null);
 
-            Debug.Log("OrgName: " + req.org_name);
-            Debug.Log("AppName: " + req.app_name);
-            Debug.Log("AppVers: " + req.app_vers);
+            Debug.Log("MobiledgeX: OrgName: " + req.org_name);
+            Debug.Log("MobiledgeX: AppName: " + req.app_name);
+            Debug.Log("MobiledgeX: AppVers: " + req.app_vers);
 
             RegisterClientReply reply;
             try
@@ -103,7 +103,7 @@ namespace MobiledgeX
 
             if (!latestRegisterStatus)
             {
-                Debug.LogError("Last RegisterClient was unsuccessful. FindCloudlet requires a succesful RegisterClient");
+                Debug.LogError("MobiledgeX: Last RegisterClient was unsuccessful. FindCloudlet requires a succesful RegisterClient");
                 throw new FindCloudletException("Last RegisterClient was unsuccessful. Call RegisterClient again before FindCloudlet");
             }
 
@@ -218,7 +218,7 @@ namespace MobiledgeX
                 Debug.Log("MobiledgeX: useWifiOnly must be false in production. useWifiOnly can be used only for testing");
                 return true;
 #else
-                Debug.Log("useOnlyWifi must be false to enable edge connection");
+                Debug.Log("MobiledgeX: useOnlyWifi must be false to enable edge connection");
                 return false;
 #endif
             }
@@ -237,7 +237,7 @@ namespace MobiledgeX
                 // We need to make sure wifi is off
                 if (!matchingEngine.netInterface.HasCellular() || matchingEngine.netInterface.HasWifi())
                 {
-                    Debug.Log(proto + " connection requires the cellular interface to be up and the wifi interface to be off to run connection over edge.");
+                    Debug.Log("MobiledgeX: " + proto + " connection requires the cellular interface to be up and the wifi interface to be off to run connection over edge.");
                     return false;
                 }
             }
@@ -246,7 +246,7 @@ namespace MobiledgeX
                     matchingEngine.GetAvailableCellularName(matchingEngine.netInterface.GetNetworkInterfaceName()));
             if (cellularIPAddress == null)
             {
-                Debug.Log("Unable to find ip address for local cellular interface.");
+                Debug.Log("MobiledgeX: Unable to find ip address for local cellular interface.");
                 return false;
             }
 
