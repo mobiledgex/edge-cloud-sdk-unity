@@ -236,7 +236,7 @@ namespace MobiledgeX
             {
                 if (reply.ports.Length > 1)
                 {
-                    throw new Exception("MobiledgeX: Unexpected Port length for MEL mode.");
+                    throw new AppPortException("MobiledgeX: Unexpected Port length for MEL mode.");
                 }
 
                 AppPort appPort = reply.ports[0];
