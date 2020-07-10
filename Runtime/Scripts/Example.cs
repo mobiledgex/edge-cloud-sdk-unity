@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using MobiledgeX;
 using DistributedMatchEngine;
@@ -9,7 +9,7 @@ public class Example : MonoBehaviour
 {
 
     #region Websocket Example using MobiledgeX
-    MobiledgeXSocketClient wsClient;
+    MobiledgeXWebSocketClient wsClient;
 
     public Text RestURIText;
     public Text WebSocketText;
@@ -28,11 +28,11 @@ public class Example : MonoBehaviour
         mxi.UseWifiOnly(true);
 #endif
 
-        wsClient = new MobiledgeXSocketClient(mxi);
+        wsClient = new MobiledgeXWebSocketClient();
         if (wsClient.isOpen())
         {
             wsClient.Dispose();
-            wsClient = new MobiledgeXSocketClient(mxi);
+            wsClient = new MobiledgeXWebSocketClient();
         }
 
         String url = await MobiledgeXIntegrationWorkflow(mxi, "ws");
@@ -147,7 +147,7 @@ public class Example : MonoBehaviour
         string url;
         try
         {
-            url = integration.GetUrl("http");
+            url = integration.GetUrl(proto);
         }
         catch (GetConnectionException gce)
         {
