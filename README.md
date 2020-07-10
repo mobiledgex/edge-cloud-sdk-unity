@@ -9,7 +9,6 @@ The Matching Engine Unity C# SDK provides everything required to create applicat
 ## Prerequisites  
 
 * Unity 2019.2 or newer, along with selected platforms (iOS, Android) for your project
-* .Net Standard 2.0
 * A running AppInst deployed on your edge server
 * Git installed
 
@@ -84,17 +83,13 @@ Once that setup has been completed, you can very easily call all the necessary A
 
 ```csharp
 using MobiledgeX;
+using DistributedMatchEngine;
 
 MobiledgeXIntegration integration = new MobiledgeXIntegration();
-bool registered = await integration.Register(); //calls Register Client
-DistributedMatchEngine.FindCloudletReply findCloudletReply = await integration.FindCloudlet(); //calls Find Cloudlet
-
-MatchingEngine dme = integration.me;
-
-Dictionary<int, AppPort> appPortsDict = dme.GetHTTPAppPorts(findCloudletReply);
-int public_port = findCloudletReply.ports[0].public_port; // if you only have one port
-AppPort appPort = appPortsDict[public_port];
-HttpClient http = await dme.GetHTTPClient(findCloudletReply, appPort, public_port, 5000);
+await integration.RegisterAndFindCloudlet(); 
+AppPort appPort = integration.GetAppPort(DistributedMatchEngine.LProto.L_PROTO_HTTP);
+string url = integration.GetUrl("http");
+http.BaseAddress = new Uri(url);
 HttpResponseMessage message = await http.GetAsync("/"); //makes a get request
 ```
 
