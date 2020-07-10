@@ -69,6 +69,8 @@ namespace MobiledgeX
             Debug.Log("MobiledgeX: AppName: " + req.app_name);
             Debug.Log("MobiledgeX: AppVers: " + req.app_vers);
 
+            await UpdateLocationAndCarrierInfo();
+
             RegisterClientReply reply;
             try
             {
@@ -107,8 +109,7 @@ namespace MobiledgeX
                 throw new FindCloudletException("Last RegisterClient was unsuccessful. Call RegisterClient again before FindCloudlet");
             }
 
-            location = GetLocationFromDevice();
-            UpdateCarrierName();
+            await UpdateLocationAndCarrierInfo();
 
             FindCloudletRequest req = matchingEngine.CreateFindCloudletRequest(location, carrierName);
             FindCloudletReply reply;
@@ -120,7 +121,6 @@ namespace MobiledgeX
             {
                 throw new FindCloudletException("FindCloudlet Exception: " + httpe.Message + ", HTTP StatusCode: " + httpe.HttpStatusCode + ", API ErrorCode: " + httpe.ErrorCode + "\nStack: " + httpe.StackTrace);
             }
-
 
             if (reply == null)
             {
@@ -139,26 +139,38 @@ namespace MobiledgeX
         /// <summary>
         /// Gets the location from the cellular device, Location is needed for Finding Cloudlet and Location Verification
         /// </summary>
-        /// <returns>Loc</returns>
-        private Loc GetLocationFromDevice()
+        private async Task UpdateLocationAndCarrierInfo()
+        {
+            UpdateLocationFromDevice();
+#if UNITY_IOS
+            bool isRoaming = await IsRoaming();
+            if (isRoaming) {
+                UseWifiOnly(true);
+                Debug.Log("IOS Device is roaming. Unable to get current network information from IOS device. Switching to wifi mode");
+            }
+#endif
+            UpdateCarrierName();
+        }
+
+        /// <summary>
+        /// Updates the location from the cellular device, Location is needed for Finding Cloudlet and Location Verification
+        /// </summary>
+        private void UpdateLocationFromDevice()
         {
             // Location is ephemeral, so retrieve a new location from the platform. May return 0,0 which is
             // technically valid, though less likely real, as of writing.
-            Loc loc = new Loc();
 
 #if UNITY_EDITOR
             Debug.Log("MobiledgeX: Cannot Get location in Unity Editor. Returning fallback location. Developer can configure fallback location with SetFallbackLocation");
-            loc.longitude = fallbackLocation.Longitude;
-            loc.latitude = fallbackLocation.Latitude;
-            return loc;
+            location.longitude = fallbackLocation.Longitude;
+            location.latitude = fallbackLocation.Latitude;
 #else
-            loc = LocationService.RetrieveLocation();
+            location = LocationService.RetrieveLocation();
             // 0f and 0f are hard zeros if no location service.
-            if (loc.longitude == 0f && loc.latitude == 0f)
+            if (location.longitude == 0f && location.latitude == 0f)
             {
                 Debug.LogError("LocationServices returned a location at (0,0)");
             }
-            return loc;               
 #endif        
         }
 
@@ -169,6 +181,17 @@ namespace MobiledgeX
         {
             carrierName = matchingEngine.GetCarrierName();
         }
+
+#if UNITY_IOS
+        /// <summary>
+        /// Function for IOS that checks if device is in different country from carrier network
+        /// </summary>
+        /// <returns>bool</returns>
+        public async Task<bool> IsRoaming()
+        {
+            return await carrierInfoClass.IsRoaming(location.longitude, location.latitude);
+        }
+#endif
 
         /// <summary>
         /// Checks whether the default netowrk data path Edge is Enabled on the device or not, Edge requires connections to run over cellular interface.
@@ -192,18 +215,6 @@ namespace MobiledgeX
             }
             return false;
         }
-
-#if UNITY_IOS
-        /// <summary>
-        /// Function for IOS that checks if device is in different country from carrier network
-        /// </summary>
-        /// <returns>bool</returns>
-        public async Task<bool> IsRoaming()
-        {
-            location = GetLocationFromDevice();
-            return await carrierInfoClass.IsRoaming(location.longitude, location.latitude);
-        }
-#endif
 
         /// <summary>
         /// Checks whether Edge is Enabled on the device or not, Edge requires connections to run over cellular interface

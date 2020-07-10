@@ -125,9 +125,8 @@ namespace MobiledgeX
                 return false;
             }
 
-            location = GetLocationFromDevice();
-            UpdateCarrierName();
-            
+            await UpdateLocationAndCarrierInfo();
+
             VerifyLocationRequest req = matchingEngine.CreateVerifyLocationRequest(location, carrierName);
             VerifyLocationReply reply = await matchingEngine.VerifyLocation(req);
 
@@ -237,7 +236,7 @@ namespace MobiledgeX
             {
                 if (reply.ports.Length > 1)
                 {
-                    throw new Exception("MobiledgeX: Unexpected Port length for MEL mode.");
+                    throw new AppPortException("MobiledgeX: Unexpected Port length for MEL mode.");
                 }
 
                 AppPort appPort = reply.ports[0];
