@@ -48,9 +48,11 @@ namespace MobiledgeX
         Thread sendThread { get; set; }
         Thread sendThreadBinary { get; set; }
         private bool run = true;
+        public CancellationTokenSource tokenSource { get; set; }
 
         public MobiledgeXWebSocketClient()
         {
+            tokenSource = new CancellationTokenSource();
             encoder = new UTF8Encoding();
             ws = new ClientWebSocket();
             receiveQueue = new ConcurrentQueue<string>();
@@ -82,7 +84,7 @@ namespace MobiledgeX
         public async Task Connect(Uri uri)
         {
             Debug.Log("Connecting to: " + uri);
-            await ws.ConnectAsync(uri, CancellationToken.None);
+            await ws.ConnectAsync(uri, tokenSource.Token);
             while (ws.State == WebSocketState.Connecting)
             {
                 Debug.Log("Waiting to connect...");
@@ -128,7 +130,7 @@ namespace MobiledgeX
                     msg = sendQueue.Take();
                     long count = sendQueue.Count;
                     //Debug.Log("Dequeued this message to send: " + msg + ", queueSize: " + count);
-                    await ws.SendAsync(msg, WebSocketMessageType.Text, true /* is last part of message */, CancellationToken.None);
+                    await ws.SendAsync(msg, WebSocketMessageType.Text, true , tokenSource.Token);
                 }
             }
         }
@@ -147,7 +149,7 @@ namespace MobiledgeX
                     msg = sendQueueBinary.Take();
                     long count = sendQueueBinary.Count;
                     //Debug.Log("Dequeued this message to send: " + msg + ", queueSize: " + count);
-                    await ws.SendAsync(msg, WebSocketMessageType.Binary, true /* is last part of message */, CancellationToken.None);
+                    await ws.SendAsync(msg, WebSocketMessageType.Binary, true ,tokenSource.Token);
                 }
             }
         }
@@ -164,7 +166,7 @@ namespace MobiledgeX
             {
                 do
                 {
-                    chunkResult = await ws.ReceiveAsync(arrayBuf, CancellationToken.None);
+                    chunkResult = await ws.ReceiveAsync(arrayBuf, tokenSource.Token);
                     ms.Write(arrayBuf.Array, arrayBuf.Offset, chunkResult.Count);
                     //Debug.Log("Size of Chunk message: " + chunkResult.Count);
                     if ((UInt64)(chunkResult.Count) > MAXREADSIZE)
@@ -238,11 +240,12 @@ namespace MobiledgeX
         public void Dispose()
         {
             run = false;
-            ws.Abort();
-            CancellationTokenSource tokenSource = new CancellationTokenSource();
-            CancellationToken token = tokenSource.Token;
-            ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Dispose", token).ConfigureAwait(false).GetAwaiter().GetResult();
-            ws = null;
+            if(ws != null)
+            {
+                ws.Abort();
+                ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Dispose", tokenSource.Token).ConfigureAwait(false).GetAwaiter().GetResult();
+                ws = null;
+            }
         }
     }
 }
