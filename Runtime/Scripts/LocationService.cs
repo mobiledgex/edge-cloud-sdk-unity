@@ -43,10 +43,10 @@ namespace MobiledgeX
 #else
                 yield break;
 #endif
-            }
+       }
 
-            // Start service before querying location
-            Input.location.Start();
+      // Start service before querying location
+      Input.location.Start();
 
       // Wait until service initializes
       while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
