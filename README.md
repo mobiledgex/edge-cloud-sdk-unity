@@ -85,12 +85,18 @@ Once that setup has been completed, you can very easily call all the necessary A
 using MobiledgeX;
 using DistributedMatchEngine;
 
-MobiledgeXIntegration integration = new MobiledgeXIntegration();
-await integration.RegisterAndFindCloudlet(); 
-AppPort appPort = integration.GetAppPort(DistributedMatchEngine.LProto.L_PROTO_HTTP);
-string url = integration.GetUrl("http");
-http.BaseAddress = new Uri(url);
-HttpResponseMessage message = await http.GetAsync("/"); //makes a get request
+[RequireComponent(typeof(MobiledgeX.LocationService))]
+public class YourClassName : MonoBehaviour
+{ 
+    async void Awake()
+    {
+        MobiledgeXIntegration integration = new MobiledgeXIntegration();
+        integration = new MobiledgeXIntegration();
+        await integration.RegisterAndFindCloudlet();
+        integration.GetAppPort(LProto.L_PROTO_HTTP); // Get the port of the desired protocol
+        string url = integration.GetUrl("http");  // Get the url of the desired protocol
+    }
+}
 ```
 
 ## Platform Specific
