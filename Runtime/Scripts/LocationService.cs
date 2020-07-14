@@ -33,11 +33,20 @@ namespace MobiledgeX
       if (!Input.location.isEnabledByUser)
       {
         Debug.Log("MobiledgeX: Location Service disabled by user.");
-        yield break;
-      }
+#if UNITY_IOS
+                //if isEnabledByUser is false and you start location updates anyway,
+                //the CoreLocation framework prompts the user with a confirmation panel
+                //asking whether location services should be reenabled.
+                //The user can enable or disable location services altogether from the Settings application
+                //by toggling the switch in Settings>General>LocationServices.
+                //https://docs.unity3d.com/ScriptReference/LocationService-isEnabledByUser.html
+#else
+                yield break;
+#endif
+            }
 
-      // Start service before querying location
-      Input.location.Start();
+            // Start service before querying location
+            Input.location.Start();
 
       // Wait until service initializes
       while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
@@ -76,7 +85,7 @@ namespace MobiledgeX
     {
       yield return StartCoroutine(InitalizeLocationService());
     }
-
+        
     public static void ensurePermissions()
     {
 #if PLATFORM_ANDROID
