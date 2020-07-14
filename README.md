@@ -88,7 +88,7 @@ using DistributedMatchEngine;
 [RequireComponent(typeof(MobiledgeX.LocationService))]
 public class YourClassName : MonoBehaviour
 { 
-    async void Awake()
+    async void Start()
     {
         MobiledgeXIntegration integration = new MobiledgeXIntegration();
         integration = new MobiledgeXIntegration();
