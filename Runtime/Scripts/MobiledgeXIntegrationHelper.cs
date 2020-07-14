@@ -69,7 +69,14 @@ namespace MobiledgeX
             Debug.Log("MobiledgeX: AppName: " + req.app_name);
             Debug.Log("MobiledgeX: AppVers: " + req.app_vers);
 
-            await UpdateLocationAndCarrierInfo();
+            try
+            {
+                await UpdateLocationAndCarrierInfo();
+            }
+            catch (CarrierInfoException cie)
+            {
+                throw new RegisterClientException(cie.Message);
+            }
 
             RegisterClientReply reply;
             try
@@ -109,7 +116,14 @@ namespace MobiledgeX
                 throw new FindCloudletException("Last RegisterClient was unsuccessful. Call RegisterClient again before FindCloudlet");
             }
 
-            await UpdateLocationAndCarrierInfo();
+            try
+            {
+                await UpdateLocationAndCarrierInfo();
+            }
+            catch (CarrierInfoException cie)
+            {
+                throw new FindCloudletException(cie.Message);
+            }
 
             FindCloudletRequest req = matchingEngine.CreateFindCloudletRequest(location, carrierName);
             FindCloudletReply reply;
@@ -189,7 +203,24 @@ namespace MobiledgeX
         /// <returns>bool</returns>
         public async Task<bool> IsRoaming()
         {
-            return await carrierInfoClass.IsRoaming(location.longitude, location.latitude);
+#if !UNITY_EDITOR
+            // 0,0 is fine in Unity Editor
+            if (location.longitude == 0 && location.latitude == 0)
+            {
+                Debug.LogError("Invalid location: (0,0). Please wait for valid location information before checking roaming status.");
+                throw CarrierInfoException("Invalid location: (0,0). Please wait for valid location information before checking roaming status.");
+            }
+#endif
+
+            try
+            {
+                return await carrierInfoClass.IsRoaming(location.longitude, location.latitude);
+            }
+            catch (CarrierInfoException cie)
+            {
+                Debug.LogError("Unable to get Roaming status. CarrierInfoException: " + cie.Message + ". Assuming device is not roaming");
+                return false;
+            }
         }
 #endif
 
