@@ -19,6 +19,7 @@ using UnityEngine;
 using DistributedMatchEngine;
 using UnityEngine.Android;
 using System.Collections;
+using System;
 
 namespace MobiledgeX
 {
@@ -27,7 +28,7 @@ namespace MobiledgeX
   public class LocationService : MonoBehaviour
   {
 
-    public static IEnumerator InitalizeLocationService(int maxWait = 20, bool continuousLocationService = true)
+    public static IEnumerator InitalizeLocationService(int maxWait = 20, bool continuousLocationService = false)
     {
       // First, check if user has location service enabled
       if (!Input.location.isEnabledByUser)
@@ -58,15 +59,13 @@ namespace MobiledgeX
       // Service didn't initialize in 20 seconds
       if (maxWait < 1)
       {
-        Debug.Log("MobiledgeX: InitalizingLocationService coroutine Timed out");
-        yield break;
+        throw new Exception("MobiledgeX: InitalizingLocationService coroutine Timed out");
       }
 
       // Connection has failed
       if (Input.location.status == LocationServiceStatus.Failed)
       {
-        Debug.Log("MobiledgeX: Location Service is unable to determine device location");
-        yield break;
+        throw new Exception("MobiledgeX: Location Service is unable to determine device location");
       }
       else
       {
@@ -81,11 +80,28 @@ namespace MobiledgeX
       }
     }
 
-    public IEnumerator Start()
+    public static IEnumerator AssureLocation()
     {
-      yield return StartCoroutine(InitalizeLocationService());
+         if (Input.location.status == LocationServiceStatus.Initializing)
+         {
+             yield return new WaitUntil(() => Input.location.status == LocationServiceStatus.Running);
+         }
+         if (Input.location.lastData.latitude  == 0 && Input.location.lastData.longitude == 0)
+         {
+#if UNITY_EDITOR
+          Debug.LogWarning("MobiledgeX: LocationService is disabled in UnityEditor.");
+#else
+          throw new Exception("MobiledgeX: LocationService request Failed, Location Permission is needed for connecting to Edge.");
+#endif
+         }
     }
-        
+
+    private void Awake()
+    {
+         ensurePermissions();
+         StartCoroutine(InitalizeLocationService());
+    }
+
     public static void ensurePermissions()
     {
 #if PLATFORM_ANDROID
