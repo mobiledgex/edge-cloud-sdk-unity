@@ -189,7 +189,15 @@ namespace MobiledgeX
         /// <returns>bool</returns>
         public async Task<bool> IsRoaming()
         {
-            return await carrierInfoClass.IsRoaming(location.longitude, location.latitude);
+            try
+            {
+                return await carrierInfoClass.IsRoaming(location.longitude, location.latitude);
+            }
+            catch (CarrierInfoException cie)
+            {
+                Debug.LogError("Unable to get Roaming status. CarrierInfoException: " + cie.Message + ". Assuming device is not roaming");
+                return false;
+            }
         }
 #endif
 
