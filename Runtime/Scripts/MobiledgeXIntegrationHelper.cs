@@ -203,11 +203,14 @@ namespace MobiledgeX
         /// <returns>bool</returns>
         public async Task<bool> IsRoaming()
         {
+#if !UNITY_EDITOR
+            // 0,0 is fine in Unity Editor
             if (location.longitude == 0 && location.latitude == 0)
             {
                 Debug.LogError("Invalid location: (0,0). Please wait for valid location information before checking roaming status.");
                 throw CarrierInfoException("Invalid location: (0,0). Please wait for valid location information before checking roaming status.");
             }
+#endif
 
             try
             {
