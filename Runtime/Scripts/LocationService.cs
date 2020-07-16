@@ -86,7 +86,7 @@ namespace MobiledgeX
 #endif
                 }
                 // Access granted and location value could be retrieved
-                Debug.Log("MobiledgeX: Location Service has location: " + Input.location.lastData.latitude + " " + Input.location.lastData.longitude + " " + Input.location.lastData.altitude + " " + Input.location.lastData.horizontalAccuracy + " " + Input.location.lastData.timestamp);
+                //Debug.Log("MobiledgeX: Location Service has location: " + Input.location.lastData.latitude + " " + Input.location.lastData.longitude + " " + Input.location.lastData.altitude + " " + Input.location.lastData.horizontalAccuracy + " " + Input.location.lastData.timestamp);
             }
 
             // Stop service if there is no need to query location updates continuously
@@ -104,9 +104,8 @@ namespace MobiledgeX
         public static IEnumerator EnsureLocation()
         {
 #if UNITY_EDITOR
-            Debug.LogWarning("MobiledgeX: LocationService is disabled in UnityEditor.");
             yield return null;
-#endif
+#else
             if (Input.location.status == LocationServiceStatus.Initializing)
             {
                 yield return new WaitUntil(() => (Input.location.status == LocationServiceStatus.Running));
@@ -115,6 +114,7 @@ namespace MobiledgeX
             {
                 yield return new WaitUntil(() => (Input.location.lastData.latitude != 0 && Input.location.lastData.longitude != 0) || locationPermissionRejected == true);
             }
+#endif
         }
 
         public IEnumerator LocationServiceFlow()
