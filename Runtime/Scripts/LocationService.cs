@@ -19,122 +19,169 @@ using UnityEngine;
 using DistributedMatchEngine;
 using UnityEngine.Android;
 using System.Collections;
+using System;
 
 namespace MobiledgeX
 {
 
-  // Unity Location Service, based on the documentation example:
-  public class LocationService : MonoBehaviour
-  {
-
-    public static IEnumerator InitalizeLocationService(int maxWait = 20, bool continuousLocationService = true)
+    // Unity Location Service, based on the documentation example:
+    public class LocationService : MonoBehaviour
     {
-      // First, check if user has location service enabled
-      if (!Input.location.isEnabledByUser)
-      {
-        Debug.Log("MobiledgeX: Location Service disabled by user.");
-        yield break;
-      }
+        private static bool locationPermissionRejected = false;
 
-      // Start service before querying location
-      Input.location.Start();
+        void Awake()
+        {
+            StartCoroutine(LocationServiceFlow());
+        }
 
-      // Wait until service initializes
-      while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
-      {
-        yield return new WaitForSeconds(1);
-        maxWait--;
-      }
+        public static IEnumerator InitalizeLocationService(int maxWait = 20, bool continuousLocationService = false)
+        {
+            // First, check if user has location service enabled
+            if (!Input.location.isEnabledByUser)
+            {
 
-      // Service didn't initialize in 20 seconds
-      if (maxWait < 1)
-      {
-        Debug.Log("MobiledgeX: InitalizingLocationService coroutine Timed out");
-        yield break;
-      }
-
-      // Connection has failed
-      if (Input.location.status == LocationServiceStatus.Failed)
-      {
-        Debug.Log("MobiledgeX: Location Service is unable to determine device location");
-        yield break;
-      }
-      else
-      {
-        // Access granted and location value could be retrieved
-        Debug.Log("MobiledgeX: Location Service has location: " + Input.location.lastData.latitude + " " + Input.location.lastData.longitude + " " + Input.location.lastData.altitude + " " + Input.location.lastData.horizontalAccuracy + " " + Input.location.lastData.timestamp);
-      }
-
-      // Stop service if there is no need to query location updates continuously
-      if (!continuousLocationService)
-      {
-        Input.location.Stop();
-      }
-    }
-
-    public IEnumerator Start()
-    {
-      yield return StartCoroutine(InitalizeLocationService());
-    }
-
-    public static void ensurePermissions()
-    {
-#if PLATFORM_ANDROID
-      if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
-      {
-        Permission.RequestUserPermission(Permission.FineLocation);
-      }
+#if UNITY_IOS
+                //if isEnabledByUser is false and you start location updates anyway,
+                //the CoreLocation framework prompts the user with a confirmation panel
+                //asking whether location services should be reenabled.
+                //The user can enable or disable location services altogether from the Settings application
+                //by toggling the switch in Settings>General>LocationServices.
+                //https://docs.unity3d.com/ScriptReference/LocationService-isEnabledByUser.html
+#elif UNITY_EDITOR
+                Debug.LogWarning("MobiledgeX: Location Service disabled in UnityEditor");
+#else
+                throw new Exception("MobiledgeX: Location Service disabled by user."); // 
 #endif
+            }
+
+            // Start service before querying location
+            Input.location.Start();
+
+            // Wait until service initializes
+            while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
+            {
+                yield return new WaitForSeconds(1);
+                maxWait--;
+            }
+
+            // Service didn't initialize in 20 seconds
+            if (maxWait < 1)
+            {
+                throw new Exception("MobiledgeX: InitalizingLocationService coroutine Timed out");
+            }
+
+            // Connection has failed
+            if (Input.location.status == LocationServiceStatus.Failed)
+            {
+                throw new Exception("MobiledgeX: Location Service is unable to determine device location");
+            }
+            else
+            {
+                if (Input.location.lastData.latitude == 0 && Input.location.lastData.longitude == 0)
+                {
+#if UNITY_EDITOR
+                    Debug.LogWarning("MobiledgeX: Location Service disabled in UnityEditor");
+#else
+                    throw new Exception("MobiledgeX: Location Service disabled by user.");
+#endif
+                }
+                // Access granted and location value could be retrieved
+                //Debug.Log("MobiledgeX: Location Service has location: " + Input.location.lastData.latitude + " " + Input.location.lastData.longitude + " " + Input.location.lastData.altitude + " " + Input.location.lastData.horizontalAccuracy + " " + Input.location.lastData.timestamp);
+            }
+
+            // Stop service if there is no need to query location updates continuously
+            if (!continuousLocationService)
+            {
+                Input.location.Stop();
+            }
+        }
+
+        /// <summary>
+        /// EnsureLocation Confirm that user location is valid, user location is essential for MobiledgeX services
+        /// If Location permission is denied by User an exception will be thrown (for Android) in LocationServiceFlow()
+        ///                                                                      (for iOS) in InitalizeLocationService()
+        /// </summary>
+        public static IEnumerator EnsureLocation()
+        {
+#if UNITY_EDITOR
+            yield return null;
+#else
+            if (Input.location.status == LocationServiceStatus.Initializing)
+            {
+                yield return new WaitUntil(() => (Input.location.status == LocationServiceStatus.Running));
+            }
+            else
+            {
+                yield return new WaitUntil(() => (Input.location.lastData.latitude != 0 && Input.location.lastData.longitude != 0) || locationPermissionRejected == true);
+            }
+#endif
+        }
+
+        public IEnumerator LocationServiceFlow()
+        {
+            if (Application.platform == RuntimePlatform.Android)
+            {
+                if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
+                {
+                    Permission.RequestUserPermission(Permission.FineLocation);
+                    yield return new WaitForEndOfFrame(); // Application Out of focus , waiting for user decision on Location Permission
+                    if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
+                    {
+                        locationPermissionRejected = true;
+                        throw new Exception("MobiledgeX: Location Permission denied by user!");
+                    }
+                    else
+                    {
+                        yield return StartCoroutine(InitalizeLocationService());
+                    }
+                }
+                else
+                {
+                    yield return StartCoroutine(InitalizeLocationService());
+                }
+            }
+            else //iOS - Permission Request are enabled once the application request location info
+            {
+                yield return StartCoroutine(InitalizeLocationService());
+            }
+        }
+
+        // Retrieve the lastest location, without restarting locationService.
+        public static Loc RetrieveLocation()
+        {
+            LocationInfo locationInfo = Input.location.lastData;
+            Debug.Log("Location Info: [" + locationInfo.longitude + "," + locationInfo.latitude + "]");
+            return ConvertUnityLocationToDMELoc(locationInfo);
+        }
+
+        public static Timestamp ConvertTimestamp(double timeInSeconds)
+        {
+            Timestamp ts;
+            int nanos;
+            long sec = (long)(timeInSeconds); // Truncate.
+            double remainder = timeInSeconds - (double)sec;
+            nanos = (int)(remainder * 1e9);
+            ts = new Timestamp { seconds = sec.ToString(), nanos = nanos };
+            return ts;
+        }
+
+        public static Loc ConvertUnityLocationToDMELoc(LocationInfo info)
+        {
+            Timestamp ts = ConvertTimestamp(info.timestamp);
+
+            Loc loc = new Loc
+            {
+                latitude = info.latitude,
+                longitude = info.longitude,
+                horizontal_accuracy = info.horizontalAccuracy,
+                vertical_accuracy = info.verticalAccuracy,
+                altitude = info.altitude,
+                course = 0f,
+                speed = 0f,
+                timestamp = ts
+            };
+
+            return loc;
+        }
     }
-
-    public void OnApplicationFocus(bool hasFocus)
-    {
-      if (hasFocus)
-      {
-        ensurePermissions();
-      }
-    }
-
-    // Retrieve the lastest location, without restarting locationService.
-    public static Loc RetrieveLocation()
-    {
-      if (Input.location.status != LocationServiceStatus.Running)
-      {
-        Debug.LogWarning("MobiledgeX: Location Status must be in running state to get a valid location! Current Status: " + Input.location.status);
-      }
-      LocationInfo locationInfo = Input.location.lastData;
-      Debug.Log("Location Info: [" + locationInfo.longitude + "," + locationInfo.latitude + "]");
-      return ConvertUnityLocationToDMELoc(locationInfo);
-    }
-
-    public static Timestamp ConvertTimestamp(double timeInSeconds)
-    {
-      Timestamp ts;
-      int nanos;
-      long sec = (long)(timeInSeconds); // Truncate.
-      double remainder = timeInSeconds - (double)sec;
-      nanos = (int)(remainder * 1e9);
-      ts = new Timestamp { seconds = sec.ToString(), nanos = nanos };
-      return ts;
-    }
-
-    public static Loc ConvertUnityLocationToDMELoc(LocationInfo info)
-    {
-      Timestamp ts = ConvertTimestamp(info.timestamp);
-
-      Loc loc = new Loc
-      {
-        latitude = info.latitude,
-        longitude = info.longitude,
-        horizontal_accuracy = info.horizontalAccuracy,
-        vertical_accuracy = info.verticalAccuracy,
-        altitude = info.altitude,
-        course = 0f,
-        speed = 0f,
-        timestamp = ts
-      };
-
-      return loc;
-    }
-  }
 }

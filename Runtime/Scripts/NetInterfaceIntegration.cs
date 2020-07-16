@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-using UnityEngine;
 using DistributedMatchEngine;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
@@ -62,7 +61,6 @@ namespace MobiledgeX
       string ipAddress = null;
       string ipAddressV4 = null;
       string ipAddressV6 = null;
-      Debug.Log("Looking for: " + sourceNetInterfaceName);
 
       foreach (NetworkInterface iface in netInterfaces)
       {
