@@ -208,7 +208,7 @@ namespace MobiledgeX
             if (location.longitude == 0 && location.latitude == 0)
             {
                 Debug.LogError("Invalid location: (0,0). Please wait for valid location information before checking roaming status.");
-                throw CarrierInfoException("Invalid location: (0,0). Please wait for valid location information before checking roaming status.");
+                throw new CarrierInfoException("Invalid location: (0,0). Please wait for valid location information before checking roaming status.");
             }
 #endif
 
