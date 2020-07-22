@@ -125,7 +125,7 @@ namespace MobiledgeX
                 throw new FindCloudletException(cie.Message);
             }
 
-            FindCloudletRequest req = matchingEngine.CreateFindCloudletRequest(location, carrierName);
+            FindCloudletRequest req = matchingEngine.CreateFindCloudletRequest(location, "");
             FindCloudletReply reply;
             try
             {
