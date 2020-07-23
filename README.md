@@ -90,9 +90,9 @@ Once that setup has been completed, you can very easily call all the necessary A
 
 **Getting Edge Connection Url**
 
-MobiledgeX SDK uses the device Location and [the device MCC-MNC code](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine) to connect you to the closest Edge cloudlet were you application instance is deployed.
+MobiledgeX SDK uses the device Location and [the device's MCC-MNC ID (if avaliable)](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine) to connect you to the closest Edge cloudlet where you application instance is deployed.
 
-If your carrier is not supported yet by MobiledgeX it will throw a DmeDnsException and it will connect you to  [wifi.dme](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine) which will connect you to the closest [regional DME](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine).
+If your carrier is not supported yet by MobiledgeX the SDK will throw a DmeDnsException. You can catch this exception and instead use WifiOnly(true) to connect to [the wifi dme](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine) which will connect you to the closest [regional DME](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine).
 
 ```csharp
 using MobiledgeX;
@@ -128,7 +128,7 @@ public class YourClassName : MonoBehaviour
 }
 ```
 
-If your device doesn't have MCC-MNC code (no sim card - for ex. Oculus device), Please use UseWifiOnly before RegisterAndFindCloudlet.
+If your device doesn't have MCC-MNC ID (no sim card - for ex. Oculus device), Please use UseWifiOnly before RegisterAndFindCloudlet.
 
 ```csharp
 use mxi.UseWifiOnly(true); 
@@ -141,7 +141,7 @@ await mxi.RegisterAndFindCloudlet();
 
 **In UnityEditor** 
 
-While developing in Unity Editor (Location is not used),The fallback location by default is San Jose,CA.
+While developing in Unity Editor (Location is not used), The fallback location by default is San Jose,CA.
 
 If you wish to change the fallback Location, use SetFallbackLocation() before you call RegisterAndFindCloudlet().
 
@@ -150,7 +150,7 @@ If you wish to change the fallback Location, use SetFallbackLocation() before yo
  await mxi.RegisterAndFindCloudlet();
 ```
 
-By default in Unity Editor you will be Wifi Mode which will connect you to wifi.dme.
+By default in Unity Editor you will connect with the Wifi DME, which is specified using the TestCarrierInfoClass in the CarrierInfoIntegration script.
 
 
 
