@@ -92,7 +92,7 @@ Once that setup has been completed, you can very easily call all the necessary A
 
 MobiledgeX SDK uses the device Location and [the device MCC-MNC code](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine) to connect you to the closest Edge cloudlet were you application instance is deployed.
 
-If you carrier is not supported yet by MobiledgeX it will throw a DmeDnsException and it will connect you to  [wifi.dme](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine) which will connect you to the closest [regional DME](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine).
+If your carrier is not supported yet by MobiledgeX it will throw a DmeDnsException and it will connect you to  [wifi.dme](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine) which will connect you to the closest [regional DME](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine).
 
 ```csharp
 using MobiledgeX;
