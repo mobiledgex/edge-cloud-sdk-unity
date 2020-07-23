@@ -23,7 +23,7 @@ The fastest way to import the MobiledgeX Unity SDK into your project is by using
 
 Enter [https://github.com/mobiledgex/edge-cloud-sdk-unity.git](https://github.com/mobiledgex/edge-cloud-sdk-unity.git) in the text field, which will automatically start the process of importing the package into your application. 
 
-Once that finishes, you will now see the MobiledgeX SDK within your Package Manager and the SDK will be available under the Packages tab of your Project. 
+Once that completes, you will see the MobiledgeX SDK within your Package Manager and the SDK will be available under the Packages tab of your Project. 
 
 ![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-package.png)
 
@@ -66,14 +66,14 @@ Once you have successfully imported the Unity package, you will see a new tab as
 
 ![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-menu.png)
 
-Click on **Setup**, which will open up a new Unity window that will ask for your application's
+Click **Setup**, which will open a new Unity window asking you for your application's
 * organization name
 * app name
 * app version number 
 
 ![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-unity-window.png)
 
-After you input your application credentials, you can click the setup button, which will communicate with the DME to verify that your application definition exists on the MobiledgeX console. If successful, your project will be set up with the correct plugins and resources necessary to use our APIs. You can verify these files were generated correctly by looking in the Plugins and Resources folders of your project. 
+After you provide your application credentials, click the setup button, which will communicate with the DME to verify that your application definition exists on the MobiledgeX console. If successful, your project will be set up with the correct plugins and resources necessary to use our APIs. You can verify if these files were generated correctly by looking in the Plugins and Resources folders of your project. 
 
 ![](https://developers.mobiledgex.com/assets/unity-sdk/generated-plugins.png)
 
