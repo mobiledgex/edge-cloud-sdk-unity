@@ -12,4 +12,4 @@ All notable changes to this package will be documented in this file.
 - MobiledgeXWebsocketClient now sends Binary & Text
 
 ### MobiledgeX Settings 
-- Added an optional auhentication token field to the MobiledgeXSettings asset. 
+- Added an optional authentication token field to the MobiledgeXSettings asset. 
