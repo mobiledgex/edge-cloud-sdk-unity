@@ -141,7 +141,7 @@ await mxi.RegisterAndFindCloudlet();
 
 **In UnityEditor** 
 
-While developing in Unity Editor (Location is not used), The fallback location by default is San Jose,CA.
+While developing in Unity Editor (Location is not used), The fallback location by default is San Jose, CA.
 
 If you wish to change the fallback Location, use SetFallbackLocation() before you call RegisterAndFindCloudlet().
 
