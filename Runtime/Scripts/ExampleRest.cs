@@ -33,7 +33,7 @@ using System;
             }
             mxi.GetAppPort(LProto.L_PROTO_HTTP);
             string url = mxi.GetUrl("http");
-            Debug.Log("Rest URL is : " + url); // Once you have your edge server url you can start communicating with your Edge sever deployed on MobiledgeX Console
+            Debug.Log("Rest URL is : " + url); // Once you have your edge server url you can start communicating with your Edge server deployed on MobiledgeX Console
 
             StartCoroutine(RestExample(url)); //using UnityWebRequest
             //await RestExampleHttpClient(url); // You can instead use HttpClient
