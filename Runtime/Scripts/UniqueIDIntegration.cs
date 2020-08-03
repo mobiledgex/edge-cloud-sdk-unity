@@ -16,6 +16,8 @@
  */
 
 using System;
+using System.Security.Cryptography;
+using System.Text;
 using UnityEngine;
 using System.Runtime.InteropServices; //for importing IOS functions
 using DistributedMatchEngine;
@@ -95,8 +97,14 @@ namespace MobiledgeX
       parameters[0] = contentResolver;
       parameters[1] = androidID;
 
-      string uuid = PlatformIntegrationUtil.CallStatic<string>(secureClass, "getString", parameters);
-      return uuid;
+      string aid = PlatformIntegrationUtil.CallStatic<string>(secureClass, "getString", parameters);
+
+      if (aid != null) {
+        string hashedAdId = HexUtil.HexStringSha512(aid);
+        Debug.Log("Hashed ID (if any): " + hashedAdId);
+        return hashedAdId;
+      }
+      return aid;
     }
 
 #elif UNITY_IOS
