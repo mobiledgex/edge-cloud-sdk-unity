@@ -245,7 +245,9 @@ char* _getUniqueID()
 
 char* _getUniqueIDType()
 {
-    return convertToCStr("");
+    UIDevice* device = UIDevice.currentDevice;
+    NSString *aid = device.model;
+    return convertToCStr([aid UTF8String]);
 }
 
 void _convertGPSToISOCountryCode(double longitude, double latitude)
