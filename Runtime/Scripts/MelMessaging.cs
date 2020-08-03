@@ -110,6 +110,13 @@ public class MelMessaging : MelMessagingInterface
      string manufacturer = PlatformIntegrationUtil.GetStatic<string>(BuildCls, "MANUFACTURER");
      return manufacturer;
   }
+#elif UNITY_IOS
+  public MelMessaging(string app_name) { }
+  public bool IsMelEnabled() { return false; }
+  public string GetMelVersion() { return ""; }
+  public string SetToken(string token, string app_name) { return ""; }
+  public string GetUid() { return ""; }
+  public string GetManufacturer() { return "Apple"; }
 #else
   public MelMessaging(string app_name) { }
   public bool IsMelEnabled() { return false; }

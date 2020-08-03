@@ -16,12 +16,29 @@
  */
 
 using System;
+using System.Security.Cryptography;
+using System.Text;
 using UnityEngine;
 using System.Runtime.InteropServices; //for importing IOS functions
 using DistributedMatchEngine;
 
 namespace MobiledgeX
 {
+  public static class HexUtil
+  {
+    static public string HexStringSha512(string data)
+    {
+      SHA512 shaM = new SHA512Managed();
+      var hashedBytes = shaM.ComputeHash(Encoding.ASCII.GetBytes(data));
+      StringBuilder sb = new StringBuilder();
+      foreach (byte b in hashedBytes)
+      {
+        sb.AppendFormat("{0:x2}", b);
+      }
+      return sb.ToString();
+    }
+  }
+
   public class UniqueIDClass : UniqueID
   {
 
@@ -80,8 +97,14 @@ namespace MobiledgeX
       parameters[0] = contentResolver;
       parameters[1] = androidID;
 
-      string uuid = PlatformIntegrationUtil.CallStatic<string>(secureClass, "getString", parameters);
-      return uuid;
+      string aid = PlatformIntegrationUtil.CallStatic<string>(secureClass, "getString", parameters);
+
+      if (aid != null) {
+        string hashedAdId = HexUtil.HexStringSha512(aid);
+        Debug.Log("Hashed ID (if any): " + hashedAdId);
+        return hashedAdId;
+      }
+      return aid;
     }
 
 #elif UNITY_IOS
@@ -104,12 +127,14 @@ namespace MobiledgeX
 
     public string GetUniqueID()
     {
-      string uniqueID = null;
-      if (Application.platform == RuntimePlatform.IPhonePlayer)
-      {
-        uniqueID = _getUniqueID();
+      // Directly retrieve on IOS. The Unity UI Thread Agent isn't needed.
+      string adId = UnityEngine.iOS.Device.advertisingIdentifier;
+      if (adId != null) {
+        string hashedAdId = HexUtil.HexStringSha512(adId);
+        Debug.Log("Hashed Advertising ID (if any): " + hashedAdId);
+        return hashedAdId;
       }
-      return uniqueID;
+      return adId;
     }
 #else
 
