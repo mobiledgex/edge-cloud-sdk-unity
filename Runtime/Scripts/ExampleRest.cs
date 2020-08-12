@@ -26,8 +26,9 @@ using System;
             {
                 await mxi.RegisterAndFindCloudlet();
             }
-            catch (DmeDnsException)
+            catch (DmeDnsException dde)
             {
+                Debug.Log("Dme dns Exception: " + dde.Message);
                 mxi.UseWifiOnly(true);
                 await mxi.RegisterAndFindCloudlet();
             }
