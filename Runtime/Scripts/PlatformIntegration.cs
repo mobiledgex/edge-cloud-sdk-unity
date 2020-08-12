@@ -49,6 +49,16 @@ namespace MobiledgeX
           CarrierInfo = new TestCarrierInfoClass();
           UniqueID = new TestUniqueIDClass();
           break;
+        case RuntimePlatform.LinuxPlayer: case RuntimePlatform.LinuxEditor:
+          NetworkInterfaceName = new LinuxNetworkInterfaceName();
+          CarrierInfo = new TestCarrierInfoClass();
+          UniqueID = new TestUniqueIDClass();
+          break;
+        case RuntimePlatform.WindowsPlayer: case RuntimePlatform.WindowsEditor:
+          NetworkInterfaceName = new Windows10NetworkInterfaceName();
+          CarrierInfo = new TestCarrierInfoClass();
+          UniqueID = new TestUniqueIDClass();
+          break;
         default:
           CarrierInfo = new CarrierInfoClass();
           UniqueID = new UniqueIDClass();
