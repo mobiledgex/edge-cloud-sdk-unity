@@ -292,7 +292,7 @@ namespace MobiledgeX
                 appPort = latestAppPort;
             }
 
-            return matchingEngine.CreateUrl(latestFindCloudletReply, appPort, port, l7Proto, path);
+            return matchingEngine.CreateUrl(latestFindCloudletReply, appPort, l7Proto, port, path);
         }
 
         /// <summary>
