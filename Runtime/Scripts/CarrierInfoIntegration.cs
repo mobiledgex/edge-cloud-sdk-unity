@@ -17,15 +17,27 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Android;
 using DistributedMatchEngine;
-
-// We need this one for importing our IOS functions
-using System.Runtime.InteropServices;
+using System.Runtime.InteropServices; //for importing IOS functionS
 
 namespace MobiledgeX
 {
+  public class CarrierInfoException : Exception
+  {
+    public CarrierInfoException(string message)
+    : base(message)
+    {
+    }
+
+    public CarrierInfoException(string message, Exception innerException)
+    : base(message, innerException)
+    {
+    }
+  }
+
   public class CarrierInfoClass : CarrierInfo
   {
 
@@ -344,6 +356,13 @@ namespace MobiledgeX
 
     public ulong GetCellID()
     {
+      /*
+       * The following code is commented out to prevent Android JNI blacklist crashes.
+       * As of Android API 28, CellInfo interfaces and class reflection through JNI are not allowed.
+       * (https://developer.android.com/distribute/best-practices/develop/restrictions-non-sdk-interfaces)
+       * The following code can be used with older Android API versions.
+       */
+       
       /*ulong cellID = 0;
 
       List<KeyValuePair<String, ulong>> cellInfoList = GetCellInfoList();
@@ -375,6 +394,15 @@ namespace MobiledgeX
     [DllImport("__Internal")]
     private static extern int _getCellID();
 
+    [DllImport("__Internal")]
+    private static extern string _getISOCountryCodeFromGPS();
+
+    [DllImport("__Internal")]
+    private static extern void _convertGPSToISOCountryCode(double longitude, double latitude);
+
+    [DllImport("__Internal")]
+    private static extern string _getISOCountryCodeFromCarrier();
+
     public string GetCurrentCarrierName()
     {
       string networkOperatorName = "";
@@ -403,6 +431,81 @@ namespace MobiledgeX
         cellID = _getCellID();
       }
       return (ulong)cellID;
+    }
+
+    public async Task<bool> IsRoaming(double longitude, double latitude)
+    {
+      if (Application.platform == RuntimePlatform.IPhonePlayer)
+      {  
+        Task<string> task = ConvertGPSToISOCountryCode(longitude, latitude);
+        string isoCCFromGPS = null;
+        if (await Task.WhenAny(task, Task.Delay(5000)) == task)
+        {
+          isoCCFromGPS = await task; 
+        }
+        else
+        {
+          // Timeout
+          throw new CarrierInfoException("Timeout: unable to get ISO country code from gps");
+        }
+        if (isoCCFromGPS == null)
+        {
+          Debug.LogError("Unable to get ISO country code from gps");
+          throw new CarrierInfoException("Unable to get ISO country code from gps");
+        }
+        Debug.Log("ISO country code from gps location is " + isoCCFromGPS);
+
+        string isoCCFromCarrier = GetISOCountryCodeFromCarrier();
+        if (isoCCFromCarrier == null)
+        {
+          Debug.LogError("Unable to get ISO country code from carrier");
+          throw new CarrierInfoException("Unable to get ISO country code from carrier");
+        }
+        Debug.Log("ISO country code from carrier is " + isoCCFromCarrier);
+
+        return isoCCFromGPS != isoCCFromCarrier;
+      }
+
+      // If in UnityEditor, return not roaming
+      return false;
+    }
+
+    private async Task<string> ConvertGPSToISOCountryCode(double longitude, double latitude)
+    {
+      if (Application.platform == RuntimePlatform.IPhonePlayer)
+      {
+        _convertGPSToISOCountryCode(longitude, latitude);
+        return await Task.Run(() => {
+          string isoCC = "";
+          while(isoCC == "" || isoCC == null)
+          {
+            isoCC = GetISOCountryCodeFromGPS();
+          }
+          return isoCC;
+         }).ConfigureAwait(false);
+      }
+
+      return null;
+    }  
+
+    private string GetISOCountryCodeFromGPS()
+    {
+      string isoCC = null;
+      if (Application.platform == RuntimePlatform.IPhonePlayer)
+      {
+        isoCC = _getISOCountryCodeFromGPS();
+      }
+      return isoCC;
+    }
+
+    private string GetISOCountryCodeFromCarrier()
+    {
+      string isoCC = null;
+      if (Application.platform == RuntimePlatform.IPhonePlayer)
+      {
+        isoCC = _getISOCountryCodeFromCarrier();
+      }
+      return isoCC;
     }
 
 #else

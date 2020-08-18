@@ -19,6 +19,7 @@ using System;
 using UnityEngine;
 using DistributedMatchEngine;
 using System.Threading.Tasks;
+using System.Net.Sockets;
 
 /*
 * Helper functions, private functions, and exceptions used to implement MobiledgeXIntegration wrapper functions
@@ -64,9 +65,18 @@ namespace MobiledgeX
 
             RegisterClientRequest req = matchingEngine.CreateRegisterClientRequest(orgName, appName, appVers, developerAuthToken.Length > 0 ? developerAuthToken : null);
 
-            Debug.Log("OrgName: " + req.org_name);
-            Debug.Log("AppName: " + req.app_name);
-            Debug.Log("AppVers: " + req.app_vers);
+            Debug.Log("MobiledgeX: OrgName: " + req.org_name);
+            Debug.Log("MobiledgeX: AppName: " + req.app_name);
+            Debug.Log("MobiledgeX: AppVers: " + req.app_vers);
+
+            try
+            {
+                await UpdateLocationAndCarrierInfo();
+            }
+            catch (CarrierInfoException cie)
+            {
+                throw new RegisterClientException(cie.Message);
+            }
 
             RegisterClientReply reply;
             try
@@ -102,14 +112,20 @@ namespace MobiledgeX
 
             if (!latestRegisterStatus)
             {
-                Debug.LogError("Last RegisterClient was unsuccessful. FindCloudlet requires a succesful RegisterClient");
+                Debug.LogError("MobiledgeX: Last RegisterClient was unsuccessful. FindCloudlet requires a succesful RegisterClient");
                 throw new FindCloudletException("Last RegisterClient was unsuccessful. Call RegisterClient again before FindCloudlet");
             }
 
-            location = GetLocationFromDevice();
-            UpdateCarrierName();
+            try
+            {
+                await UpdateLocationAndCarrierInfo();
+            }
+            catch (CarrierInfoException cie)
+            {
+                throw new FindCloudletException(cie.Message);
+            }
 
-            FindCloudletRequest req = matchingEngine.CreateFindCloudletRequest(location, carrierName);
+            FindCloudletRequest req = matchingEngine.CreateFindCloudletRequest(location, "");
             FindCloudletReply reply;
             try
             {
@@ -119,7 +135,6 @@ namespace MobiledgeX
             {
                 throw new FindCloudletException("FindCloudlet Exception: " + httpe.Message + ", HTTP StatusCode: " + httpe.HttpStatusCode + ", API ErrorCode: " + httpe.ErrorCode + "\nStack: " + httpe.StackTrace);
             }
-
 
             if (reply == null)
             {
@@ -138,26 +153,38 @@ namespace MobiledgeX
         /// <summary>
         /// Gets the location from the cellular device, Location is needed for Finding Cloudlet and Location Verification
         /// </summary>
-        /// <returns>Loc</returns>
-        private Loc GetLocationFromDevice()
+        private async Task UpdateLocationAndCarrierInfo()
+        {
+            UpdateLocationFromDevice();
+#if UNITY_IOS
+            bool isRoaming = await IsRoaming();
+            if (isRoaming) {
+                UseWifiOnly(true);
+                Debug.Log("IOS Device is roaming. Unable to get current network information from IOS device. Switching to wifi mode");
+            }
+#endif
+            UpdateCarrierName();
+        }
+
+        /// <summary>
+        /// Updates the location from the cellular device, Location is needed for Finding Cloudlet and Location Verification
+        /// </summary>
+        private void UpdateLocationFromDevice()
         {
             // Location is ephemeral, so retrieve a new location from the platform. May return 0,0 which is
             // technically valid, though less likely real, as of writing.
-            Loc loc = new Loc();
 
 #if UNITY_EDITOR
             Debug.Log("MobiledgeX: Cannot Get location in Unity Editor. Returning fallback location. Developer can configure fallback location with SetFallbackLocation");
-            loc.longitude = fallbackLocation.Longitude;
-            loc.latitude = fallbackLocation.Latitude;
-            return loc;
+            location.longitude = fallbackLocation.Longitude;
+            location.latitude = fallbackLocation.Latitude;
 #else
-            loc = LocationService.RetrieveLocation();
+            location = LocationService.RetrieveLocation();
             // 0f and 0f are hard zeros if no location service.
-            if (loc.longitude == 0f && loc.latitude == 0f)
+            if (location.longitude == 0f && location.latitude == 0f)
             {
                 Debug.LogError("LocationServices returned a location at (0,0)");
             }
-            return loc;               
 #endif        
         }
 
@@ -167,6 +194,57 @@ namespace MobiledgeX
         private void UpdateCarrierName()
         {
             carrierName = matchingEngine.GetCarrierName();
+        }
+
+#if UNITY_IOS
+        /// <summary>
+        /// Function for IOS that checks if device is in different country from carrier network
+        /// </summary>
+        /// <returns>bool</returns>
+        public async Task<bool> IsRoaming()
+        {
+#if !UNITY_EDITOR
+            // 0,0 is fine in Unity Editor
+            if (location.longitude == 0 && location.latitude == 0)
+            {
+                Debug.LogError("Invalid location: (0,0). Please wait for valid location information before checking roaming status.");
+                throw new CarrierInfoException("Invalid location: (0,0). Please wait for valid location information before checking roaming status.");
+            }
+#endif
+
+            try
+            {
+                return await carrierInfoClass.IsRoaming(location.longitude, location.latitude);
+            }
+            catch (CarrierInfoException cie)
+            {
+                Debug.LogError("Unable to get Roaming status. CarrierInfoException: " + cie.Message + ". Assuming device is not roaming");
+                return false;
+            }
+        }
+#endif
+
+        /// <summary>
+        /// Checks whether the default netowrk data path Edge is Enabled on the device or not, Edge requires connections to run over cellular interface.
+        /// This status is independent of the UseWiFiOnly setting.
+        /// </summary>
+        /// <returns>bool</returns>
+        public bool IsNetworkDataPathEdgeEnabled() {
+            string wifiIpV4 = null;
+            string wifiIpV6 = null;
+
+            if (matchingEngine.netInterface.HasWifi())
+            {
+                string wifi = matchingEngine.GetAvailableWiFiName(matchingEngine.netInterface.GetNetworkInterfaceName());
+                wifiIpV6 = matchingEngine.netInterface.GetIPAddress(wifi, AddressFamily.InterNetwork);
+                wifiIpV4 = matchingEngine.netInterface.GetIPAddress(wifi, AddressFamily.InterNetworkV6);
+            }
+
+            // HasCellular() is best effort due to variable network names and queriable status.
+            if (matchingEngine.netInterface.HasCellular() && wifiIpV4 == null && wifiIpV6 == null) {
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -182,7 +260,7 @@ namespace MobiledgeX
                 Debug.Log("MobiledgeX: useWifiOnly must be false in production. useWifiOnly can be used only for testing");
                 return true;
 #else
-                Debug.Log("useOnlyWifi must be false to enable edge connection");
+                Debug.Log("MobiledgeX: useOnlyWifi must be false to enable edge connection");
                 return false;
 #endif
             }
@@ -201,15 +279,16 @@ namespace MobiledgeX
                 // We need to make sure wifi is off
                 if (!matchingEngine.netInterface.HasCellular() || matchingEngine.netInterface.HasWifi())
                 {
-                    Debug.Log(proto + " connection requires the cellular interface to be up and the wifi interface to be off to run connection over edge.");
+                    Debug.Log("MobiledgeX: " + proto + " connection requires the cellular interface to be up and the wifi interface to be off to run connection over edge.");
                     return false;
                 }
             }
 
-            string cellularIPAddress = matchingEngine.netInterface.GetIPAddress(matchingEngine.netInterface.GetNetworkInterfaceName().CELLULAR);
+            string cellularIPAddress = matchingEngine.netInterface.GetIPAddress(
+                    matchingEngine.GetAvailableCellularName(matchingEngine.netInterface.GetNetworkInterfaceName()));
             if (cellularIPAddress == null)
             {
-                Debug.Log("Unable to find ip address for local cellular interface.");
+                Debug.Log("MobiledgeX: Unable to find ip address for local cellular interface.");
                 return false;
             }
 

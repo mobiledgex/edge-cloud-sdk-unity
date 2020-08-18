@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
@@ -11,7 +11,6 @@ using DistributedMatchEngine;
 using System.Threading;
 using System.Collections.Concurrent;
 using System.Text;
-
 namespace MobiledgeX
 {
     public class MobiledgeX_RuntimeTests
@@ -23,7 +22,7 @@ namespace MobiledgeX
         Loc testLocation;
 
         [OneTimeSetUp]
-        public void SetupEditorWindow()
+        public void MobiledgeXEnvironmentSetup()
         {
             if (!File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/iOS/PlatformIntegration.m")) &&
             !File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/link.xml")) &&
@@ -35,7 +34,6 @@ namespace MobiledgeX
             }
             else
             {
-                // settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
                 integration = new MobiledgeXIntegration();
                 testLocation = new Loc
                 {
@@ -94,31 +92,32 @@ namespace MobiledgeX
 
         [Test]
         [TestCase("MobiledgeX", "MobiledgeX SDK Demo", "2.0")]
-        public void VerifyLocation(string orgName, string appName, string appVers)
-        {
-            var task = Task.Run(async () =>
-            {
-                bool registered = await RegisterHelper();
-                Assert.True(registered, "Unable to register");
-                return await VerifyLocationHelper();
-            });
-
-            Assert.True(task.Result);
-        }
-
-        [Test]
-        [TestCase("MobiledgeX", "MobiledgeX SDK Demo", "2.0")]
-        public void GetRestURI(string orgName, string appName, string appVers)
+        public void GetRestUrl(string orgName, string appName, string appVers)
         {
             MobiledgeXIntegration.orgName = orgName;
             MobiledgeXIntegration.appName = appName;
             MobiledgeXIntegration.appVers = appVers;
             var task = Task.Run(async () =>
             {
-                return await RegisterAndFindCloudletHelper(orgName, appName, appVers);
+                return await GetUrlHelper(orgName, appName, appVers, "http");
             });
 
-            Assert.IsNotEmpty(task.Result);
+            Assert.AreEqual(task.Result, "http://mobiledgexsdkdemo-tcp.mobiledgexmobiledgexsdkdemo20.sdkdemo-app-cluster.us-los-angeles.gcp.mobiledgex.net:8008"); 
+        }
+
+        [Test]
+        [TestCase("MobiledgeX", "MobiledgeX SDK Demo", "2.0")]
+        public void GetWSUrl(string orgName, string appName, string appVers)
+        {
+            MobiledgeXIntegration.orgName = orgName;
+            MobiledgeXIntegration.appName = appName;
+            MobiledgeXIntegration.appVers = appVers;
+            var task = Task.Run(async () =>
+            {
+                return await GetUrlHelper(orgName, appName, appVers, "ws");
+            });
+
+            Assert.AreEqual(task.Result, "ws://mobiledgexsdkdemo-tcp.mobiledgexmobiledgexsdkdemo20.sdkdemo-app-cluster.us-los-angeles.gcp.mobiledgex.net:8008");
         }
 
         [Test]
@@ -130,7 +129,7 @@ namespace MobiledgeX
             MobiledgeXIntegration.appVers = appVers;
             try
             {
-                GetRestURI(orgName, appName, appVers);
+                GetRestUrl(orgName, appName, appVers);
                 Assert.True(false);
             }
             catch (AggregateException e)
@@ -198,10 +197,8 @@ namespace MobiledgeX
 
         public async Task<bool> RegisterHelper()
         {
-
             bool check = await integration.Register();
             await Task.Delay(TimeSpan.FromMilliseconds(200));
-
             return check;
         }
 
@@ -209,36 +206,41 @@ namespace MobiledgeX
         {
             bool foundCloudlet = await integration.FindCloudlet();
             await Task.Delay(TimeSpan.FromMilliseconds(200));
-
             return foundCloudlet;
         }
 
-        public async Task<bool> VerifyLocationHelper()
-        {
-            bool verified = await integration.VerifyLocation();
-            await Task.Delay(TimeSpan.FromMilliseconds(200));
-
-            return verified;
-        }
-
-        public async Task<string> RegisterAndFindCloudletHelper(string orgName, string appName, string appVers)
+        public async Task<string> GetUrlHelper(string orgName, string appName, string appVers, string proto)
         {
 
-            FindCloudletReply reply = await integration.matchingEngine.RegisterAndFindCloudlet(orgName, appName, appVers, testLocation, MatchingEngine.wifiCarrier);
+            FindCloudletReply reply = await integration.matchingEngine.RegisterAndFindCloudlet(orgName, appName, appVers, testLocation, "");
             await Task.Delay(TimeSpan.FromMilliseconds(200));
-            string uri = reply.fqdn;
-            return uri;
+            DistributedMatchEngine.AppPort appPort;
+
+            switch (proto)
+	    {
+                case "http":
+                     appPort = integration.GetAppPort(DistributedMatchEngine.LProto.L_PROTO_HTTP);
+                    break;
+                case "ws":
+                     appPort = integration.GetAppPort(DistributedMatchEngine.LProto.L_PROTO_TCP);
+                    break;
+                default:
+                    appPort = integration.GetAppPort(DistributedMatchEngine.LProto.L_PROTO_HTTP);
+                    break;
+            }
+            string url = integration.GetUrl(proto, appPort);
+            return url;
         }
 
         public async Task<string> WebSocketTestHelper(string orgName, string appName, string appVers)
         {
-            FindCloudletReply reply = await integration.matchingEngine.RegisterAndFindCloudlet(orgName, appName, appVers, testLocation, MatchingEngine.wifiCarrier);
+            FindCloudletReply reply = await integration.matchingEngine.RegisterAndFindCloudlet(orgName, appName, appVers, testLocation);
             await Task.Delay(TimeSpan.FromMilliseconds(200));
-            Dictionary<int, AppPort> appPortsDict = integration.matchingEngine.GetTCPAppPorts(reply);
-            int public_port = reply.ports[0].public_port;
-            AppPort appPort = appPortsDict[public_port];
-            ClientWebSocket ws = await integration.matchingEngine.GetWebsocketConnection(reply, appPort, public_port, 5000, "?roomid=testing&pName=MobiledgeX&pCharacter=2");
-            await Task.Delay(TimeSpan.FromMilliseconds(200));
+	    Dictionary<int, AppPort> appPortsDict = integration.matchingEngine.GetTCPAppPorts(reply);
+	    int public_port = reply.ports[0].public_port;
+	    AppPort appPort = appPortsDict[public_port];
+	    ClientWebSocket ws = await integration.matchingEngine.GetWebsocketConnection(reply, appPort, public_port, 5000, "?roomid=testing");
+	    await Task.Delay(TimeSpan.FromMilliseconds(200));
             byte[] buf = new byte[4 * 1024];
             ArraySegment<byte> arrayBuf = new ArraySegment<byte>(buf);
             var ms = new MemoryStream();
@@ -265,7 +267,6 @@ namespace MobiledgeX
                     readString = reader.ReadToEnd();
                 }
             }
-
             return readString;
         }
 

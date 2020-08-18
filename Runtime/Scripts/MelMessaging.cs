@@ -22,7 +22,7 @@ using DistributedMatchEngine.Mel;
 
 public class MelMessaging : MelMessagingInterface
 {
-  
+
 #if UNITY_ANDROID
   AndroidJavaObject getActivity()
   {
@@ -102,11 +102,27 @@ public class MelMessaging : MelMessagingInterface
     string sent_token = PlatformIntegrationUtil.CallStatic<string>(MelCls, "sendSetToken", pa);
     return sent_token;
   }
+
+  // MelMessaging related:
+  public string GetManufacturer()
+  {
+     AndroidJavaClass BuildCls = PlatformIntegrationUtil.GetAndroidJavaClass("android.os.Build");
+     string manufacturer = PlatformIntegrationUtil.GetStatic<string>(BuildCls, "MANUFACTURER");
+     return manufacturer;
+  }
+#elif UNITY_IOS
+  public MelMessaging(string app_name) { }
+  public bool IsMelEnabled() { return false; }
+  public string GetMelVersion() { return ""; }
+  public string SetToken(string token, string app_name) { return ""; }
+  public string GetUid() { return ""; }
+  public string GetManufacturer() { return "Apple"; }
 #else
-    public MelMessaging(string app_name) {}
-    public bool IsMelEnabled() { return false; }
-    public string GetMelVersion() { return ""; }
-    public string SetToken(string token, string app_name) { return ""; }
-    public string GetUid() { return ""; }
+  public MelMessaging(string app_name) { }
+  public bool IsMelEnabled() { return false; }
+  public string GetMelVersion() { return ""; }
+  public string SetToken(string token, string app_name) { return ""; }
+  public string GetUid() { return ""; }
+  public string GetManufacturer() { return ""; }
 #endif
 }
