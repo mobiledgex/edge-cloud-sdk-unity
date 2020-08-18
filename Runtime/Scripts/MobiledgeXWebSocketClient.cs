@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
@@ -23,57 +24,47 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using UnityEngine;
-using DistributedMatchEngine;
+
 
 namespace MobiledgeX
 {
+    // MobiledgeXWebSocketClient is a WebSocket Implementation offered with MobiledgeX Unity Package
+    // To see examples of using MobiledgeXWebSocketClient check MobiledgeX unity sample apps
+    // at ("https://github.com/mobiledgex/edge-cloud-sampleapps/tree/master/unity")
     // C#'s built in WebSockets concurrency model supports the use a single queue for
-    // send, and another queue for recieve. MobiledgeXSokcetClient here has 1 independent thread
+    // send, and another queue for recieve. MobiledgeXWebSocketClient here has 1 independent thread
     // per send or receive direction of communication.
-    public class MobiledgeXSocketClient : IDisposable
+    public class MobiledgeXWebSocketClient : IDisposable
     {
         // Life of MobiledgeXSocketClient:
-        private static string proto = "ws";
-        private static string host = "localhost";
-        private static int port = 3000;
-        private static string server = proto + "://" + host + ":" + port;
-        public Uri uri = new Uri(server);
         private ClientWebSocket ws = new ClientWebSocket();
         static UTF8Encoding encoder; // For websocket text message encoding.
-        const UInt64 MAXREADSIZE = 1 * 1024 * 1024;
-        public ConcurrentQueue<String> receiveQueue { get; }
+        const ulong MAXREADSIZE = 1 * 1024 * 1024;
+        public ConcurrentQueue<string> receiveQueue { get; }
+        public ConcurrentQueue<byte[]> receiveQueueBinary { get; }
         public BlockingCollection<ArraySegment<byte>> sendQueue { get; }
+        public BlockingCollection<ArraySegment<byte>> sendQueueBinary { get; }
         Thread receiveThread { get; set; }
         Thread sendThread { get; set; }
+        Thread sendThreadBinary { get; set; }
         private bool run = true;
-        MobiledgeXIntegration integration;
+        public CancellationTokenSource tokenSource { get; set; }
 
-        // For testing
-        public MobiledgeXSocketClient()
+        public MobiledgeXWebSocketClient()
         {
+            tokenSource = new CancellationTokenSource();
             encoder = new UTF8Encoding();
             ws = new ClientWebSocket();
-
             receiveQueue = new ConcurrentQueue<string>();
-            receiveThread = new Thread(RunReceive);
-            receiveThread.Start();
-
-            sendQueue = new BlockingCollection<ArraySegment<byte>>();
-            sendThread = new Thread(RunSend);
-            sendThread.Start();
-        }
-
-        public MobiledgeXSocketClient(MobiledgeXIntegration integration)
-        {
-            encoder = new UTF8Encoding();
-            ws = new ClientWebSocket();
-            this.integration = integration;
-            receiveQueue = new ConcurrentQueue<string>();
+            receiveQueueBinary = new ConcurrentQueue<byte[]>();
             receiveThread = new Thread(RunReceive);
             receiveThread.Start();
             sendQueue = new BlockingCollection<ArraySegment<byte>>();
+            sendQueueBinary = new BlockingCollection<ArraySegment<byte>>();
             sendThread = new Thread(RunSend);
             sendThread.Start();
+            sendThreadBinary = new Thread(RunSendBinary);
+            sendThreadBinary.Start();
         }
 
         public bool isConnecting()
@@ -93,7 +84,7 @@ namespace MobiledgeX
         public async Task Connect(Uri uri)
         {
             Debug.Log("Connecting to: " + uri);
-            await ws.ConnectAsync(uri, CancellationToken.None);
+            await ws.ConnectAsync(uri, tokenSource.Token);
             while (ws.State == WebSocketState.Connecting)
             {
                 Debug.Log("Waiting to connect...");
@@ -103,15 +94,31 @@ namespace MobiledgeX
             run = true;
         }
 
+        /// <summary>
+        /// For Sending Text Messages to the server (ex. JSON)
+        /// </summary>
+        /// <param name="message"></param>
         public void Send(string message)
         {
             byte[] buffer = encoder.GetBytes(message);
             //Debug.Log("Message to queue for send: " + buffer.Length + ", message: " + message);
             var sendBuf = new ArraySegment<byte>(buffer);
-
             sendQueue.Add(sendBuf);
         }
 
+        /// <summary>
+        /// For Sending Binary to the server
+        /// </summary>
+        /// <param name="binary"></param>
+        public void Send(byte[] binary)
+        {
+            var sendBuf = new ArraySegment<byte>(binary);
+            sendQueueBinary.Add(sendBuf);
+        }
+
+        /// <summary>
+        /// RunSend is used in sendThread
+        /// </summary>
         public async void RunSend()
         {
             ArraySegment<byte> msg;
@@ -123,25 +130,43 @@ namespace MobiledgeX
                     msg = sendQueue.Take();
                     long count = sendQueue.Count;
                     //Debug.Log("Dequeued this message to send: " + msg + ", queueSize: " + count);
-                    await ws.SendAsync(msg, WebSocketMessageType.Text, true /* is last part of message */, CancellationToken.None);
+                    await ws.SendAsync(msg, WebSocketMessageType.Text, true , tokenSource.Token);
                 }
             }
         }
 
-        // This belongs in a background thread posting queued results for the UI thread to pick up.
-        public async Task<string> Receive(UInt64 maxSize = MAXREADSIZE)
+        /// <summary>
+        /// RunSendBinary is used in sendThreadBinary
+        /// </summary>
+        public async void RunSendBinary()
+        {
+            ArraySegment<byte> msg;
+            Debug.Log("RunSend entered.");
+            while (run)
+            {
+                while (!sendQueueBinary.IsCompleted)
+                {
+                    msg = sendQueueBinary.Take();
+                    long count = sendQueueBinary.Count;
+                    //Debug.Log("Dequeued this message to send: " + msg + ", queueSize: " + count);
+                    await ws.SendAsync(msg, WebSocketMessageType.Binary, true ,tokenSource.Token);
+                }
+            }
+        }
+
+        //This belongs in a background thread posting queued results for the UI thread to pick up.
+        public async Task<Dictionary<WebSocketMessageType, MemoryStream>> Receive(ulong maxSize = MAXREADSIZE)
         {
             // A read buffer, and a memory stream to stuff unknown number of chunks into:
             byte[] buf = new byte[4 * 1024];
             var ms = new MemoryStream();
             ArraySegment<byte> arrayBuf = new ArraySegment<byte>(buf);
             WebSocketReceiveResult chunkResult = null;
-
             if (ws.State == WebSocketState.Open)
             {
                 do
                 {
-                    chunkResult = await ws.ReceiveAsync(arrayBuf, CancellationToken.None);
+                    chunkResult = await ws.ReceiveAsync(arrayBuf, tokenSource.Token);
                     ms.Write(arrayBuf.Array, arrayBuf.Offset, chunkResult.Count);
                     //Debug.Log("Size of Chunk message: " + chunkResult.Count);
                     if ((UInt64)(chunkResult.Count) > MAXREADSIZE)
@@ -149,31 +174,48 @@ namespace MobiledgeX
                         Console.Error.WriteLine("Warning: Message is bigger than expected!");
                     }
                 } while (!chunkResult.EndOfMessage);
+                
                 ms.Seek(0, SeekOrigin.Begin);
-
-                // Looking for UTF-8 JSON type messages.
-                if (chunkResult.MessageType == WebSocketMessageType.Text)
-                {
-                    return StreamToString(ms, Encoding.UTF8);
-                }
-
+                return new Dictionary<WebSocketMessageType, MemoryStream>(){ [chunkResult.MessageType]= ms };
             }
 
-            return "";
+            return null;
         }
 
+        /// <summary>
+        /// RunReceive is used in receive thread
+        /// RunReceive receives websocket messages asynchronously and add it to either receiveQueue or receiveQueueBinary ...
+        /// dependent on the MessageType
+        /// </summary>
         public async void RunReceive()
         {
             Debug.Log("WebSocket Message Receiver looping.");
-            string result;
+            Dictionary<WebSocketMessageType, MemoryStream> response = new Dictionary<WebSocketMessageType, MemoryStream>(1);
             while (run)
             {
                 //Debug.Log("Awaiting Receive...");
-                result = await Receive();
-                if (result != null && result.Length > 0)
+                response = await Receive();
+                if (response != null && response.Keys.Count > 0)
                 {
                     //Debug.Log("Received: " + result);
-                    receiveQueue.Enqueue(result);
+                    if (response.Keys.First() == WebSocketMessageType.Text)
+                    {
+                        string result = StreamToString(response.Values.First(), Encoding.UTF8);
+                        if (result != null && result.Length > 0)
+                        {
+                            Debug.Log("Received: " + result);
+                            receiveQueue.Enqueue(result);
+                        }
+                    }
+                    if (response.Keys.First() == WebSocketMessageType.Binary)
+                    {
+                        byte[] result = response.Values.First().GetBuffer();
+                        if (result != null && result.Length > 0)
+                        {
+                            Debug.Log("Received: " + result);
+                            receiveQueueBinary.Enqueue(result);
+                        }
+                    }
                 }
                 else
                 {
@@ -192,18 +234,18 @@ namespace MobiledgeX
                     readString = reader.ReadToEnd();
                 }
             }
-
             return readString;
         }
 
         public void Dispose()
         {
             run = false;
-            ws.Abort();
-            CancellationTokenSource tokenSource = new CancellationTokenSource();
-            CancellationToken token = tokenSource.Token;
-            ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Dispose", token).ConfigureAwait(false).GetAwaiter().GetResult();
-            ws = null;
+            if(ws != null)
+            {
+                ws.Abort();
+                ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Dispose", tokenSource.Token).ConfigureAwait(false).GetAwaiter().GetResult();
+                ws = null;
+            }
         }
     }
 }

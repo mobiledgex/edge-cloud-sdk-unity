@@ -23,6 +23,7 @@
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <CoreTelephony/CTCarrier.h>
 #import <UIKit/UIKit.h>
+#import <CoreLocation/CoreLocation.h>
 
 #import <ifaddrs.h>
 #import <sys/socket.h>
@@ -40,6 +41,7 @@
 @end
 
 NetworkState *networkState = NULL;
+NSString* isoCountryCode = NULL;
 
 void _ensureMatchingEnginePlatformIntegration() {
     if (networkState == NULL)
@@ -243,5 +245,48 @@ char* _getUniqueID()
 
 char* _getUniqueIDType()
 {
-    return "";
+    UIDevice* device = UIDevice.currentDevice;
+    NSString *aid = device.model;
+    return convertToCStr([aid UTF8String]);
+}
+
+void _convertGPSToISOCountryCode(double longitude, double latitude)
+{
+    // reset isoCountryCode, so we don't get previous country code
+    isoCountryCode = NULL;
+    CLLocation *location = [[CLLocation alloc] initWithLatitude:latitude longitude:longitude];
+    CLGeocoder *geocoder = [[CLGeocoder alloc] init];
+    [geocoder reverseGeocodeLocation:location completionHandler:^(NSArray *placemarks, NSError
+    *error)
+     {
+         if(placemarks && placemarks.count > 0)
+         {
+             CLPlacemark *placemark= [placemarks objectAtIndex:0];
+             isoCountryCode = [placemark ISOcountryCode];
+         }
+     }];
+}
+
+char* _getISOCountryCodeFromGPS()
+{
+    NSString* capitalizedISOCC = [isoCountryCode uppercaseString];
+    return convertToCStr([capitalizedISOCC UTF8String]);
+}
+
+char* _getISOCountryCodeFromCarrier()
+{
+    _ensureMatchingEnginePlatformIntegration();
+    CTCarrier *carrier;
+
+    if (@available(iOS 12.1, *))
+    {
+        carrier = networkState.lastCarrier;
+    }
+    else
+    {
+        CTTelephonyNetworkInfo *netinfo = [[CTTelephonyNetworkInfo alloc] init];
+        carrier = [netinfo subscriberCellularProvider];
+    }
+    NSString* capitalizedISOCC = [carrier.isoCountryCode uppercaseString];
+    return convertToCStr([capitalizedISOCC UTF8String]);
 }

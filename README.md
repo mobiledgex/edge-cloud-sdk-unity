@@ -9,7 +9,7 @@ The Matching Engine Unity C# SDK provides everything required to create applicat
 ## Prerequisites  
 
 * Unity 2019.2 or newer, along with selected platforms (iOS, Android) for your project
-* .Net Standard 2.0
+* The SDK is compatible with (IL2CPP & .NET 2.0) , (IL2CPP & .NET 4.x) , (Mono & .NET 2.0) **but not compatible with (Mono  & .NET 4.x)**
 * A running AppInst deployed on your edge server
 * Git installed
 
@@ -23,7 +23,7 @@ The fastest way to import the MobiledgeX Unity SDK into your project is by using
 
 Enter [https://github.com/mobiledgex/edge-cloud-sdk-unity.git](https://github.com/mobiledgex/edge-cloud-sdk-unity.git) in the text field, which will automatically start the process of importing the package into your application. 
 
-Once that finishes, you will now see the MobiledgeX SDK within your Package Manager and the SDK will be available under the Packages tab of your Project. 
+Once that completes, you will see the MobiledgeX SDK within your Package Manager and the SDK will be available under the Packages tab of your Project. 
 
 ![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-package.png)
 
@@ -59,18 +59,21 @@ After you finish editing and save the file, you can now click into the Unity edi
 
 ## Using the MobiledgeX SDK
 
+### Setup
+
+
 Once you have successfully imported the Unity package, you will see a new tab as part of the Unity menu labeled **MobiledgeX**
 
 ![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-menu.png)
 
-Click on **Setup**, which will open up a new Unity window that will ask for your application's
+Click **Setup**, which will open a new Unity window asking you for your application's
 * organization name
 * app name
 * app version number 
 
 ![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-unity-window.png)
 
-After you input your application credentials, you can click the setup button, which will communicate with the DME to verify that your application definition exists on the MobiledgeX console. If successful, your project will be set up with the correct plugins and resources necessary to use our APIs. You can verify these files were generated correctly by looking in the Plugins and Resources folders of your project. 
+After you provide your application credentials, click the setup button, which will communicate with the DME to verify that your application definition exists on the MobiledgeX console. If successful, your project will be set up with the correct plugins and resources necessary to use our APIs. You can verify if these files were generated correctly by looking in the Plugins and Resources folders of your project. 
 
 ![](https://developers.mobiledgex.com/assets/unity-sdk/generated-plugins.png)
 
@@ -80,23 +83,183 @@ After you input your application credentials, you can click the setup button, wh
 
 **Important**: Make sure your Resources/MobiledgeXSettings.asset file has the correct information for your application. 
 
-Once that setup has been completed, you can very easily call all the necessary API requests to connect to a cloudlet with your application deployed. Here is some example code using the MobiledgeXIntegration class that comes with the package : 
+
+### Example Usage:
+Once that setup has been completed, you can very easily call all the necessary API requests to connect to a cloudlet with your application deployed. Here is some example code using the MobiledgeXIntegration class that comes with the package 
+
+
+**Getting Edge Connection Url**
+
+MobiledgeX SDK uses the device Location and [the device's MCC-MNC ID (if avaliable)](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine) to connect you to the closest Edge cloudlet where you application instance is deployed.
+
+If your carrier is not supported yet by MobiledgeX the SDK will throw a DmeDnsException. You can catch this exception and instead use WifiOnly(true) to connect to [the wifi dme](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine) which will connect you to the closest [regional DME](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine).
 
 ```csharp
 using MobiledgeX;
+using DistributedMatchEngine;
+using UnityEngine;
+using System.Collections;
 
-MobiledgeXIntegration integration = new MobiledgeXIntegration();
-bool registered = await integration.Register(); //calls Register Client
-DistributedMatchEngine.FindCloudletReply findCloudletReply = await integration.FindCloudlet(); //calls Find Cloudlet
+[RequireComponent(typeof(MobiledgeX.LocationService))]
+public class YourClassName : MonoBehaviour
+{ 
+    IEnumerator Start()
+    {
+        yield return StartCoroutine(MobiledgeX.LocationService.EnsureLocation()); // Location is needed to connect you to the closet edge
+        GetEdgeConnection();
+    }
+     async void GetEdgeConnection()
+    {
+        MobiledgeXIntegration mxi = new MobiledgeXIntegration();
+        try
+        {
+            await mxi.RegisterAndFindCloudlet();
+        }
+        catch(DmeDnsException)
+        {
+            mxi.UseWifiOnly(true); // if you carrier is not supported yet, WifiOnly will connect you to wifi.dme 
+            await mxi.RegisterAndFindCloudlet();
+        }
 
-MatchingEngine dme = integration.me;
-
-Dictionary<int, AppPort> appPortsDict = dme.GetHTTPAppPorts(findCloudletReply);
-int public_port = findCloudletReply.ports[0].public_port; // if you only have one port
-AppPort appPort = appPortsDict[public_port];
-HttpClient http = await dme.GetHTTPClient(findCloudletReply, appPort, public_port, 5000);
-HttpResponseMessage message = await http.GetAsync("/"); //makes a get request
+        mxi.GetAppPort(LProto.L_PROTO_HTTP); // Get the port of the desired protocol
+        string url = mxi.GetUrl("http"); // Get the url of the desired protocol
+    }
+    
+}
 ```
+
+If your device doesn't have MCC-MNC ID (no sim card - for ex. Oculus device), Please use UseWifiOnly before RegisterAndFindCloudlet.
+
+```csharp
+use mxi.UseWifiOnly(true); 
+await mxi.RegisterAndFindCloudlet();
+```
+
+
+
+
+
+**In UnityEditor** 
+
+While developing in Unity Editor (Location is not used), The fallback location by default is San Jose, CA.
+
+If you wish to change the fallback Location, use SetFallbackLocation() before you call RegisterAndFindCloudlet().
+
+```csharp
+ mxi.SetFallbackLocation(testLongtiude, testLatitude); 
+ await mxi.RegisterAndFindCloudlet();
+```
+
+By default in Unity Editor you will connect with the Wifi DME, which is specified using the TestCarrierInfoClass in the CarrierInfoIntegration script.
+
+
+
+
+**Communicating with your Edge Server using REST**
+
+
+For full example code, Please check [RunTime/Scripts/ExampleRest.cs](https://github.com/mobiledgex/edge-cloud-sdk-unity/blob/master/Runtime/Scripts/ExampleRest.cs)
+
+```csharp
+ async void GetEdgeConnection()
+    {
+        MobiledgeXIntegration mxi = new MobiledgeXIntegration();
+        await mxi.RegisterAndFindCloudlet();
+        
+        mxi.GetAppPort(LProto.L_PROTO_HTTP); // Get the port of the desired protocol
+        string url = mxi.GetUrl("http"); // Get the url of the desired protocol
+        StartCoroutine(RestExample(url)); // using UnityWebRequest
+        RestExampleHttpClient(url); // using HttpClient
+        
+    }
+ // using UnityWebRequest
+ IEnumerator RestExample(string url)
+    {
+        UnityWebRequest www = UnityWebRequest.Get(url);
+        yield return www.SendWebRequest();
+
+        if (www.isHttpError || www.isNetworkError)
+        {
+            Debug.Log(www.error);
+        }
+        else
+        {
+            // Show results as text
+            Debug.Log(www.downloadHandler.text);
+
+            // Or retrieve results as binary data
+            byte[] results = www.downloadHandler.data;
+        }
+    }
+    
+    // using HttpClient
+    async Task<HttpResponseMessage> RestExampleHttpClient(string url)
+    {
+        HttpClient httpClient = new HttpClient();
+        httpClient.BaseAddress = new Uri(url);
+        return await httpClient.GetAsync("?q=x"); //makes a get request, "?q=x" is a parameter example 
+    }
+    
+```
+
+
+**Communicating with your Edge Server using WebSockets**
+
+MobiledgeX Unity Package comes with  WebSocket Implementation (MobiledgeXWebSocketClient).
+ 
+ For Using MobiledgeXWebSocketClient:
+ 1. Start the WebSocket
+ 2. Handle received messages from your Edge server.
+ 3. Send messages. (Text or Binary)
+ 
+ For full example code, Please check [RunTime/Scripts/ExampleWebSocket.cs](https://github.com/mobiledgex/edge-cloud-sdk-unity/blob/master/Runtime/Scripts/ExampleWebSocket.cs)
+ 
+ 
+ 
+ ```csharp
+     async void GetEdgeConnection()
+        {
+            mxi = new MobiledgeXIntegration();
+            await mxi.RegisterAndFindCloudlet();
+            mxi.GetAppPort(LProto.L_PROTO_TCP);
+            string url = mxi.GetUrl("ws");
+            await StartWebSocket(url);
+            wsClient.Send("WebSocketMsg");// You can send  Text or Binary messages to the WebSocket Server 
+        }
+        
+     async Task StartWebSocket(string url)
+        {
+            wsClient = new MobiledgeXWebSocketClient();
+            if (wsClient.isOpen())
+            {
+                wsClient.Dispose();
+                wsClient = new MobiledgeXWebSocketClient();
+            }
+
+            Uri uri = new Uri(url);
+            await wsClient.Connect(uri);
+        }
+     
+     // Handle received messages from your Edge server
+     // Using MonoBehaviour callback Update to dequeue Received WebSocket Messages every frame (if there is any)
+     private void Update()
+     {
+         if (wsClient == null)
+         {
+             return;
+         }
+         var cqueue = wsClient.receiveQueue;
+         string msg;
+         while (cqueue.TryPeek(out msg))
+         {
+             cqueue.TryDequeue(out msg);
+             Debug.Log("WebSocket Received messgae : " + msg);
+         }
+     }
+ 
+ ```
+
+
 
 ## Platform Specific
 
@@ -112,9 +275,6 @@ If you recieve the following error and cannot compile your Unity project, restar
 
 ![](https://developers.mobiledgex.com/assets/unity-sdk/metadata_error.png)
 
-### iOS
-
-On iOS, if you are on a roaming network, the MCCMNC the SDK returns is the MCCMNC of your original network instead of the MCCMNC of your current roaming network, which is not the intended behavior. 
 
 ### Where to Go from Here  
 * Click [here](https://api.mobiledgex.net/#section/Edge-SDK-Unity) to view and familiarize with the Unity C# SDK APIs to start your MobiledgeX integration.

@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 MobiledgeX, Inc. All rights and licenses reserved.
+ * Copyright 2018-2020 MobiledgeX, Inc. All rights and licenses reserved.
  * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-using UnityEngine;
 using DistributedMatchEngine;
-
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
@@ -63,7 +61,6 @@ namespace MobiledgeX
       string ipAddress = null;
       string ipAddressV4 = null;
       string ipAddressV6 = null;
-      Debug.Log("Looking for: " + sourceNetInterfaceName + ", known Wifi: " + networkInterfaceName.WIFI + ", known Cellular: " + networkInterfaceName.CELLULAR);
 
       foreach (NetworkInterface iface in netInterfaces)
       {
@@ -99,24 +96,78 @@ namespace MobiledgeX
     public bool HasCellular()
     {
       NetworkInterface[] netInterfaces = GetInterfaces();
+      bool foundByIp = false;
+
       foreach (NetworkInterface iface in netInterfaces)
       {
-        if (iface.Name.Equals(networkInterfaceName.CELLULAR))
+        foreach (string cellularName in networkInterfaceName.CELLULAR)
         {
-          return iface.OperationalStatus == OperationalStatus.Up;
+          if (iface.Name.Equals(cellularName))
+          {
+            // unreliable.
+            if (iface.OperationalStatus == OperationalStatus.Up)
+            {
+              return true;
+            }
+          }
+
+          // First one with both IPv4 and IPv6 is a heuristic without NetTest. OperationStatus seems inaccurate or "unknown".
+          if (GetIPAddress(cellularName, AddressFamily.InterNetwork) != null &&
+              GetIPAddress(cellularName, AddressFamily.InterNetworkV6) != null)
+          {
+            foundByIp = true;
+          }
+          else if (GetIPAddress(cellularName, AddressFamily.InterNetworkV6) != null)
+          {
+            // No-op. Every interface has IpV6.
+          }
+          else if (GetIPAddress(cellularName, AddressFamily.InterNetwork) != null)
+          {
+            foundByIp = true;
+          }
+          if (foundByIp)
+          {
+            return true;
+          }
         }
       }
       return false;
     }
 
+
     public bool HasWifi()
     {
       NetworkInterface[] netInterfaces = GetInterfaces();
+      bool foundByIp = false;
+
       foreach (NetworkInterface iface in netInterfaces)
       {
-        if (iface.Name.Equals(networkInterfaceName.WIFI))
+        foreach (string wifiName in networkInterfaceName.WIFI)
         {
-          return iface.OperationalStatus == OperationalStatus.Up;
+          // unreliable.
+          if (iface.Name.Equals(wifiName) && iface.OperationalStatus == OperationalStatus.Up)
+          {
+            return true;
+          }
+
+          // First one with both IPv4 and IPv6 is a heuristic without NetTest. OperationStatus seems inaccurate or "unknown".
+          if (GetIPAddress(wifiName, AddressFamily.InterNetwork) != null &&
+              GetIPAddress(wifiName, AddressFamily.InterNetworkV6) != null)
+          {
+            foundByIp = true;
+          }
+          else if (GetIPAddress(wifiName, AddressFamily.InterNetworkV6) != null)
+          {
+            // No-op. Every interface has IpV6.
+          }
+          else if (GetIPAddress(wifiName, AddressFamily.InterNetwork) != null)
+          {
+            foundByIp = true;
+          }
+          if (foundByIp)
+          {
+            return true;
+          }
         }
       }
       return false;

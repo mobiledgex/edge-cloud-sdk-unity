@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 MobiledgeX, Inc. All rights and licenses reserved.
+ * Copyright 2018-2020 MobiledgeX, Inc. All rights and licenses reserved.
  * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,15 +15,10 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
+
 using UnityEngine;
-
 using DistributedMatchEngine;
-
-// We need this one for importing our IOS functions
-using System.Runtime.InteropServices;
+using System.Runtime.InteropServices; //for importing IOS functions
 
 namespace MobiledgeX
 {
@@ -51,6 +46,16 @@ namespace MobiledgeX
       {
         case RuntimePlatform.OSXPlayer: case RuntimePlatform.OSXEditor:
           NetworkInterfaceName = new MacNetworkInterfaceName();
+          CarrierInfo = new TestCarrierInfoClass();
+          UniqueID = new TestUniqueIDClass();
+          break;
+        case RuntimePlatform.LinuxPlayer: case RuntimePlatform.LinuxEditor:
+          NetworkInterfaceName = new LinuxNetworkInterfaceName();
+          CarrierInfo = new TestCarrierInfoClass();
+          UniqueID = new TestUniqueIDClass();
+          break;
+        case RuntimePlatform.WindowsPlayer: case RuntimePlatform.WindowsEditor:
+          NetworkInterfaceName = new Windows10NetworkInterfaceName();
           CarrierInfo = new TestCarrierInfoClass();
           UniqueID = new TestUniqueIDClass();
           break;
