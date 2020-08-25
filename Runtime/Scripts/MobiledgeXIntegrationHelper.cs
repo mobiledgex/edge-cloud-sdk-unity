@@ -75,7 +75,7 @@ namespace MobiledgeX
             }
             catch (CarrierInfoException cie)
             {
-                Debug.Log("Register Exception: " + cie.Message);
+                Debug.LogError("Register Exception: " + cie.Message);
                 throw new RegisterClientException(cie.Message);
             }
 
@@ -95,24 +95,24 @@ namespace MobiledgeX
             }
             catch (HttpException httpe)
             {
-                Debug.Log("RegisterClient HttpException: " + httpe.Message);
+                Debug.LogError("RegisterClient HttpException: " + httpe.Message);
                 throw new RegisterClientException("RegisterClient Exception: " + httpe.Message + ", HTTP StatusCode: " + httpe.HttpStatusCode + ", API ErrorCode: " + httpe.ErrorCode + "\nStack: " + httpe.StackTrace);
             }
             catch (Exception e)
             {
-                Debug.Log("RegisterClient Exception: " + e.Message);
+                Debug.LogError("RegisterClient Exception: " + e.Message);
                 throw e;
             }
             finally
             {
                 if (reply == null)
                 {
-                    Debug.Log("Register reply NULL!");
+                    Debug.LogError("Register reply NULL!");
                     throw new RegisterClientException("RegisterClient returned null.");
                 }
                 if (reply.status != ReplyStatus.RS_SUCCESS)
                 {
-                    Debug.Log("Register Failed: " + reply.status);
+                    Debug.LogError("Register Failed: " + reply.status);
                     throw new RegisterClientException("Bad RegisterClient. RegisterClient status is " + reply.status);
                 }
             }
@@ -129,7 +129,6 @@ namespace MobiledgeX
         public async Task<bool> FindCloudlet(string dmeHost = null, uint dmePort = 0)
         {
             latestFindCloudletReply = null;
-            Debug.Log("FindCloudlet to DME: " + dmeHost);
             if (!latestRegisterStatus)
             {
                 throw new FindCloudletException("Last RegisterClient was unsuccessful. Call RegisterClient again before FindCloudlet");
@@ -141,7 +140,7 @@ namespace MobiledgeX
             }
             catch (CarrierInfoException cie)
             {
-                Debug.Log("FindCloudlet CarrierInfoException: " + cie.Message);
+                Debug.LogError("FindCloudlet CarrierInfoException: " + cie.Message);
                 throw new FindCloudletException(cie.Message);
             }
 
