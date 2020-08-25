@@ -128,7 +128,7 @@ namespace MobiledgeX
         /// Wrapper for VerifyLocation. Verification of location based on the device location and the cell tower location
         /// </summary>
         /// <returns>bool Task</returns>
-        public async Task<bool> VerifyLocation()
+        public async Task<bool> VerifyLocation(string dmeHost = null, uint dmePort = 0)
         {
             latestVerifyLocationStatus = false;
 
@@ -141,7 +141,15 @@ namespace MobiledgeX
             await UpdateLocationAndCarrierInfo();
 
             VerifyLocationRequest req = matchingEngine.CreateVerifyLocationRequest(location, carrierName);
-            VerifyLocationReply reply = await matchingEngine.VerifyLocation(req);
+            VerifyLocationReply reply;
+            if (dmeHost == null || dmePort == 0)
+            {
+                reply = await matchingEngine.VerifyLocation(req);
+            }
+            else
+            {
+                reply = await matchingEngine.VerifyLocation(dmeHost, dmePort, req);
+            }
 
             // The return is not binary, but one can decide the particular app's policy
             // on pass or failing the location check. Not being verified or the country
