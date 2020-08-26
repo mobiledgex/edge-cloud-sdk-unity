@@ -33,7 +33,7 @@ namespace MobiledgeX
 {
     public partial class MobiledgeXIntegration
     {
-
+        public static string sdkVersion { get; set; }
         /// <summary>
         /// Scriptable Object Holding MobiledgeX Settings (OrgName, AppName, AppVers)
         /// </summary>
@@ -88,6 +88,7 @@ namespace MobiledgeX
         public MobiledgeXIntegration()
         {
             ConfigureMobiledgeXSettings();
+            Debug.Log("MobiledgeX Unity SDK (" + sdkVersion + ")");
             // Set the platform specific way to get SIM carrier information.
             pIntegration = new PlatformIntegration();
             matchingEngine = new MatchingEngine(pIntegration.CarrierInfo, pIntegration.NetInterface, pIntegration.UniqueID);
