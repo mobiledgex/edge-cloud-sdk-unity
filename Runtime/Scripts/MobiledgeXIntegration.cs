@@ -85,12 +85,18 @@ namespace MobiledgeX
         /// <summary>
         /// Constructor for MobiledgeXIntegration. This class has functions that wrap DistributedMatchEngine functions for ease of use
         /// </summary>
-        public MobiledgeXIntegration()
+        public MobiledgeXIntegration(CarrierInfo carrierInfo = null, NetInterface netInterface = null, UniqueID uniqueId = null)
         {
             ConfigureMobiledgeXSettings();
             // Set the platform specific way to get SIM carrier information.
             pIntegration = new PlatformIntegration();
-            matchingEngine = new MatchingEngine(pIntegration.CarrierInfo, pIntegration.NetInterface, pIntegration.UniqueID);
+
+            // Optionally override each interface:
+            matchingEngine = new MatchingEngine(
+              carrierInfo == null ? pIntegration.CarrierInfo : carrierInfo,
+              netInterface == null ? pIntegration.NetInterface : netInterface,
+              uniqueId == null ? pIntegration.UniqueID : uniqueId);
+
             melMessaging = new MelMessaging(appName);
             matchingEngine.SetMelMessaging(melMessaging);
         }
@@ -100,22 +106,29 @@ namespace MobiledgeX
         /// RegisterClientException and FindCloudletException will give more details on reason for failure
         /// </summary>
         /// <returns>bool Task</returns>
-        public async Task<bool> RegisterAndFindCloudlet()
+        public async Task<bool> RegisterAndFindCloudlet(string dmeHost = null, uint dmePort = 0)
         {
-            bool registered = await Register();
+            bool registered = await Register(dmeHost, dmePort);
             if (!registered)
             {
+                Debug.LogError("Register Failed!");
                 return false;
             }
-
-            return await FindCloudlet();
+            Debug.LogError("Register OK!");
+            bool found = await FindCloudlet(dmeHost, dmePort);
+            if (!found)
+            {
+              Debug.LogError("FindCloudlet Failed!");
+              return false;
+            }
+            return true;
         }
 
         /// <summary>
         /// Wrapper for VerifyLocation. Verification of location based on the device location and the cell tower location
         /// </summary>
         /// <returns>bool Task</returns>
-        public async Task<bool> VerifyLocation()
+        public async Task<bool> VerifyLocation(string dmeHost = null, uint dmePort = 0)
         {
             latestVerifyLocationStatus = false;
 
@@ -128,7 +141,15 @@ namespace MobiledgeX
             await UpdateLocationAndCarrierInfo();
 
             VerifyLocationRequest req = matchingEngine.CreateVerifyLocationRequest(location, carrierName);
-            VerifyLocationReply reply = await matchingEngine.VerifyLocation(req);
+            VerifyLocationReply reply;
+            if (dmeHost == null || dmePort == 0)
+            {
+                reply = await matchingEngine.VerifyLocation(req);
+            }
+            else
+            {
+                reply = await matchingEngine.VerifyLocation(dmeHost, dmePort, req);
+            }
 
             // The return is not binary, but one can decide the particular app's policy
             // on pass or failing the location check. Not being verified or the country

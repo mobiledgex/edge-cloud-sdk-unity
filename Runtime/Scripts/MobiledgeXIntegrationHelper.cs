@@ -59,7 +59,7 @@ namespace MobiledgeX
         /// Wrapper for Register Client. First call to establish the connection with your backend(server) deployed on MobiledgeX
         /// </summary>
         /// <returns>bool Task</returns>
-        public async Task<bool> Register()
+        public async Task<bool> Register(string dmeHost = null, uint dmePort = 0)
         {
             latestRegisterStatus = false;
 
@@ -75,26 +75,46 @@ namespace MobiledgeX
             }
             catch (CarrierInfoException cie)
             {
+                Debug.LogError("Register Exception: " + cie.Message);
                 throw new RegisterClientException(cie.Message);
             }
 
-            RegisterClientReply reply;
+            RegisterClientReply reply = null;
             try
             {
-                reply = await matchingEngine.RegisterClient(req);
+                if (dmeHost == null || dmePort == 0)
+                {
+                    Debug.Log("Doing Register Client, with req: " + req);
+                    reply = await matchingEngine.RegisterClient(req);
+                }
+                else
+                {
+                    Debug.Log("Doing Register Client with DME: " + dmeHost + ", p: " + dmePort + " with req: " + req);
+                    reply = await matchingEngine.RegisterClient(dmeHost, dmePort, req);
+                }
             }
             catch (HttpException httpe)
             {
+                Debug.LogError("RegisterClient HttpException: " + httpe.Message);
                 throw new RegisterClientException("RegisterClient Exception: " + httpe.Message + ", HTTP StatusCode: " + httpe.HttpStatusCode + ", API ErrorCode: " + httpe.ErrorCode + "\nStack: " + httpe.StackTrace);
             }
-
-            if (reply == null)
+            catch (Exception e)
             {
-                throw new RegisterClientException("RegisterClient returned null.");
+                Debug.LogError("RegisterClient Exception: " + e.Message);
+                throw e;
             }
-            if (reply.status != ReplyStatus.RS_SUCCESS)
+            finally
             {
-                throw new RegisterClientException("Bad RegisterClient. RegisterClient status is " + reply.status);
+                if (reply == null)
+                {
+                    Debug.LogError("Register reply NULL!");
+                    throw new RegisterClientException("RegisterClient returned null.");
+                }
+                if (reply.status != ReplyStatus.RS_SUCCESS)
+                {
+                    Debug.LogError("Register Failed: " + reply.status);
+                    throw new RegisterClientException("Bad RegisterClient. RegisterClient status is " + reply.status);
+                }
             }
 
             latestRegisterStatus = true;
@@ -106,13 +126,11 @@ namespace MobiledgeX
         /// To use Performance mode. Call UseFindCloudletPerformanceMode(true)
         /// </summary>
         /// <returns>FindCloudletReply Task</returns>
-        public async Task<bool> FindCloudlet()
+        public async Task<bool> FindCloudlet(string dmeHost = null, uint dmePort = 0)
         {
             latestFindCloudletReply = null;
-
             if (!latestRegisterStatus)
             {
-                Debug.LogError("MobiledgeX: Last RegisterClient was unsuccessful. FindCloudlet requires a succesful RegisterClient");
                 throw new FindCloudletException("Last RegisterClient was unsuccessful. Call RegisterClient again before FindCloudlet");
             }
 
@@ -122,32 +140,55 @@ namespace MobiledgeX
             }
             catch (CarrierInfoException cie)
             {
+                Debug.LogError("FindCloudlet CarrierInfoException: " + cie.Message);
                 throw new FindCloudletException(cie.Message);
             }
 
-            FindCloudletRequest req = matchingEngine.CreateFindCloudletRequest(location, "");
-            FindCloudletReply reply;
+            FindCloudletReply reply = null;
             try
             {
-                reply = await matchingEngine.FindCloudlet(req, mode);
+                if (location == null)
+                {
+                    throw new FindCloudletException("Location must not be null!");
+                }
+                Debug.Log("FindCloudlet Location: " + location.longitude + ", lat: " + location.latitude);
+                FindCloudletRequest req = matchingEngine.CreateFindCloudletRequest(location, "");
+
+                if (dmeHost == null || dmePort == 0)
+                {
+                    Debug.Log("Doing FindCloudlet, with req: " + req);
+                    reply = await matchingEngine.FindCloudlet(req, mode);
+                }
+                else
+                {
+                    Debug.Log("Doing FindCloudlet with DME: " + dmeHost + ", p: " + dmePort + " with req: " + req);
+                    reply = await matchingEngine.FindCloudlet(dmeHost, dmePort, req, mode);
+                }
             }
             catch (HttpException httpe)
             {
                 throw new FindCloudletException("FindCloudlet Exception: " + httpe.Message + ", HTTP StatusCode: " + httpe.HttpStatusCode + ", API ErrorCode: " + httpe.ErrorCode + "\nStack: " + httpe.StackTrace);
             }
-
-            if (reply == null)
+            catch (Exception e)
             {
-                throw new FindCloudletException("FindCloudletReply returned null. Make Sure you created App Instances for your Application and they are deployed in the correct region.");
+                throw new FindCloudletException(e.Message);
             }
-            if (reply.status != FindCloudletReply.FindStatus.FIND_FOUND)
+            finally
             {
-                throw new FindCloudletException("Unable to findCloudlet. Status is " + reply.status);
+                if (reply == null)
+                {
+                    throw new FindCloudletException("FindCloudletReply returned null. Make Sure you created App Instances for your Application and they are deployed in the correct region.");
+                }
+                if (reply.status != FindCloudletReply.FindStatus.FIND_FOUND)
+                {
+                    throw new FindCloudletException("Unable to findCloudlet. Status is " + reply.status);
+                }
             }
 
+            Debug.Log("FindCloudlet with DME result: " + reply.status);
             latestFindCloudletReply = reply;
             latestAppPortList = reply.ports;
-            return true;
+            return reply.status == FindCloudletReply.FindStatus.FIND_FOUND;
         }
 
         /// <summary>
@@ -178,6 +219,10 @@ namespace MobiledgeX
             Debug.Log("MobiledgeX: Cannot Get location in Unity Editor. Returning fallback location. Developer can configure fallback location with SetFallbackLocation");
             location.longitude = fallbackLocation.Longitude;
             location.latitude = fallbackLocation.Latitude;
+#elif PLATFORM_LUMIN
+            Debug.Log("MobiledgeX: Cannot Get location on Lumin Platform. Returning fallback location. Developer can configure fallback location with SetFallbackLocation");
+            location.longitude = fallbackLocation.Longitude;
+            location.latitude = fallbackLocation.Latitude;
 #else
             location = LocationService.RetrieveLocation();
             // 0f and 0f are hard zeros if no location service.
@@ -185,8 +230,8 @@ namespace MobiledgeX
             {
                 Debug.LogError("LocationServices returned a location at (0,0)");
             }
-#endif        
-        }
+#endif
+    }
 
         /// <summary>
         /// Updates the carrier name to be used in FindCloudlet and VerifyLocation calls
