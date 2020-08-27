@@ -70,14 +70,14 @@ namespace MobiledgeX
 
         #region  Mobiledgex ToolBar Menu items
 
-        [MenuItem("MobiledgeX/Setup")]
+        [MenuItem("MobiledgeX/Setup",false,0)]
         public static void ShowWindow()
         {
             MobiledgeXEditorWindow window = (MobiledgeXEditorWindow)EditorWindow.GetWindow(typeof(MobiledgeXEditorWindow));
             window.Show();
         }
 
-        [MenuItem("MobiledgeX/Settings")]
+        [MenuItem("MobiledgeX/Settings", false, 0)]
         public static void ShowSettings()
         {
             settings = (MobiledgeXSettings)Resources.Load("MobiledgeXSettings", typeof(MobiledgeXSettings));
@@ -85,19 +85,27 @@ namespace MobiledgeX
             EditorGUIUtility.PingObject(settings);
         }
 
-        [MenuItem("MobiledgeX/API References")]
+        [MenuItem("MobiledgeX/Docs/API References", false, 20)]
         public static void OpenAPIReferencesURL()
         {
             Application.OpenURL("https://api.mobiledgex.net/#section/Edge-SDK-Unity");
         }
 
-        [MenuItem("MobiledgeX/Documentation")]
+        [MenuItem("MobiledgeX/Docs/SDK Documentation", false, 20)]
         public static void OpenDocumentationURL()
         {
             Application.OpenURL("https://developers.mobiledgex.com/sdk-libraries/unity-sdk");
         }
 
-        [MenuItem("MobiledgeX/Remove MobiledgeX")]
+
+        [MenuItem("MobiledgeX/Examples/Computer Vision", false, 20)]
+        public static void ImportComputerVisionExample()
+        {
+            string sdkPath = Path.GetFullPath("Packages/com.mobiledgex.sdk");
+            AssetDatabase.ImportPackage(Path.Combine(sdkPath, "Resources/Examples/ComputerVision.unitypackage"), true);
+        }
+
+        [MenuItem("MobiledgeX/Remove MobiledgeX", false, 40)]
         public static void RemoveMobiledgeX()
         {
              if (EditorUtility.DisplayDialog("MobiledgeX","Choosing Remove will delete MobiledgeX package and close Unity Editor", "Remove", "Cancel"))
