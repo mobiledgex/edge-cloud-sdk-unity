@@ -70,7 +70,7 @@ namespace MobiledgeX
 
         #region  Mobiledgex ToolBar Menu items
 
-        [MenuItem("MobiledgeX/Setup",false,0)]
+        [MenuItem("MobiledgeX/Setup", false, 0)]
         public static void ShowWindow()
         {
             MobiledgeXEditorWindow window = (MobiledgeXEditorWindow)EditorWindow.GetWindow(typeof(MobiledgeXEditorWindow));
