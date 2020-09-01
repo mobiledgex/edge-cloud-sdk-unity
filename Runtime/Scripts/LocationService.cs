@@ -30,9 +30,18 @@ namespace MobiledgeX
     {
         private static bool locationPermissionRejected = false;
 
+        [Tooltip("Disable LocationService flow if you will use SetupLocation() to supply your the location on your own")]
+        [SerializeField]
+        bool useLocationServiceFlow = true;
+
+        static Loc locationSupplied;
+
         void Awake()
         {
-            StartCoroutine(LocationServiceFlow());
+            if (useLocationServiceFlow)
+            {
+                StartCoroutine(LocationServiceFlow());
+            }
         }
 
         public static IEnumerator InitalizeLocationService(int maxWait = 20, bool continuousLocationService = false)
@@ -147,9 +156,20 @@ namespace MobiledgeX
             }
         }
 
+        public static void SetupLocation(Loc location)
+        {
+            locationSupplied = location;
+        }
+
         // Retrieve the lastest location, without restarting locationService.
         public static Loc RetrieveLocation()
         {
+            if (Input.location.lastData.Equals(default(LocationInfo))){
+
+                return locationSupplied;
+                
+            }
+
             LocationInfo locationInfo = Input.location.lastData;
             Debug.Log("Location Info: [" + locationInfo.longitude + "," + locationInfo.latitude + "]");
             return ConvertUnityLocationToDMELoc(locationInfo);
