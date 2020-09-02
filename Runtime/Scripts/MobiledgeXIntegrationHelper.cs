@@ -54,6 +54,13 @@ namespace MobiledgeX
 
     public partial class MobiledgeXIntegration
     {
+        /// <summary>
+        /// set to true to use Fallback Location instead of the device location in production, use SetFallbackLocation() to define the FallbackLocation
+        /// set to true if you are using a device that doesn't provide location data such as magic leap
+        /// Fallback location is used by default in Unity Editor
+        /// </summary>
+        public bool useFallbackLocation = false;
+
         /// Call once, or when the carrier changes. May throw DistributedMatchEngine.HttpException.
         /// <summary>
         /// Wrapper for Register Client. First call to establish the connection with your backend(server) deployed on MobiledgeX
@@ -219,16 +226,21 @@ namespace MobiledgeX
             Debug.Log("MobiledgeX: Cannot Get location in Unity Editor. Returning fallback location. Developer can configure fallback location with SetFallbackLocation");
             location.longitude = fallbackLocation.Longitude;
             location.latitude = fallbackLocation.Latitude;
-#elif PLATFORM_LUMIN
-            Debug.Log("MobiledgeX: Cannot Get location on Lumin Platform. Returning fallback location. Developer can configure fallback location with SetFallbackLocation");
-            location.longitude = fallbackLocation.Longitude;
-            location.latitude = fallbackLocation.Latitude;
 #else
-            location = LocationService.RetrieveLocation();
-            // 0f and 0f are hard zeros if no location service.
-            if (location.longitude == 0f && location.latitude == 0f)
+            if (useFallbackLocation)
             {
-                Debug.LogError("LocationServices returned a location at (0,0)");
+                location.longitude = fallbackLocation.Longitude;
+                location.latitude = fallbackLocation.Latitude;
+                Debug.Log("MobiledgeX: Using FallbackLocation ["+location.latitude+", "+location.longitude+"]");
+            }
+            else
+            {
+                location = LocationService.RetrieveLocation();
+                // 0f and 0f are hard zeros if no location service.
+                if (location.longitude == 0f && location.latitude == 0f)
+                {
+                    Debug.LogError("LocationServices returned a location at (0,0)");
+                }
             }
 #endif
     }
