@@ -227,12 +227,14 @@ namespace MobiledgeX
             location.longitude = fallbackLocation.Longitude;
             location.latitude = fallbackLocation.Latitude;
 #else
-            if (useFallbackLocation) {
+            if (useFallbackLocation)
+            {
                 location.longitude = fallbackLocation.Longitude;
                 location.latitude = fallbackLocation.Latitude;
                 Debug.Log("MobiledgeX: Using FallbackLocation ["+location.latitude+", "+location.longitude+"]");
             }
-            else{
+            else
+            {
                 location = LocationService.RetrieveLocation();
                 // 0f and 0f are hard zeros if no location service.
                 if (location.longitude == 0f && location.latitude == 0f)
