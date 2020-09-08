@@ -36,6 +36,7 @@ namespace MobiledgeX
         Vector2 scrollPos;
         GUIStyle headerStyle;
         GUIStyle labelStyle;
+        GUIStyle sdkVersionStyle;
         static MobiledgeXSettings settings;
         static bool editorPopUp;
 
@@ -65,6 +66,8 @@ namespace MobiledgeX
 
             return result;
         }
+
+        private string sdkVersion;
 
         #endregion
 
@@ -129,6 +132,9 @@ namespace MobiledgeX
         private void Awake()
         {
             settings = (MobiledgeXSettings)Resources.Load("MobiledgeXSettings", typeof(MobiledgeXSettings));
+            settings.sdkVersion = GetSDKVersion();
+            sdkVersion = settings.sdkVersion;
+
             if (PlayerSettings.iOS.locationUsageDescription.Length < 1)
             {
                 SetUpLocationSettings();
@@ -172,12 +178,20 @@ namespace MobiledgeX
                     LicenseWindow();
                     break;
             }
+            GUILayout.Label(sdkVersion, sdkVersionStyle);
         }
 
         #endregion
 
 
         #region Private Helper Functions
+
+        string GetSDKVersion()
+        {
+            TextAsset asset = (TextAsset)AssetDatabase.LoadAssetAtPath("Packages/com.mobiledgex.sdk/package.json", typeof(TextAsset));
+            string sdkVersion = JsonUtility.FromJson<PackageDetails>(asset.text).version;
+            return "v" + sdkVersion;
+        }
 
         /// <summary>
         /// Load Resources to be used in OnGUI
@@ -190,6 +204,8 @@ namespace MobiledgeX
             headerStyle.normal.background = MakeTex(20, 20, new Color(0.4f, 0.4f, 0.4f));
             labelStyle = new GUIStyle(GUI.skin.label);
             labelStyle.normal.textColor = Color.white;
+            sdkVersionStyle = new GUIStyle(GUI.skin.label);
+            sdkVersionStyle.alignment = TextAnchor.UpperRight;
         }
         /// <summary>
         /// Draws MobiledgeX Logo.
@@ -436,4 +452,11 @@ namespace MobiledgeX
 
         #endregion
     }
+}
+
+//for JSON Utility
+public class PackageDetails
+{
+    public string version;
+    
 }

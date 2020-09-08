@@ -33,7 +33,8 @@ namespace MobiledgeX
 {
     public partial class MobiledgeXIntegration
     {
-
+        public static string sdkVersion { get; set; }
+        
         /// <summary>
         /// Scriptable Object Holding MobiledgeX Settings (OrgName, AppName, AppVers)
         /// </summary>
