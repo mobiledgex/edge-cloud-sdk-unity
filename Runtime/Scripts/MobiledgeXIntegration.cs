@@ -115,7 +115,7 @@ namespace MobiledgeX
                 Debug.LogError("Register Failed!");
                 return false;
             }
-            Debug.LogError("Register OK!");
+            Debug.Log("Register OK!");
             bool found = await FindCloudlet(dmeHost, dmePort);
             if (!found)
             {
