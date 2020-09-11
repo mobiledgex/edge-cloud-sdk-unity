@@ -115,7 +115,7 @@ namespace MobiledgeX
                 Debug.LogError("Register Failed!");
                 return false;
             }
-            Debug.LogError("Register OK!");
+            Debug.Log("Register OK!");
             bool found = await FindCloudlet(dmeHost, dmePort);
             if (!found)
             {
@@ -201,11 +201,6 @@ namespace MobiledgeX
                 Debug.Log("MobiledgeX: Last FindCloudlet returned null. Call FindCloudlet again before GetAppPort");
                 throw new AppPortException("Last FindCloudlet returned null. Call FindCloudlet again before GetAppPort");
             }
-            
-            if (AppPortForMel(latestFindCloudletReply, proto, port))
-            {
-                Debug.Log("Updated public port.");
-            }
 
             Dictionary<int, AppPort> appPortsDict = new Dictionary<int, AppPort>();
 
@@ -248,47 +243,7 @@ namespace MobiledgeX
                 throw new AppPortException(proto + " " + port + " is not defined for your Application");
             }
         }
-        
-        /// <summary>
-        /// Updates the public port, if necessary, if this AppPort is in Mel Mode.
-        /// </summary>
-        private bool AppPortForMel(FindCloudletReply reply, LProto proto, int defaultPort)
-        {
-            if (IsNetworkDataPathEdgeEnabled() && melMessaging.IsMelEnabled())
-            {
-                if (reply.ports.Length > 1)
-                {
-                    throw new AppPortException("MobiledgeX: Unexpected Port length for MEL mode.");
-                }
 
-                AppPort appPort = reply.ports[0];
-                if (appPort.internal_port != 0)
-                {
-                    return true; // Update only once.
-                }
-
-                if (defaultPort == 0 && appPort.internal_port == 0)
-                {
-                    throw new AppPortException("MobiledgeX: The AppPort's internal port is 0, the app must specify the default protocol port to use.");
-                }
-
-                // Internal Port of 0 is updated to lookup public port.
-                appPort.public_port = defaultPort;
-                appPort.internal_port = defaultPort;
-                switch (proto)
-                {
-                  case LProto.L_PROTO_HTTP:
-                      appPort.proto = LProto.L_PROTO_TCP;
-                      break;
-                  default:
-                      appPort.proto = proto;
-                      break;
-                }
-                return true;
-            }
-            return false;
-        }
-        
         /// <summary>
         /// Wrapper for CreateUrl. Returns the L7 url for application backend
         /// </summary>
