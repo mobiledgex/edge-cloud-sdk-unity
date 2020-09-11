@@ -69,7 +69,7 @@ namespace MobiledgeX
 
         private string sdkVersion;
         private int selectedRegionIndex = 0;
-        private string[] regionOptions = new string[5] { "Any", "EU", "JP", "KR", "US" };
+        private string[] regionOptions = new string[5] { "Nearest", "EU", "JP", "KR", "US" };
         private string region;
         public string Region
         {
@@ -86,7 +86,7 @@ namespace MobiledgeX
                         return JP_DME;
                     case "US":
                         return US_DME;
-                    case "Any":
+                    case "Nearest":
                     default:
                         return "";
                 }
