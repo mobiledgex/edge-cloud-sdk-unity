@@ -88,10 +88,11 @@ namespace MobiledgeX
                         return US_DME;
                     case "Nearest":
                     default:
-                        return "";
+                        return WIFI_DME;
                 }
             }
         }
+        const string WIFI_DME = "wifi.dme.mobiledgex.net";
         const string EU_DME = "eu-mexdemo.dme.mobiledgex.net";
         const string KR_DME = "kr-mexdemo.dme.mobiledgex.net";
         const string US_DME = "us-mexdemo.dme.mobiledgex.net";
@@ -383,8 +384,8 @@ namespace MobiledgeX
             {
                 // Register and find cloudlet:
                 clog("Registering to DME ...", "");
-                checkResult = await integration.Register(Region == "" ? "" : Region, Region == "" ? (uint) 0 : MatchingEngine.defaultDmeRestPort);
-                bool foundCloudlet = await integration.FindCloudlet(Region == "" ? "" : Region, Region == "" ? (uint)0 : MatchingEngine.defaultDmeRestPort);
+                checkResult = await integration.Register(Region, MatchingEngine.defaultDmeRestPort);
+                bool foundCloudlet = await integration.FindCloudlet(Region, MatchingEngine.defaultDmeRestPort);
 
                 if (!foundCloudlet)
                 {
