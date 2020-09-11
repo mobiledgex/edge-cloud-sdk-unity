@@ -96,7 +96,6 @@ namespace MobiledgeX
         const string KR_DME = "kr-mexdemo.dme.mobiledgex.net";
         const string US_DME = "us-mexdemo.dme.mobiledgex.net";
         const string JP_DME = "jp-mexdemo.dme.mobiledgex.net";
-        const uint DME_PORT = 38001;
 
         #endregion
 
@@ -384,8 +383,8 @@ namespace MobiledgeX
             {
                 // Register and find cloudlet:
                 clog("Registering to DME ...", "");
-                checkResult = await integration.Register(Region == "" ? "" : Region, Region == "" ? (uint) 0 : DME_PORT);
-                bool foundCloudlet = await integration.FindCloudlet(Region == "" ? "" : Region, Region == "" ? (uint)0 : DME_PORT);
+                checkResult = await integration.Register(Region == "" ? "" : Region, Region == "" ? (uint) 0 : MatchingEngine.defaultDmeRestPort);
+                bool foundCloudlet = await integration.FindCloudlet(Region == "" ? "" : Region, Region == "" ? (uint)0 : MatchingEngine.defaultDmeRestPort);
 
                 if (!foundCloudlet)
                 {
