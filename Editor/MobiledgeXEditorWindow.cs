@@ -69,9 +69,8 @@ namespace MobiledgeX
 
         private string sdkVersion;
         private int selectedRegionIndex = 0;
-        private string region;
-
         private string[] regionOptions = new string[5] { "Any", "EU", "JP", "KR", "US" };
+        private string region;
         public string Region
         {
             set { region = value; }
@@ -210,7 +209,6 @@ namespace MobiledgeX
             }
             GUILayout.Label(sdkVersion, sdkVersionStyle);
         }
-
         #endregion 
 
 
@@ -268,14 +266,12 @@ namespace MobiledgeX
             settings.appName = EditorGUILayout.TextField("App Name", settings.appName);
             settings.appVers = EditorGUILayout.TextField("App Version", settings.appVers);
             EditorGUI.BeginChangeCheck();
-
             selectedRegionIndex = EditorGUILayout.Popup("Region (Editor Only)", selectedRegionIndex, regionOptions);
 
             if (EditorGUI.EndChangeCheck())
             {
                 Region = regionOptions[selectedRegionIndex];
             }
-
             EditorGUILayout.BeginVertical(headerStyle);
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(300), GUILayout.Height(100));
             GUILayout.Label(progressText, labelStyle);
@@ -383,14 +379,13 @@ namespace MobiledgeX
         {
             MobiledgeXIntegration integration = new MobiledgeXIntegration();
             bool checkResult = false;
-            bool foundCloudlet = false;
             integration.UseWifiOnly(true);
             try
             {
                 // Register and find cloudlet:
                 clog("Registering to DME ...", "");
                 checkResult = await integration.Register(Region == "" ? "" : Region, Region == "" ? (uint) 0 : DME_PORT);
-                foundCloudlet = await integration.FindCloudlet(Region == "" ? "" : Region, Region == "" ? (uint)0 : DME_PORT);
+                bool foundCloudlet = await integration.FindCloudlet(Region == "" ? "" : Region, Region == "" ? (uint)0 : DME_PORT);
 
                 if (!foundCloudlet)
                 {
@@ -501,5 +496,3 @@ public class PackageDetails
     public string version;
     
 }
-
- 
