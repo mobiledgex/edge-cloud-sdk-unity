@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this package will be documented in this file.
 
+## [2.1.3] - 2020-09-16
+
+### Fix & Improvements.
+- SDK Version is available in MobiledgeX Editor Window.
+- GetAppPort (LProto.UDP) fixed.
+- You can use fallback location in production if your device doesn't support Location Services, mobiledgeXIntegration.useFallBackLocation = true.
+- ComputerVision Example added to the SDK.
+
+### MobiledgeX Settings 
+- Optional Regions in Unity Editor Only. 
 
 ## [2.1.2] - 2020-07-21
 
