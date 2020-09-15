@@ -68,6 +68,35 @@ namespace MobiledgeX
         }
 
         private string sdkVersion;
+        private int selectedRegionIndex = 0;
+        private string[] regionOptions = new string[5] { "Nearest", "EU", "JP", "KR", "US" };
+        private string region;
+        public string Region
+        {
+            set { region = value; }
+            get
+            {
+                switch (region)
+                {
+                    case "EU":
+                        return EU_DME;
+                    case "KR":
+                        return KR_DME;
+                    case "JP":
+                        return JP_DME;
+                    case "US":
+                        return US_DME;
+                    case "Nearest":
+                    default:
+                        return WIFI_DME;
+                }
+            }
+        }
+        const string WIFI_DME = "wifi.dme.mobiledgex.net";
+        const string EU_DME = "eu-mexdemo.dme.mobiledgex.net";
+        const string KR_DME = "kr-mexdemo.dme.mobiledgex.net";
+        const string US_DME = "us-mexdemo.dme.mobiledgex.net";
+        const string JP_DME = "jp-mexdemo.dme.mobiledgex.net";
 
         #endregion
 
@@ -180,8 +209,7 @@ namespace MobiledgeX
             }
             GUILayout.Label(sdkVersion, sdkVersionStyle);
         }
-
-        #endregion
+        #endregion 
 
 
         #region Private Helper Functions
@@ -237,6 +265,13 @@ namespace MobiledgeX
             settings.orgName = EditorGUILayout.TextField("Organization Name", settings.orgName);
             settings.appName = EditorGUILayout.TextField("App Name", settings.appName);
             settings.appVers = EditorGUILayout.TextField("App Version", settings.appVers);
+            EditorGUI.BeginChangeCheck();
+            selectedRegionIndex = EditorGUILayout.Popup("Region (Editor Only)", selectedRegionIndex, regionOptions);
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                Region = regionOptions[selectedRegionIndex];
+            }
             EditorGUILayout.BeginVertical(headerStyle);
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(300), GUILayout.Height(100));
             GUILayout.Label(progressText, labelStyle);
@@ -349,8 +384,9 @@ namespace MobiledgeX
             {
                 // Register and find cloudlet:
                 clog("Registering to DME ...", "");
-                checkResult = await integration.Register();
-                bool foundCloudlet = await integration.FindCloudlet();
+                checkResult = await integration.Register(Region, MatchingEngine.defaultDmeRestPort);
+                bool foundCloudlet = await integration.FindCloudlet(Region, MatchingEngine.defaultDmeRestPort);
+
                 if (!foundCloudlet)
                 {
                     Debug.LogError("MobiledgeX: Couldn't Find findCloudletReply, Make Sure you created App Instances for your Application and they are deployed in the correct region.");
