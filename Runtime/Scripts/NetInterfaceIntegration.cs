@@ -51,6 +51,26 @@ namespace MobiledgeX
       return NetworkInterface.GetAllNetworkInterfaces();
     }
 
+    private IPEndPoint GetDefaultLocalEndPoint()
+    {
+      IPEndPoint defaultEndPoint = null;
+      using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
+      {
+        // Should not actually connect if UDP (connectionless)
+        try
+        {
+          socket.Connect("65.52.63.145", 38002); // if using wifi.dme.mobiledgex.net, this causes an host not found error some devices.
+          defaultEndPoint = socket.LocalEndPoint as IPEndPoint;
+        }
+        catch (SocketException se)
+        {
+          UnityEngine.Debug.Log("Exception trying to test endpoint: " + se.Message);
+        }
+      }
+      return defaultEndPoint;
+    }
+
+    // In this implementation, it also checks if it's on the default network route.
     public string GetIPAddress(string sourceNetInterfaceName, AddressFamily addressfamily = AddressFamily.InterNetwork)
     {
       if (!NetworkInterface.GetIsNetworkAvailable())
@@ -59,73 +79,47 @@ namespace MobiledgeX
       }
 
       NetworkInterface[] netInterfaces = GetInterfaces();
+      IPEndPoint defaultLocalEndPoint = GetDefaultLocalEndPoint();
 
       string ipAddress = null;
-      string ipAddressV4 = null;
-      string ipAddressV6 = null;
+      string ipAddressV4;
+      string ipAddressV6;
 
       foreach (NetworkInterface iface in netInterfaces)
       {
+        ipAddressV4 = null;
+        ipAddressV6 = null;
         if (iface.Name.Equals(sourceNetInterfaceName))
         {
           IPInterfaceProperties ipifaceProperties = iface.GetIPProperties();
           foreach (UnicastIPAddressInformation ip in ipifaceProperties.UnicastAddresses)
           {
-            if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
-            {
-              ipAddressV4 = ip.Address.ToString();
-            }
-            if (ip.Address.AddressFamily == AddressFamily.InterNetworkV6)
-            {
-              ipAddressV6 = ip.Address.ToString();
+            string potentialIP = ip.Address.ToString();
+            if (potentialIP.Equals(defaultLocalEndPoint.Address.ToString())) {
+              // This interface is on the default network route.
+              if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
+              {
+                ipAddressV4 = potentialIP;
+              }
+              if (ip.Address.AddressFamily == AddressFamily.InterNetworkV6)
+              {
+                ipAddressV6 = potentialIP;
+              }
             }
           }
 
           if (addressfamily == AddressFamily.InterNetworkV6)
           {
-            return ipAddressV6;
+            ipAddress = ipAddressV6;
           }
-
-          if (addressfamily == AddressFamily.InterNetwork)
+          else if (addressfamily == AddressFamily.InterNetwork)
           {
-            return ipAddressV4;
+            ipAddress = ipAddressV4;
           }
         }
       }
+
       return ipAddress;
-    }
-
-    private bool TestSameDefaultRoute(string iName)
-    {
-      using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
-      {
-        // Should not actually connect if UDP (connectionless)
-        try
-        {
-          socket.Connect("65.52.63.145", 38002); // if using wifi.dme.mobiledgex.net, this causes an host not found error some devices.
-          IPEndPoint defaultEndPoint = socket.LocalEndPoint as IPEndPoint;
-
-          if (defaultEndPoint != null)
-          {
-            // Is default endpoint that of this interface?
-            string ipv6 = GetIPAddress(iName, AddressFamily.InterNetworkV6);
-            if (ipv6 != null && ipv6.Equals(defaultEndPoint.Address.ToString()))
-            {
-              return true;
-            }
-            string ipv4 = GetIPAddress(iName, AddressFamily.InterNetwork);
-            if (ipv4 != null && ipv4.Equals(defaultEndPoint.Address.ToString()))
-            {
-              return true;
-            }
-          }
-        }
-        catch (SocketException se)
-        {
-          UnityEngine.Debug.Log("Exception trying to test endpoint: " + se.Message);
-        }
-      }
-      return false;
     }
 
     public bool HasCellular()
@@ -137,7 +131,8 @@ namespace MobiledgeX
         string iName = iface.Name;
         if (networkInterfaceName.CELLULAR.IsMatch(iName))
         {
-          if (TestSameDefaultRoute(iName))
+          if (GetIPAddress(iName, AddressFamily.InterNetworkV6) != null ||
+              GetIPAddress(iName, AddressFamily.InterNetwork) != null)
           {
             return true;
           }
@@ -156,7 +151,8 @@ namespace MobiledgeX
         string iName = iface.Name;
         if (networkInterfaceName.WIFI.IsMatch(iName))
         {
-          if (TestSameDefaultRoute(iName))
+          if (GetIPAddress(iName, AddressFamily.InterNetworkV6) != null ||
+              GetIPAddress(iName, AddressFamily.InterNetwork) != null)
           {
             return true;
           }

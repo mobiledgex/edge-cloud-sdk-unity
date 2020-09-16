@@ -341,9 +341,14 @@ namespace MobiledgeX
                 }
             }
 
-            string cellularIPAddress = matchingEngine.netInterface.GetIPAddress(
-                    matchingEngine.GetAvailableCellularName(matchingEngine.netInterface.GetNetworkInterfaceName()));
-            if (cellularIPAddress == null)
+            // Check both IP stacks:
+            string cellularIPAddressV6 = matchingEngine.netInterface.GetIPAddress(
+                    matchingEngine.GetAvailableCellularName(matchingEngine.netInterface.GetNetworkInterfaceName()),
+                    AddressFamily.InterNetworkV6);
+            string cellularIPAddressV4 = matchingEngine.netInterface.GetIPAddress(
+                    matchingEngine.GetAvailableCellularName(matchingEngine.netInterface.GetNetworkInterfaceName()),
+                    AddressFamily.InterNetwork);
+            if (cellularIPAddressV4 == null && cellularIPAddressV6 == null)
             {
                 Debug.Log("MobiledgeX: Unable to find ip address for local cellular interface.");
                 return false;
