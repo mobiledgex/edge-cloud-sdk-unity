@@ -5,12 +5,12 @@ All notable changes to this package will be documented in this file.
 
 ### Fix & Improvements.
 - SDK Version is available in MobiledgeX Editor Window.
-- GetAppPort (LProto.UDP) fixed.
-- You can use fallback location in production if your device doesn't support Location Services, mobiledgeXIntegration.useFallBackLocation = true.
+- MobiledgeX logo added to (LocationService.cs, ExampleRest.cs,ExampleWebSocket.cs)
+- GetAppPort (LProto.UDP) fixed, returns the correct mapped UDP Port.
+- You can use fallback location in production, if your device doesn't support Location Services use mobiledgeXIntegration.useFallBackLocation = true.
 - ComputerVision Example added to the SDK.
+- Optional region selection to connect to an app instance in a specific region (works in Unity Editor Only).
 
-### MobiledgeX Settings 
-- Optional Regions in Unity Editor Only. 
 
 ## [2.1.2] - 2020-07-21
 
@@ -20,6 +20,5 @@ All notable changes to this package will be documented in this file.
 - Added an EnsureLocation function to LocationServices. If you are using Location Services, please wait on this function for your app to get valid GPS location data from your device. 
 - Renamed MobiledgeXSocketClient to MobiledgeXWebsocketClient 
 - MobiledgeXWebsocketClient now sends Binary & Text
-
 ### MobiledgeX Settings 
 - Added an optional authentication token field to the MobiledgeXSettings asset. 
