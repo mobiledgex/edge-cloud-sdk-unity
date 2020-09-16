@@ -18,6 +18,8 @@
 using DistributedMatchEngine;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Net;
+using UnityEngine;
 
 namespace MobiledgeX
 {
@@ -93,39 +95,49 @@ namespace MobiledgeX
       return ipAddress;
     }
 
-    public bool HasCellular()
+    private bool TestSameDefaultRoute(string iName)
     {
-      NetworkInterface[] netInterfaces = GetInterfaces();
-      bool foundByIp = false;
-
-      foreach (NetworkInterface iface in netInterfaces)
+      using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
       {
-        foreach (string cellularName in networkInterfaceName.CELLULAR)
+        // Should not actually connect if UDP (connectionless)
+        try
         {
-          if (iface.Name.Equals(cellularName))
+          socket.Connect("65.52.63.145", 38002); // if using wifi.dme.mobiledgex.net, this causes an host not found error some devices.
+          IPEndPoint defaultEndPoint = socket.LocalEndPoint as IPEndPoint;
+
+          if (defaultEndPoint != null)
           {
-            // unreliable.
-            if (iface.OperationalStatus == OperationalStatus.Up)
+            // Is default endpoint that of this interface?
+            string ipv6 = GetIPAddress(iName, AddressFamily.InterNetworkV6);
+            if (ipv6 != null && ipv6.Equals(defaultEndPoint.Address.ToString()))
+            {
+              return true;
+            }
+            string ipv4 = GetIPAddress(iName, AddressFamily.InterNetwork);
+            if (ipv4 != null && ipv4.Equals(defaultEndPoint.Address.ToString()))
             {
               return true;
             }
           }
+        }
+        catch (SocketException se)
+        {
+          UnityEngine.Debug.Log("Exception trying to test endpoint: " + se.Message);
+        }
+      }
+      return false;
+    }
 
-          // First one with both IPv4 and IPv6 is a heuristic without NetTest. OperationStatus seems inaccurate or "unknown".
-          if (GetIPAddress(cellularName, AddressFamily.InterNetwork) != null &&
-              GetIPAddress(cellularName, AddressFamily.InterNetworkV6) != null)
-          {
-            foundByIp = true;
-          }
-          else if (GetIPAddress(cellularName, AddressFamily.InterNetworkV6) != null)
-          {
-            // No-op. Every interface has IpV6.
-          }
-          else if (GetIPAddress(cellularName, AddressFamily.InterNetwork) != null)
-          {
-            foundByIp = true;
-          }
-          if (foundByIp)
+    public bool HasCellular()
+    {
+      NetworkInterface[] netInterfaces = GetInterfaces();
+
+      foreach (NetworkInterface iface in netInterfaces)
+      {
+        string iName = iface.Name;
+        if (networkInterfaceName.CELLULAR.IsMatch(iName))
+        {
+          if (TestSameDefaultRoute(iName))
           {
             return true;
           }
@@ -138,33 +150,13 @@ namespace MobiledgeX
     public bool HasWifi()
     {
       NetworkInterface[] netInterfaces = GetInterfaces();
-      bool foundByIp = false;
 
       foreach (NetworkInterface iface in netInterfaces)
       {
-        foreach (string wifiName in networkInterfaceName.WIFI)
+        string iName = iface.Name;
+        if (networkInterfaceName.WIFI.IsMatch(iName))
         {
-          // unreliable.
-          if (iface.Name.Equals(wifiName) && iface.OperationalStatus == OperationalStatus.Up)
-          {
-            return true;
-          }
-
-          // First one with both IPv4 and IPv6 is a heuristic without NetTest. OperationStatus seems inaccurate or "unknown".
-          if (GetIPAddress(wifiName, AddressFamily.InterNetwork) != null &&
-              GetIPAddress(wifiName, AddressFamily.InterNetworkV6) != null)
-          {
-            foundByIp = true;
-          }
-          else if (GetIPAddress(wifiName, AddressFamily.InterNetworkV6) != null)
-          {
-            // No-op. Every interface has IpV6.
-          }
-          else if (GetIPAddress(wifiName, AddressFamily.InterNetwork) != null)
-          {
-            foundByIp = true;
-          }
-          if (foundByIp)
+          if (TestSameDefaultRoute(iName))
           {
             return true;
           }
