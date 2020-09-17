@@ -241,13 +241,10 @@ namespace MobiledgeX
         private void DrawLogo()
         {
             EditorGUILayout.BeginHorizontal();
-            Rect rect = GUILayoutUtility.GetRect(200, 50);
-            int padding = EditorStyles.label.padding.vertical;
-            rect.x = 100;
-            rect.y += padding;
-            rect.width = 180;
-            rect.height = 30;
-            GUI.DrawTexture(rect, mexLogo, ScaleMode.StretchToFill, true, 10.0F);
+            Rect reservedRect = GUILayoutUtility.GetRect(240, 40);
+            Rect LogoRect = new Rect(0, 0, 150, 25);
+            Rect LogoLayout = new Rect((reservedRect.width/2)-(LogoRect.width / 2), (reservedRect.height/2)-(LogoRect.height/2), LogoRect.width, LogoRect.height);
+            GUI.DrawTexture(LogoLayout, mexLogo, ScaleMode.ScaleToFit, true, 6);
             EditorGUILayout.EndHorizontal();
         }
 
