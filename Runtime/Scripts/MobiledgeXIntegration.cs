@@ -33,7 +33,8 @@ namespace MobiledgeX
 {
     public partial class MobiledgeXIntegration
     {
-
+        public static string sdkVersion { get; set; }
+        
         /// <summary>
         /// Scriptable Object Holding MobiledgeX Settings (OrgName, AppName, AppVers)
         /// </summary>
@@ -85,12 +86,18 @@ namespace MobiledgeX
         /// <summary>
         /// Constructor for MobiledgeXIntegration. This class has functions that wrap DistributedMatchEngine functions for ease of use
         /// </summary>
-        public MobiledgeXIntegration()
+        public MobiledgeXIntegration(CarrierInfo carrierInfo = null, NetInterface netInterface = null, UniqueID uniqueId = null)
         {
             ConfigureMobiledgeXSettings();
             // Set the platform specific way to get SIM carrier information.
             pIntegration = new PlatformIntegration();
-            matchingEngine = new MatchingEngine(pIntegration.CarrierInfo, pIntegration.NetInterface, pIntegration.UniqueID);
+
+            // Optionally override each interface:
+            matchingEngine = new MatchingEngine(
+              carrierInfo == null ? pIntegration.CarrierInfo : carrierInfo,
+              netInterface == null ? pIntegration.NetInterface : netInterface,
+              uniqueId == null ? pIntegration.UniqueID : uniqueId);
+
             melMessaging = new MelMessaging(appName);
             matchingEngine.SetMelMessaging(melMessaging);
         }
@@ -100,22 +107,29 @@ namespace MobiledgeX
         /// RegisterClientException and FindCloudletException will give more details on reason for failure
         /// </summary>
         /// <returns>bool Task</returns>
-        public async Task<bool> RegisterAndFindCloudlet()
+        public async Task<bool> RegisterAndFindCloudlet(string dmeHost = null, uint dmePort = 0)
         {
-            bool registered = await Register();
+            bool registered = await Register(dmeHost, dmePort);
             if (!registered)
             {
+                Debug.LogError("Register Failed!");
                 return false;
             }
-
-            return await FindCloudlet();
+            Debug.Log("Register OK!");
+            bool found = await FindCloudlet(dmeHost, dmePort);
+            if (!found)
+            {
+              Debug.LogError("FindCloudlet Failed!");
+              return false;
+            }
+            return true;
         }
 
         /// <summary>
         /// Wrapper for VerifyLocation. Verification of location based on the device location and the cell tower location
         /// </summary>
         /// <returns>bool Task</returns>
-        public async Task<bool> VerifyLocation()
+        public async Task<bool> VerifyLocation(string dmeHost = null, uint dmePort = 0)
         {
             latestVerifyLocationStatus = false;
 
@@ -128,7 +142,15 @@ namespace MobiledgeX
             await UpdateLocationAndCarrierInfo();
 
             VerifyLocationRequest req = matchingEngine.CreateVerifyLocationRequest(location, carrierName);
-            VerifyLocationReply reply = await matchingEngine.VerifyLocation(req);
+            VerifyLocationReply reply;
+            if (dmeHost == null || dmePort == 0)
+            {
+                reply = await matchingEngine.VerifyLocation(req);
+            }
+            else
+            {
+                reply = await matchingEngine.VerifyLocation(dmeHost, dmePort, req);
+            }
 
             // The return is not binary, but one can decide the particular app's policy
             // on pass or failing the location check. Not being verified or the country
@@ -179,11 +201,6 @@ namespace MobiledgeX
                 Debug.Log("MobiledgeX: Last FindCloudlet returned null. Call FindCloudlet again before GetAppPort");
                 throw new AppPortException("Last FindCloudlet returned null. Call FindCloudlet again before GetAppPort");
             }
-            
-            if (AppPortForMel(latestFindCloudletReply, proto, port))
-            {
-                Debug.Log("Updated public port.");
-            }
 
             Dictionary<int, AppPort> appPortsDict = new Dictionary<int, AppPort>();
 
@@ -226,47 +243,7 @@ namespace MobiledgeX
                 throw new AppPortException(proto + " " + port + " is not defined for your Application");
             }
         }
-        
-        /// <summary>
-        /// Updates the public port, if necessary, if this AppPort is in Mel Mode.
-        /// </summary>
-        private bool AppPortForMel(FindCloudletReply reply, LProto proto, int defaultPort)
-        {
-            if (IsNetworkDataPathEdgeEnabled() && melMessaging.IsMelEnabled())
-            {
-                if (reply.ports.Length > 1)
-                {
-                    throw new AppPortException("MobiledgeX: Unexpected Port length for MEL mode.");
-                }
 
-                AppPort appPort = reply.ports[0];
-                if (appPort.internal_port != 0)
-                {
-                    return true; // Update only once.
-                }
-
-                if (defaultPort == 0 && appPort.internal_port == 0)
-                {
-                    throw new AppPortException("MobiledgeX: The AppPort's internal port is 0, the app must specify the default protocol port to use.");
-                }
-
-                // Internal Port of 0 is updated to lookup public port.
-                appPort.public_port = defaultPort;
-                appPort.internal_port = defaultPort;
-                switch (proto)
-                {
-                  case LProto.L_PROTO_HTTP:
-                      appPort.proto = LProto.L_PROTO_TCP;
-                      break;
-                  default:
-                      appPort.proto = proto;
-                      break;
-                }
-                return true;
-            }
-            return false;
-        }
-        
         /// <summary>
         /// Wrapper for CreateUrl. Returns the L7 url for application backend
         /// </summary>

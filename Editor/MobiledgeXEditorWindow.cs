@@ -36,6 +36,7 @@ namespace MobiledgeX
         Vector2 scrollPos;
         GUIStyle headerStyle;
         GUIStyle labelStyle;
+        GUIStyle sdkVersionStyle;
         static MobiledgeXSettings settings;
         static bool editorPopUp;
 
@@ -66,18 +67,49 @@ namespace MobiledgeX
             return result;
         }
 
+        private string sdkVersion;
+        private int selectedRegionIndex = 0;
+        private string[] regionOptions = new string[5] { "Nearest", "EU", "JP", "KR", "US" };
+        private string region;
+        public string Region
+        {
+            set { region = value; }
+            get
+            {
+                switch (region)
+                {
+                    case "EU":
+                        return EU_DME;
+                    case "KR":
+                        return KR_DME;
+                    case "JP":
+                        return JP_DME;
+                    case "US":
+                        return US_DME;
+                    case "Nearest":
+                    default:
+                        return WIFI_DME;
+                }
+            }
+        }
+        const string WIFI_DME = "wifi.dme.mobiledgex.net";
+        const string EU_DME = "eu-mexdemo.dme.mobiledgex.net";
+        const string KR_DME = "kr-mexdemo.dme.mobiledgex.net";
+        const string US_DME = "us-mexdemo.dme.mobiledgex.net";
+        const string JP_DME = "jp-mexdemo.dme.mobiledgex.net";
+
         #endregion
 
         #region  Mobiledgex ToolBar Menu items
 
-        [MenuItem("MobiledgeX/Setup")]
+        [MenuItem("MobiledgeX/Setup", false, 0)]
         public static void ShowWindow()
         {
             MobiledgeXEditorWindow window = (MobiledgeXEditorWindow)EditorWindow.GetWindow(typeof(MobiledgeXEditorWindow));
             window.Show();
         }
 
-        [MenuItem("MobiledgeX/Settings")]
+        [MenuItem("MobiledgeX/Settings", false, 0)]
         public static void ShowSettings()
         {
             settings = (MobiledgeXSettings)Resources.Load("MobiledgeXSettings", typeof(MobiledgeXSettings));
@@ -85,19 +117,27 @@ namespace MobiledgeX
             EditorGUIUtility.PingObject(settings);
         }
 
-        [MenuItem("MobiledgeX/API References")]
+        [MenuItem("MobiledgeX/Docs/API References", false, 20)]
         public static void OpenAPIReferencesURL()
         {
             Application.OpenURL("https://api.mobiledgex.net/#section/Edge-SDK-Unity");
         }
 
-        [MenuItem("MobiledgeX/Documentation")]
+        [MenuItem("MobiledgeX/Docs/SDK Documentation", false, 20)]
         public static void OpenDocumentationURL()
         {
             Application.OpenURL("https://developers.mobiledgex.com/sdk-libraries/unity-sdk");
         }
 
-        [MenuItem("MobiledgeX/Remove MobiledgeX")]
+
+        [MenuItem("MobiledgeX/Examples/Computer Vision", false, 20)]
+        public static void ImportComputerVisionExample()
+        {
+            string sdkPath = Path.GetFullPath("Packages/com.mobiledgex.sdk");
+            AssetDatabase.ImportPackage(Path.Combine(sdkPath, "Resources/Examples/ComputerVision.unitypackage"), true);
+        }
+
+        [MenuItem("MobiledgeX/Remove MobiledgeX", false, 40)]
         public static void RemoveMobiledgeX()
         {
              if (EditorUtility.DisplayDialog("MobiledgeX","Choosing Remove will delete MobiledgeX package and close Unity Editor", "Remove", "Cancel"))
@@ -121,6 +161,9 @@ namespace MobiledgeX
         private void Awake()
         {
             settings = (MobiledgeXSettings)Resources.Load("MobiledgeXSettings", typeof(MobiledgeXSettings));
+            settings.sdkVersion = GetSDKVersion();
+            sdkVersion = settings.sdkVersion;
+
             if (PlayerSettings.iOS.locationUsageDescription.Length < 1)
             {
                 SetUpLocationSettings();
@@ -164,12 +207,19 @@ namespace MobiledgeX
                     LicenseWindow();
                     break;
             }
+            GUILayout.Label(sdkVersion, sdkVersionStyle);
         }
-
-        #endregion
+        #endregion 
 
 
         #region Private Helper Functions
+
+        string GetSDKVersion()
+        {
+            TextAsset asset = (TextAsset)AssetDatabase.LoadAssetAtPath("Packages/com.mobiledgex.sdk/package.json", typeof(TextAsset));
+            string sdkVersion = JsonUtility.FromJson<PackageDetails>(asset.text).version;
+            return "v" + sdkVersion;
+        }
 
         /// <summary>
         /// Load Resources to be used in OnGUI
@@ -182,6 +232,8 @@ namespace MobiledgeX
             headerStyle.normal.background = MakeTex(20, 20, new Color(0.4f, 0.4f, 0.4f));
             labelStyle = new GUIStyle(GUI.skin.label);
             labelStyle.normal.textColor = Color.white;
+            sdkVersionStyle = new GUIStyle(GUI.skin.label);
+            sdkVersionStyle.alignment = TextAnchor.UpperRight;
         }
         /// <summary>
         /// Draws MobiledgeX Logo.
@@ -189,13 +241,10 @@ namespace MobiledgeX
         private void DrawLogo()
         {
             EditorGUILayout.BeginHorizontal();
-            Rect rect = GUILayoutUtility.GetRect(200, 50);
-            int padding = EditorStyles.label.padding.vertical;
-            rect.x = 100;
-            rect.y += padding;
-            rect.width = 180;
-            rect.height = 30;
-            GUI.DrawTexture(rect, mexLogo, ScaleMode.StretchToFill, true, 10.0F);
+            Rect reservedRect = GUILayoutUtility.GetRect(240, 40);
+            Rect LogoRect = new Rect(0, 0, 150, 25);
+            Rect LogoLayout = new Rect((reservedRect.width/2)-(LogoRect.width / 2), (reservedRect.height/2)-(LogoRect.height/2), LogoRect.width, LogoRect.height);
+            GUI.DrawTexture(LogoLayout, mexLogo, ScaleMode.ScaleToFit, true, 6);
             EditorGUILayout.EndHorizontal();
         }
 
@@ -213,6 +262,13 @@ namespace MobiledgeX
             settings.orgName = EditorGUILayout.TextField("Organization Name", settings.orgName);
             settings.appName = EditorGUILayout.TextField("App Name", settings.appName);
             settings.appVers = EditorGUILayout.TextField("App Version", settings.appVers);
+            EditorGUI.BeginChangeCheck();
+            selectedRegionIndex = EditorGUILayout.Popup("Region (Editor Only)", selectedRegionIndex, regionOptions);
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                Region = regionOptions[selectedRegionIndex];
+            }
             EditorGUILayout.BeginVertical(headerStyle);
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(300), GUILayout.Height(100));
             GUILayout.Label(progressText, labelStyle);
@@ -325,8 +381,9 @@ namespace MobiledgeX
             {
                 // Register and find cloudlet:
                 clog("Registering to DME ...", "");
-                checkResult = await integration.Register();
-                bool foundCloudlet = await integration.FindCloudlet();
+                checkResult = await integration.Register(Region, MatchingEngine.defaultDmeRestPort);
+                bool foundCloudlet = await integration.FindCloudlet(Region, MatchingEngine.defaultDmeRestPort);
+
                 if (!foundCloudlet)
                 {
                     Debug.LogError("MobiledgeX: Couldn't Find findCloudletReply, Make Sure you created App Instances for your Application and they are deployed in the correct region.");
@@ -428,4 +485,11 @@ namespace MobiledgeX
 
         #endregion
     }
+}
+
+//for JSON Utility
+public class PackageDetails
+{
+    public string version;
+    
 }

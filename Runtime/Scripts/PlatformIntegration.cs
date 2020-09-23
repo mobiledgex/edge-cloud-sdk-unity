@@ -44,17 +44,20 @@ namespace MobiledgeX
       // Editor or Player network management (overrides target device platform):
       switch (Application.platform)
       {
-        case RuntimePlatform.OSXPlayer: case RuntimePlatform.OSXEditor:
+        case RuntimePlatform.OSXPlayer:
+        case RuntimePlatform.OSXEditor:
           NetworkInterfaceName = new MacNetworkInterfaceName();
           CarrierInfo = new TestCarrierInfoClass();
           UniqueID = new TestUniqueIDClass();
           break;
-        case RuntimePlatform.LinuxPlayer: case RuntimePlatform.LinuxEditor:
+        case RuntimePlatform.LinuxPlayer:
+        case RuntimePlatform.LinuxEditor:
           NetworkInterfaceName = new LinuxNetworkInterfaceName();
           CarrierInfo = new TestCarrierInfoClass();
           UniqueID = new TestUniqueIDClass();
           break;
-        case RuntimePlatform.WindowsPlayer: case RuntimePlatform.WindowsEditor:
+        case RuntimePlatform.WindowsPlayer:
+        case RuntimePlatform.WindowsEditor:
           NetworkInterfaceName = new Windows10NetworkInterfaceName();
           CarrierInfo = new TestCarrierInfoClass();
           UniqueID = new TestUniqueIDClass();
