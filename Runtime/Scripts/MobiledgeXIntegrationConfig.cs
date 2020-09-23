@@ -37,6 +37,7 @@ namespace MobiledgeX
             orgName = settings.orgName;
             appName = settings.appName;
             appVers = settings.appVers;
+            sdkVersion = settings.sdkVersion;
 
             if (settings.authPublicKey.Length > 0)
             {

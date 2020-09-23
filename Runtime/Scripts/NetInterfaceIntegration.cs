@@ -18,6 +18,8 @@
 using DistributedMatchEngine;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Net;
+using UnityEngine;
 
 namespace MobiledgeX
 {
@@ -49,6 +51,26 @@ namespace MobiledgeX
       return NetworkInterface.GetAllNetworkInterfaces();
     }
 
+    private IPEndPoint GetDefaultLocalEndPoint()
+    {
+      IPEndPoint defaultEndPoint = null;
+      using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
+      {
+        // Should not actually connect if UDP (connectionless)
+        try
+        {
+          socket.Connect("65.52.63.145", 38002); // if using wifi.dme.mobiledgex.net, this causes an host not found error some devices.
+          defaultEndPoint = socket.LocalEndPoint as IPEndPoint;
+        }
+        catch (SocketException se)
+        {
+          UnityEngine.Debug.Log("Exception trying to test endpoint: " + se.Message);
+        }
+      }
+      return defaultEndPoint;
+    }
+
+    // In this implementation, it also checks if it's on the default network route.
     public string GetIPAddress(string sourceNetInterfaceName, AddressFamily addressfamily = AddressFamily.InterNetwork)
     {
       if (!NetworkInterface.GetIsNetworkAvailable())
@@ -57,75 +79,60 @@ namespace MobiledgeX
       }
 
       NetworkInterface[] netInterfaces = GetInterfaces();
+      IPEndPoint defaultLocalEndPoint = GetDefaultLocalEndPoint();
 
       string ipAddress = null;
-      string ipAddressV4 = null;
-      string ipAddressV6 = null;
+      string ipAddressV4;
+      string ipAddressV6;
 
       foreach (NetworkInterface iface in netInterfaces)
       {
+        ipAddressV4 = null;
+        ipAddressV6 = null;
         if (iface.Name.Equals(sourceNetInterfaceName))
         {
           IPInterfaceProperties ipifaceProperties = iface.GetIPProperties();
           foreach (UnicastIPAddressInformation ip in ipifaceProperties.UnicastAddresses)
           {
-            if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
-            {
-              ipAddressV4 = ip.Address.ToString();
-            }
-            if (ip.Address.AddressFamily == AddressFamily.InterNetworkV6)
-            {
-              ipAddressV6 = ip.Address.ToString();
+            string potentialIP = ip.Address.ToString();
+            if (potentialIP.Equals(defaultLocalEndPoint.Address.ToString())) {
+              // This interface is on the default network route.
+              if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
+              {
+                ipAddressV4 = potentialIP;
+              }
+              if (ip.Address.AddressFamily == AddressFamily.InterNetworkV6)
+              {
+                ipAddressV6 = potentialIP;
+              }
             }
           }
 
           if (addressfamily == AddressFamily.InterNetworkV6)
           {
-            return ipAddressV6;
+            ipAddress = ipAddressV6;
           }
-
-          if (addressfamily == AddressFamily.InterNetwork)
+          else if (addressfamily == AddressFamily.InterNetwork)
           {
-            return ipAddressV4;
+            ipAddress = ipAddressV4;
           }
         }
       }
+
       return ipAddress;
     }
 
     public bool HasCellular()
     {
       NetworkInterface[] netInterfaces = GetInterfaces();
-      bool foundByIp = false;
 
       foreach (NetworkInterface iface in netInterfaces)
       {
-        foreach (string cellularName in networkInterfaceName.CELLULAR)
+        string iName = iface.Name;
+        if (networkInterfaceName.CELLULAR.IsMatch(iName))
         {
-          if (iface.Name.Equals(cellularName))
-          {
-            // unreliable.
-            if (iface.OperationalStatus == OperationalStatus.Up)
-            {
-              return true;
-            }
-          }
-
-          // First one with both IPv4 and IPv6 is a heuristic without NetTest. OperationStatus seems inaccurate or "unknown".
-          if (GetIPAddress(cellularName, AddressFamily.InterNetwork) != null &&
-              GetIPAddress(cellularName, AddressFamily.InterNetworkV6) != null)
-          {
-            foundByIp = true;
-          }
-          else if (GetIPAddress(cellularName, AddressFamily.InterNetworkV6) != null)
-          {
-            // No-op. Every interface has IpV6.
-          }
-          else if (GetIPAddress(cellularName, AddressFamily.InterNetwork) != null)
-          {
-            foundByIp = true;
-          }
-          if (foundByIp)
+          if (GetIPAddress(iName, AddressFamily.InterNetworkV6) != null ||
+              GetIPAddress(iName, AddressFamily.InterNetwork) != null)
           {
             return true;
           }
@@ -138,33 +145,14 @@ namespace MobiledgeX
     public bool HasWifi()
     {
       NetworkInterface[] netInterfaces = GetInterfaces();
-      bool foundByIp = false;
 
       foreach (NetworkInterface iface in netInterfaces)
       {
-        foreach (string wifiName in networkInterfaceName.WIFI)
+        string iName = iface.Name;
+        if (networkInterfaceName.WIFI.IsMatch(iName))
         {
-          // unreliable.
-          if (iface.Name.Equals(wifiName) && iface.OperationalStatus == OperationalStatus.Up)
-          {
-            return true;
-          }
-
-          // First one with both IPv4 and IPv6 is a heuristic without NetTest. OperationStatus seems inaccurate or "unknown".
-          if (GetIPAddress(wifiName, AddressFamily.InterNetwork) != null &&
-              GetIPAddress(wifiName, AddressFamily.InterNetworkV6) != null)
-          {
-            foundByIp = true;
-          }
-          else if (GetIPAddress(wifiName, AddressFamily.InterNetworkV6) != null)
-          {
-            // No-op. Every interface has IpV6.
-          }
-          else if (GetIPAddress(wifiName, AddressFamily.InterNetwork) != null)
-          {
-            foundByIp = true;
-          }
-          if (foundByIp)
+          if (GetIPAddress(iName, AddressFamily.InterNetworkV6) != null ||
+              GetIPAddress(iName, AddressFamily.InterNetwork) != null)
           {
             return true;
           }
