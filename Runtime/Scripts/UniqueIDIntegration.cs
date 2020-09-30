@@ -46,7 +46,7 @@ namespace MobiledgeX
 
     public string GetUniqueIDType()
     {
-      return "";
+      return SystemInfo.deviceModel;
     }
 
     public String GetUniqueID()
@@ -156,11 +156,11 @@ namespace MobiledgeX
   {
     public string GetUniqueIDType()
     {
-      return "";
+      return Environment.OSVersion.VersionString;
     }
     public string GetUniqueID()
     {
-      return "UnityEditor";
+      return "Unity-"+Environment.OSVersion.Platform+""+Environment.TickCount;
     }
   }
 }
