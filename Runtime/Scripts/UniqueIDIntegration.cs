@@ -160,7 +160,7 @@ namespace MobiledgeX
     }
     public string GetUniqueID()
     {
-      return "";
+      return "UnityEditor";
     }
   }
 }
