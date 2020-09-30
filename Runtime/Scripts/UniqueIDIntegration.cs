@@ -160,7 +160,7 @@ namespace MobiledgeX
     }
     public string GetUniqueID()
     {
-      return "Unity-"+Environment.OSVersion.Platform+""+Environment.TickCount;
+      return "UnitySDK-"+Environment.OSVersion.Platform;
     }
   }
 }
