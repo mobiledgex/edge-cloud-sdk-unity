@@ -156,11 +156,11 @@ namespace MobiledgeX
   {
     public string GetUniqueIDType()
     {
-      return Environment.OSVersion.VersionString;
+      return SystemInfo.deviceModel;
     }
     public string GetUniqueID()
     {
-      return "UnitySDK-"+Environment.OSVersion.Platform;
+      return HexUtil.HexStringSha512(SystemInfo.deviceUniqueIdentifier);
     }
   }
 }
