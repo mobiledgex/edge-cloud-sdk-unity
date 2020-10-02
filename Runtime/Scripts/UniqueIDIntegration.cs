@@ -46,7 +46,7 @@ namespace MobiledgeX
 
     public string GetUniqueIDType()
     {
-      return "";
+      return SystemInfo.deviceModel;
     }
 
     public String GetUniqueID()
@@ -156,11 +156,11 @@ namespace MobiledgeX
   {
     public string GetUniqueIDType()
     {
-      return "";
+      return SystemInfo.deviceModel;
     }
     public string GetUniqueID()
     {
-      return "";
+      return HexUtil.HexStringSha512(SystemInfo.deviceUniqueIdentifier);
     }
   }
 }
