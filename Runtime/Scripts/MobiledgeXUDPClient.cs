@@ -52,7 +52,7 @@ namespace MobiledgeX
             }
             catch (Exception e)
             {
-                Debug.LogError("Failed to listen for UDP at port " + receivePort + ": " + e.Message);
+                Debug.LogError("Failed to listen to UDP Messages at port " + receivePort + ": " + e.Message);
                 return;
             }
 
@@ -81,7 +81,7 @@ namespace MobiledgeX
             byte[] buffer = encoder.GetBytes(message);
             if (buffer.Length > MAXPAYLOADSIZE)
             {
-                Debug.LogError("Max UDP payload size is 508 bytes, trying slicing your message to suit the max payload size");
+                Debug.LogError("Max UDP payload size is "+ MAXPAYLOADSIZE + " bytes, try slicing your message to suit the max payload size");
                 return;
             }
             var sendBuf = new ArraySegment<byte>(buffer);
@@ -92,7 +92,7 @@ namespace MobiledgeX
         {
             if (buffer.Length > MAXPAYLOADSIZE)
             {
-                Debug.LogError("Max UDP payload size is 508 bytes, trying slicing your buffer to suit the max payload size");
+                Debug.LogError("Max UDP payload size is " + MAXPAYLOADSIZE + " bytes, try slicing your buffer to suit the max payload size");
                 return;
             }
             var sendBuf = new ArraySegment<byte>(buffer);
