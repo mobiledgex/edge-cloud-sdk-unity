@@ -262,11 +262,13 @@ MobiledgeX Unity Package comes with  WebSocket Implementation (MobiledgeXWebSock
 ## Location
 MobiledgeX SDK uses a combination of device Location  & MCC-MNC code to connect you to the closet Edge data center where your backend is deployed.
 
-The SDK comes with an easy to integrate Location Service Solution (LocationService.cs), LocationService.cs needed to be added to the Scene in order for the SDK to automatically ask for Location Permission and use the user Location.
-You can find LocationService in the inspector 
-Under AddComponent Select (MobiledgeX/LocationService)
+The SDK comes with an easy to integrate Location Service Solution (LocationService.cs), LocationService.cs must be added to the Scene in order for the SDK to automatically ask for Location Permission and use the user location.
 
-If you have different Location Input flow or for testing use the following:
+You can find LocationService in the inspector,Select AddComponent then select (MobiledgeX/LocationService)
+
+![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-unity-location-service.png)
+
+If you have different Location flow or for testing use the following:
 
 ```csharp
    MobiledgeXIntegration mxi = new MobiledgeXIntegration();
