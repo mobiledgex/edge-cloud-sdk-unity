@@ -83,6 +83,33 @@ namespace MobiledgeX
         CarrierInfoClass carrierInfoClass = new CarrierInfoClass(); // used for IsRoaming check
         MelMessaging melMessaging;
 
+        string region
+        {
+            get
+            {
+                switch (settings.region)
+                {
+                    case "EU":
+                        return EU_DME;
+                    case "KR":
+                        return KR_DME;
+                    case "JP":
+                        return JP_DME;
+                    case "US":
+                        return US_DME;
+                    case "Nearest":
+                    default:
+                        return WIFI_DME;
+                }
+            }
+        }
+
+        const string WIFI_DME = "wifi.dme.mobiledgex.net";
+        const string EU_DME = "eu-mexdemo.dme.mobiledgex.net";
+        const string KR_DME = "kr-mexdemo.dme.mobiledgex.net";
+        const string US_DME = "us-mexdemo.dme.mobiledgex.net";
+        const string JP_DME = "jp-mexdemo.dme.mobiledgex.net";
+
         /// <summary>
         /// Constructor for MobiledgeXIntegration. This class has functions that wrap DistributedMatchEngine functions for ease of use
         /// </summary>
@@ -107,16 +134,16 @@ namespace MobiledgeX
         /// RegisterClientException and FindCloudletException will give more details on reason for failure
         /// </summary>
         /// <returns>bool Task</returns>
-        public async Task<bool> RegisterAndFindCloudlet(string dmeHost = null, uint dmePort = 0)
+        public async Task<bool> RegisterAndFindCloudlet()
         {
-            bool registered = await Register(dmeHost, dmePort);
+            bool registered = await Register();
             if (!registered)
             {
                 Debug.LogError("Register Failed!");
                 return false;
             }
             Debug.Log("Register OK!");
-            bool found = await FindCloudlet(dmeHost, dmePort);
+            bool found = await FindCloudlet();
             if (!found)
             {
               Debug.LogError("FindCloudlet Failed!");
