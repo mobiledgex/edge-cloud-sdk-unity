@@ -64,8 +64,8 @@ namespace MobiledgeX
         /// <summary>
         /// You don't need this option in UnityEditor by default the region used will be the region selected in MobiledgeX Editor Window
         /// Set to true to use the Region selected in MobiledgeX Editor Window in production
-        /// its not recommended to use this option in production since the SDK will automatically select the best region
-        /// you can use this option for non-sim card devices such as Oculus or MagicLeap
+        /// It's not recommended to use this option in production since the SDK will automatically select the best region.
+        /// You can use this option for non-sim card devices such as Oculus or MagicLeap
         /// </summary>
         public bool useSelectedRegionInProduction = false;
 
