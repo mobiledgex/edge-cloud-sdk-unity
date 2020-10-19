@@ -19,6 +19,7 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using DistributedMatchEngine;
@@ -69,7 +70,7 @@ namespace MobiledgeX
 
         private string sdkVersion;
         private int selectedRegionIndex = 0;
-        private string[] regionOptions = new string[5] { "Nearest", "EU", "JP", "KR", "US" };
+        private List<string> regionOptions = new List<string>(5) { "Nearest", "EU", "JP", "KR", "US" };
 
         #endregion
 
@@ -235,13 +236,29 @@ namespace MobiledgeX
             settings.orgName = EditorGUILayout.TextField("Organization Name", settings.orgName);
             settings.appName = EditorGUILayout.TextField("App Name", settings.appName);
             settings.appVers = EditorGUILayout.TextField("App Version", settings.appVers);
-            EditorGUI.BeginChangeCheck();
-            selectedRegionIndex = EditorGUILayout.Popup("Region (Editor Only)", selectedRegionIndex, regionOptions);
-
-            if (EditorGUI.EndChangeCheck())
+            if (settings.region.Length > 0)
             {
-                settings.region = regionOptions[selectedRegionIndex];
+                try
+                {
+                    selectedRegionIndex = regionOptions.FindIndex(region => region == settings.region);
+                    if (selectedRegionIndex == -1)
+                    {
+                        selectedRegionIndex = 0;
+                    }
+                }
+                catch (ArgumentNullException)
+                {
+                    selectedRegionIndex = 0;
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    selectedRegionIndex = 0;
+                }
             }
+            EditorGUI.BeginChangeCheck();
+            selectedRegionIndex = EditorGUILayout.Popup("Region (Editor Only)", selectedRegionIndex, regionOptions.ToArray());
+            EditorGUI.EndChangeCheck();
+            settings.region = regionOptions[selectedRegionIndex];
             EditorGUILayout.BeginVertical(headerStyle);
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(300), GUILayout.Height(100));
             GUILayout.Label(progressText, labelStyle);
