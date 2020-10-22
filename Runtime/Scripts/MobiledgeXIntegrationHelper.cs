@@ -100,9 +100,9 @@ namespace MobiledgeX
                 if (!useSelectedRegionInProduction)
                 {
 #if UNITY_EDITOR
-                        Debug.Log("MobiledgeX: Doing Register Client with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
-                        Debug.LogWarning("MobiledgeX: Region Selection will work only in UnityEditor not on Mobile Devices");
-                        reply = await matchingEngine.RegisterClient(region, MatchingEngine.defaultDmeRestPort, req);
+                    Debug.Log("MobiledgeX: Doing Register Client with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
+                    Debug.LogWarning("MobiledgeX: Region Selection will work only in UnityEditor not on Mobile Devices");
+                    reply = await matchingEngine.RegisterClient(region, MatchingEngine.defaultDmeRestPort, req);
 #else
                     Debug.Log("MobiledgeX: Doing Register Client, with req: " + req);
                     reply = await matchingEngine.RegisterClient(req);
