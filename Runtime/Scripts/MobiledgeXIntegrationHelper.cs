@@ -74,7 +74,7 @@ namespace MobiledgeX
         /// Wrapper for Register Client. First call to establish the connection with your backend(server) deployed on MobiledgeX
         /// </summary>
         /// <returns>bool Task</returns>
-        public async Task<bool> Register(string dmeHost = "", uint dmePort = 0)
+        public async Task<bool> Register(string dmeHost = null, uint dmePort = 0)
         {
             latestRegisterStatus = false;
 
@@ -97,7 +97,7 @@ namespace MobiledgeX
             RegisterClientReply reply = null;
             try
             {
-                if (dmeHost != "" && dmePort != 0)
+                if (dmeHost != null && dmePort != 0)
                 {
                     Debug.Log("MobiledgeX: Doing Register Client with DME: " + dmeHost + ", p: " + dmePort + " with req: " + req);
                     reply = await matchingEngine.RegisterClient(dmeHost, dmePort, req);
@@ -155,7 +155,7 @@ namespace MobiledgeX
         /// To use Performance mode. Call UseFindCloudletPerformanceMode(true)
         /// </summary>
         /// <returns>FindCloudletReply Task</returns>
-        public async Task<bool> FindCloudlet(string dmeHost = "", uint dmePort = 0)
+        public async Task<bool> FindCloudlet(string dmeHost = null, uint dmePort = 0)
         {
             latestFindCloudletReply = null;
             if (!latestRegisterStatus)
@@ -182,7 +182,7 @@ namespace MobiledgeX
                 }
                 Debug.Log("FindCloudlet Location: " + location.longitude + ", lat: " + location.latitude);
                 FindCloudletRequest req = matchingEngine.CreateFindCloudletRequest(location, "");
-                if (dmeHost != "" && dmePort != 0)
+                if (dmeHost != null && dmePort != 0)
                 {
                     Debug.Log("MobiledgeX: Doing FindCloudlet with DME: " + dmeHost + ", p: " + dmePort + " with req: " + req);
                     reply = await matchingEngine.FindCloudlet(dmeHost, dmePort, req, mode);
