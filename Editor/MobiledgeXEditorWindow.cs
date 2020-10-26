@@ -19,6 +19,7 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using DistributedMatchEngine;
@@ -69,34 +70,7 @@ namespace MobiledgeX
 
         private string sdkVersion;
         private int selectedRegionIndex = 0;
-        private string[] regionOptions = new string[5] { "Nearest", "EU", "JP", "KR", "US" };
-        private string region;
-        public string Region
-        {
-            set { region = value; }
-            get
-            {
-                switch (region)
-                {
-                    case "EU":
-                        return EU_DME;
-                    case "KR":
-                        return KR_DME;
-                    case "JP":
-                        return JP_DME;
-                    case "US":
-                        return US_DME;
-                    case "Nearest":
-                    default:
-                        return WIFI_DME;
-                }
-            }
-        }
-        const string WIFI_DME = "wifi.dme.mobiledgex.net";
-        const string EU_DME = "eu-mexdemo.dme.mobiledgex.net";
-        const string KR_DME = "kr-mexdemo.dme.mobiledgex.net";
-        const string US_DME = "us-mexdemo.dme.mobiledgex.net";
-        const string JP_DME = "jp-mexdemo.dme.mobiledgex.net";
+        private List<string> regionOptions = new List<string>(5) { "Nearest", "EU", "JP", "KR", "US" };
 
         #endregion
 
@@ -262,13 +236,29 @@ namespace MobiledgeX
             settings.orgName = EditorGUILayout.TextField("Organization Name", settings.orgName);
             settings.appName = EditorGUILayout.TextField("App Name", settings.appName);
             settings.appVers = EditorGUILayout.TextField("App Version", settings.appVers);
-            EditorGUI.BeginChangeCheck();
-            selectedRegionIndex = EditorGUILayout.Popup("Region (Editor Only)", selectedRegionIndex, regionOptions);
-
-            if (EditorGUI.EndChangeCheck())
+            if (settings.region.Length > 0)
             {
-                Region = regionOptions[selectedRegionIndex];
+                try
+                {
+                    selectedRegionIndex = regionOptions.FindIndex(region => region == settings.region);
+                    if (selectedRegionIndex == -1)
+                    {
+                        selectedRegionIndex = 0;
+                    }
+                }
+                catch (ArgumentNullException)
+                {
+                    selectedRegionIndex = 0;
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    selectedRegionIndex = 0;
+                }
             }
+            EditorGUI.BeginChangeCheck();
+            selectedRegionIndex = EditorGUILayout.Popup("Region (Editor Only)", selectedRegionIndex, regionOptions.ToArray());
+            EditorGUI.EndChangeCheck();
+            settings.region = regionOptions[selectedRegionIndex];
             EditorGUILayout.BeginVertical(headerStyle);
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(300), GUILayout.Height(100));
             GUILayout.Label(progressText, labelStyle);
@@ -381,8 +371,8 @@ namespace MobiledgeX
             {
                 // Register and find cloudlet:
                 clog("Registering to DME ...", "");
-                checkResult = await integration.Register(Region, MatchingEngine.defaultDmeRestPort);
-                bool foundCloudlet = await integration.FindCloudlet(Region, MatchingEngine.defaultDmeRestPort);
+                checkResult = await integration.Register();
+                bool foundCloudlet = await integration.FindCloudlet();
 
                 if (!foundCloudlet)
                 {

@@ -83,6 +83,33 @@ namespace MobiledgeX
         CarrierInfoClass carrierInfoClass = new CarrierInfoClass(); // used for IsRoaming check
         MelMessaging melMessaging;
 
+        string region
+        {
+            get
+            {
+                switch (settings.region)
+                {
+                    case "EU":
+                        return EU_DME;
+                    case "KR":
+                        return KR_DME;
+                    case "JP":
+                        return JP_DME;
+                    case "US":
+                        return US_DME;
+                    case "Nearest":
+                    default:
+                        return WIFI_DME;
+                }
+            }
+        }
+
+        const string WIFI_DME = "wifi.dme.mobiledgex.net";
+        const string EU_DME = "eu-mexdemo.dme.mobiledgex.net";
+        const string KR_DME = "kr-mexdemo.dme.mobiledgex.net";
+        const string US_DME = "us-mexdemo.dme.mobiledgex.net";
+        const string JP_DME = "jp-mexdemo.dme.mobiledgex.net";
+
         /// <summary>
         /// Constructor for MobiledgeXIntegration. This class has functions that wrap DistributedMatchEngine functions for ease of use
         /// </summary>
