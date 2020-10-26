@@ -57,7 +57,6 @@ namespace MobiledgeX
         public uint cellID { get; set; } = 0;
         public string uniqueIDType { get; set; } = "";
         public string uniqueID { get; set; } = "";
-        public Tag[] tags { get; set; } = new Tag[0];
         public Loc location { get; set; } = new Loc();
 
         /// <summary>
