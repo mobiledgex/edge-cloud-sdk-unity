@@ -74,7 +74,7 @@ namespace MobiledgeX
         /// Wrapper for Register Client. First call to establish the connection with your backend(server) deployed on MobiledgeX
         /// </summary>
         /// <returns>bool Task</returns>
-        public async Task<bool> Register()
+        public async Task<bool> Register(string dmeHost = "", uint dmePort = 0)
         {
             latestRegisterStatus = false;
 
@@ -97,21 +97,29 @@ namespace MobiledgeX
             RegisterClientReply reply = null;
             try
             {
-                if (!useSelectedRegionInProduction)
+                if (dmeHost != "" && dmePort != 0)
                 {
+                    Debug.Log("MobiledgeX: Doing Register Client with DME: " + dmeHost + ", p: " + dmePort + " with req: " + req);
+                    reply = await matchingEngine.RegisterClient(dmeHost, dmePort, req);
+                }
+                else
+                { 
+                    if (!useSelectedRegionInProduction)
+                    {
 #if UNITY_EDITOR
-                    Debug.Log("MobiledgeX: Doing Register Client with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
-                    Debug.LogWarning("MobiledgeX: Region Selection will work only in UnityEditor not on Mobile Devices");
-                    reply = await matchingEngine.RegisterClient(region, MatchingEngine.defaultDmeRestPort, req);
+                        Debug.Log("MobiledgeX: Doing Register Client with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
+                        Debug.LogWarning("MobiledgeX: Region Selection will work only in UnityEditor not on Mobile Devices");
+                        reply = await matchingEngine.RegisterClient(region, MatchingEngine.defaultDmeRestPort, req);
 #else
                     Debug.Log("MobiledgeX: Doing Register Client, with req: " + req);
                     reply = await matchingEngine.RegisterClient(req);
 #endif
-                }
-                else
-                {
+                    }
+                    else
+                    {
                     Debug.Log("MobiledgeX: Doing Register Client with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
                     reply = await matchingEngine.RegisterClient(region, MatchingEngine.defaultDmeRestPort, req);
+                    }
                 }
             }
             catch (HttpException httpe)
@@ -147,7 +155,7 @@ namespace MobiledgeX
         /// To use Performance mode. Call UseFindCloudletPerformanceMode(true)
         /// </summary>
         /// <returns>FindCloudletReply Task</returns>
-        public async Task<bool> FindCloudlet()
+        public async Task<bool> FindCloudlet(string dmeHost = "", uint dmePort = 0)
         {
             latestFindCloudletReply = null;
             if (!latestRegisterStatus)
@@ -174,21 +182,29 @@ namespace MobiledgeX
                 }
                 Debug.Log("FindCloudlet Location: " + location.longitude + ", lat: " + location.latitude);
                 FindCloudletRequest req = matchingEngine.CreateFindCloudletRequest(location, "");
-                if (!useSelectedRegionInProduction)
+                if (dmeHost != "" && dmePort != 0)
                 {
-#if UNITY_EDITOR
-                    Debug.Log("MobiledgeX: Doing FindCloudlet with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
-                    Debug.LogWarning("MobiledgeX: Region Selection will work only in UnityEditor not on Mobile Devices");
-                    reply = await matchingEngine.FindCloudlet(region, MatchingEngine.defaultDmeRestPort, req);
-#else
-                    Debug.Log("MobiledgeX: Doing FindCloudlet, with req: " + req);
-                    reply = await matchingEngine.FindCloudlet(req, mode);
-#endif
+                    Debug.Log("MobiledgeX: Doing FindCloudlet with DME: " + dmeHost + ", p: " + dmePort + " with req: " + req);
+                    reply = await matchingEngine.FindCloudlet(dmeHost, dmePort, req, mode);
                 }
                 else
-                {
-                    Debug.Log("MobiledgeX: Doing FindCloudlet with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
-                    reply = await matchingEngine.FindCloudlet(region, MatchingEngine.defaultDmeRestPort, req, mode);
+                { 
+                    if (!useSelectedRegionInProduction)
+                    {
+#if UNITY_EDITOR
+                        Debug.Log("MobiledgeX: Doing FindCloudlet with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
+                        Debug.LogWarning("MobiledgeX: Region Selection will work only in UnityEditor not on Mobile Devices");
+                        reply = await matchingEngine.FindCloudlet(region, MatchingEngine.defaultDmeRestPort, req);
+#else
+                        Debug.Log("MobiledgeX: Doing FindCloudlet, with req: " + req);
+                        reply = await matchingEngine.FindCloudlet(req, mode);
+#endif
+                    }
+                    else
+                    {
+                        Debug.Log("MobiledgeX: Doing FindCloudlet with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
+                        reply = await matchingEngine.FindCloudlet(region, MatchingEngine.defaultDmeRestPort, req, mode);
+                    }
                 }
             }
             catch (HttpException httpe)

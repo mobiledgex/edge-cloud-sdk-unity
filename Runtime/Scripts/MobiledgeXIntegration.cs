@@ -134,16 +134,16 @@ namespace MobiledgeX
         /// RegisterClientException and FindCloudletException will give more details on reason for failure
         /// </summary>
         /// <returns>bool Task</returns>
-        public async Task<bool> RegisterAndFindCloudlet()
+        public async Task<bool> RegisterAndFindCloudlet(string dmeHost = "", uint dmePort = 0)
         {
-            bool registered = await Register();
+            bool registered = await Register(dmeHost, dmePort);
             if (!registered)
             {
                 Debug.LogError("Register Failed!");
                 return false;
             }
             Debug.Log("Register OK!");
-            bool found = await FindCloudlet();
+            bool found = await FindCloudlet(dmeHost, dmePort);
             if (!found)
             {
               Debug.LogError("FindCloudlet Failed!");
