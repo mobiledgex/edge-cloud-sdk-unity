@@ -30,6 +30,7 @@ namespace MobiledgeX
     public CarrierInfo CarrierInfo { get; }
     public NetInterface NetInterface { get; }
     public UniqueID UniqueID { get; }
+    public DeviceInfo DeviceInfo { get; }
 
     public PlatformIntegration()
     {
@@ -49,22 +50,26 @@ namespace MobiledgeX
           NetworkInterfaceName = new MacNetworkInterfaceName();
           CarrierInfo = new TestCarrierInfoClass();
           UniqueID = new TestUniqueIDClass();
+          DeviceInfo = new TestDeviceInfoClass();
           break;
         case RuntimePlatform.LinuxPlayer:
         case RuntimePlatform.LinuxEditor:
           NetworkInterfaceName = new LinuxNetworkInterfaceName();
           CarrierInfo = new TestCarrierInfoClass();
           UniqueID = new TestUniqueIDClass();
+          DeviceInfo = new TestDeviceInfoClass();
           break;
         case RuntimePlatform.WindowsPlayer:
         case RuntimePlatform.WindowsEditor:
           NetworkInterfaceName = new Windows10NetworkInterfaceName();
           CarrierInfo = new TestCarrierInfoClass();
           UniqueID = new TestUniqueIDClass();
+          DeviceInfo = new TestDeviceInfoClass();
           break;
         default:
           CarrierInfo = new CarrierInfoClass();
           UniqueID = new UniqueIDClass();
+          DeviceInfo = new TestDeviceInfoClass();
           break;
       }
       NetInterface = new NetInterfaceClass(NetworkInterfaceName);
