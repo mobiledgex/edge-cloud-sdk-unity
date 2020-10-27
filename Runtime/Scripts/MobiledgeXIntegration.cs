@@ -125,6 +125,11 @@ namespace MobiledgeX
               uniqueId == null ? pIntegration.UniqueID : uniqueId,
               deviceInfo == null ? pIntegration.DeviceInfo : deviceInfo);
 
+            if (matchingEngine.deviceInfo == null)
+            {
+                Debug.Log("YYYY: Bad DeviceInfo state!");
+            }
+
             melMessaging = new MelMessaging(appName);
             matchingEngine.SetMelMessaging(melMessaging);
         }
