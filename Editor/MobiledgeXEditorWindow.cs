@@ -103,6 +103,12 @@ namespace MobiledgeX
             Application.OpenURL("https://developers.mobiledgex.com/sdk-libraries/unity-sdk");
         }
 
+        [MenuItem("MobiledgeX/Examples/EdgeMultiplay", false, 20)]
+        public static void ImportEdgeMultiplayExample()
+        {
+            string sdkPath = Path.GetFullPath("Packages/com.mobiledgex.sdk");
+            AssetDatabase.ImportPackage(Path.Combine(sdkPath, "Resources/Examples/EdgeMultiplay.unitypackage"), true);
+        }
 
         [MenuItem("MobiledgeX/Examples/Computer Vision", false, 20)]
         public static void ImportComputerVisionExample()
