@@ -125,11 +125,6 @@ namespace MobiledgeX
               uniqueId == null ? pIntegration.UniqueID : uniqueId,
               deviceInfo == null ? pIntegration.DeviceInfo : deviceInfo);
 
-            if (matchingEngine.deviceInfo == null)
-            {
-                Debug.Log("YYYY: Bad DeviceInfo state!");
-            }
-
             melMessaging = new MelMessaging(appName);
             matchingEngine.SetMelMessaging(melMessaging);
         }
@@ -243,9 +238,6 @@ namespace MobiledgeX
                     break;
                 case LProto.L_PROTO_UDP:
                     appPortsDict = matchingEngine.GetUDPAppPorts(latestFindCloudletReply);
-                    break;
-                case LProto.L_PROTO_HTTP:
-                    appPortsDict = matchingEngine.GetTCPAppPorts(latestFindCloudletReply);
                     break;
                 default:
                     throw new AppPortException(proto + " is not supported");
