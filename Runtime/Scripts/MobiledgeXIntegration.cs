@@ -57,7 +57,6 @@ namespace MobiledgeX
         public uint cellID { get; set; } = 0;
         public string uniqueIDType { get; set; } = "";
         public string uniqueID { get; set; } = "";
-        public Tag[] tags { get; set; } = new Tag[0];
         public Loc location { get; set; } = new Loc();
 
         /// <summary>
@@ -113,7 +112,7 @@ namespace MobiledgeX
         /// <summary>
         /// Constructor for MobiledgeXIntegration. This class has functions that wrap DistributedMatchEngine functions for ease of use
         /// </summary>
-        public MobiledgeXIntegration(CarrierInfo carrierInfo = null, NetInterface netInterface = null, UniqueID uniqueId = null)
+        public MobiledgeXIntegration(CarrierInfo carrierInfo = null, NetInterface netInterface = null, UniqueID uniqueId = null, DeviceInfo deviceInfo = null)
         {
             ConfigureMobiledgeXSettings();
             // Set the platform specific way to get SIM carrier information.
@@ -123,7 +122,8 @@ namespace MobiledgeX
             matchingEngine = new MatchingEngine(
               carrierInfo == null ? pIntegration.CarrierInfo : carrierInfo,
               netInterface == null ? pIntegration.NetInterface : netInterface,
-              uniqueId == null ? pIntegration.UniqueID : uniqueId);
+              uniqueId == null ? pIntegration.UniqueID : uniqueId,
+              deviceInfo == null ? pIntegration.DeviceInfo : deviceInfo);
 
             melMessaging = new MelMessaging(appName);
             matchingEngine.SetMelMessaging(melMessaging);
@@ -238,9 +238,6 @@ namespace MobiledgeX
                     break;
                 case LProto.L_PROTO_UDP:
                     appPortsDict = matchingEngine.GetUDPAppPorts(latestFindCloudletReply);
-                    break;
-                case LProto.L_PROTO_HTTP:
-                    appPortsDict = matchingEngine.GetTCPAppPorts(latestFindCloudletReply);
                     break;
                 default:
                     throw new AppPortException(proto + " is not supported");

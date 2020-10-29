@@ -114,7 +114,7 @@ namespace MobiledgeX
       return PlatformIntegrationUtil.GetStatic<int>(version, "SDK_INT");
     }
 
-    AndroidJavaObject GetTelephonyManager()
+    public AndroidJavaObject GetTelephonyManager()
     {
       AndroidJavaClass unityPlayer = PlatformIntegrationUtil.GetAndroidJavaClass("com.unity3d.player.UnityPlayer");
       if (unityPlayer == null)
