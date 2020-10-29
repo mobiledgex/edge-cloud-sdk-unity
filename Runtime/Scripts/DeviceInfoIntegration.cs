@@ -58,7 +58,7 @@ namespace MobiledgeX
       int sdk_int = PlatformIntegrationUtil.GetStatic<int>(versionClass, "SDK_INT");
       map["Build.VERSION.SDK_INT"] = sdk_int.ToString();
 
-      const string readPhoneStatePermissionString = "READ_PHONE_STATE";
+      const string readPhoneStatePermissionString = "android.permission.READ_PHONE_STATE";
       try
       {
         if (Permission.HasUserAuthorizedPermission(readPhoneStatePermissionString))
