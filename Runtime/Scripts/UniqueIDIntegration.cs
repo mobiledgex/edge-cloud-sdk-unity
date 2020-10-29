@@ -163,5 +163,4 @@ namespace MobiledgeX
       return HexUtil.HexStringSha512(SystemInfo.deviceUniqueIdentifier);
     }
   }
-
 }

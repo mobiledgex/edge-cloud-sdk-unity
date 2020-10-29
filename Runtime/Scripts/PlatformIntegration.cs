@@ -68,21 +68,9 @@ namespace MobiledgeX
           DeviceInfo = new TestDeviceInfo();
           break;
         default:
-          Debug.Log("XXX: INIT block.");
           CarrierInfo = new CarrierInfoClass();
-          Debug.Log("XXX: INIT block. 2");
           UniqueID = new UniqueIDClass();
-          Debug.Log("XXX: INIT block. 3");
           DeviceInfo = new DeviceInfoIntegration();
-          {
-            Dictionary<string, string> dict = new DeviceInfoIntegration().GetDeviceInfo();
-            Debug.Log("XXXX Z Dictionary size? " + dict.Count);
-            foreach (KeyValuePair<string, string> pair in dict)
-            {
-              Debug.Log("XXXXX Z DeviceInfo [" + pair.Key + ", " + pair.Value + "]");
-            }
-          }
-          Debug.Log("XXX: INIT block. 4");
           break;
       }
       NetInterface = new NetInterfaceClass(NetworkInterfaceName);

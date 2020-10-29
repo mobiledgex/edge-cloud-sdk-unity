@@ -61,7 +61,7 @@ namespace MobiledgeX
       const string readPhoneStatePermissionString = "READ_PHONE_STATE";
       try
       {
-        if (!Permission.HasUserAuthorizedPermission(readPhoneStatePermissionString))
+        if (Permission.HasUserAuthorizedPermission(readPhoneStatePermissionString))
         {
           string ver = PlatformIntegrationUtil.Call<string>(telephonyManager, "getDeviceSoftwareVersion");
           if (ver != null)
@@ -77,7 +77,7 @@ namespace MobiledgeX
 
       try
       {
-        if (!Permission.HasUserAuthorizedPermission(readPhoneStatePermissionString))
+        if (Permission.HasUserAuthorizedPermission(readPhoneStatePermissionString))
         {
           int nType = PlatformIntegrationUtil.Call<int>(telephonyManager, "getDataNetworkType");
           NetworkDataType datatype = (NetworkDataType)nType;
@@ -119,7 +119,7 @@ namespace MobiledgeX
       string simOperatorName = PlatformIntegrationUtil.Call<string>(telephonyManager, "getSimOperatorName");
       if (simOperatorName != null)
       {
-        map["SimOperator"] = simOperatorName;
+        map["SimOperatorName"] = simOperatorName;
       }
 
       // Default one.
@@ -132,7 +132,12 @@ namespace MobiledgeX
       return map;
     }
 #elif UNITY_IOS
-  Dictionary<string, string> GetDeviceDetails()
+  public Dictionary<string, string> GetDeviceInfo()
+  {
+    Debug.LogFormat("[{0}] DeviceInfo not implemented!", TAG);
+  }
+#else // Unsupported platform.
+  public Dictionary<string, string> GetDeviceInfo()
   {
     Debug.LogFormat("[{0}] DeviceInfo not implemented!", TAG);
   }
