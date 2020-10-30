@@ -134,12 +134,14 @@ namespace MobiledgeX
 #elif UNITY_IOS
   public Dictionary<string, string> GetDeviceInfo()
   {
-    Debug.LogFormat("[{0}] DeviceInfo not implemented!", TAG);
+    Debug.LogFormat("DeviceInfo not implemented!");
+    return null;
   }
 #else // Unsupported platform.
   public Dictionary<string, string> GetDeviceInfo()
   {
-    Debug.LogFormat("[{0}] DeviceInfo not implemented!", TAG);
+    Debug.LogFormat("DeviceInfo not implemented!");
+    return null;
   }
 #endif
   }
