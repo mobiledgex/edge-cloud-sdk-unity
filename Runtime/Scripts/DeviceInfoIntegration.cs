@@ -132,16 +132,23 @@ namespace MobiledgeX
       return map;
     }
 #elif UNITY_IOS
+  [DllImport("__Internal")]
+  private static extern Dictionary<string, string> _getDeviceInfo();
+
   public Dictionary<string, string> GetDeviceInfo()
   {
-    Debug.Log("DeviceInfo not implemented!");
-     return null;
+    Dictionary<string, string> deviceInfo = new Dictionary<string, string>();
+    if (Application.platform == RuntimePlatform.IPhonePlayer)
+    {
+      deviceInfo = _getDeviceInfo());
+    }
+    return deviceInfo;
   }
 #else // Unsupported platform.
   public Dictionary<string, string> GetDeviceInfo()
   {
-    Debug.Log("DeviceInfo not implemented!");
-     return null;
+    Debug.LogFormat("DeviceInfo not implemented!");
+    return null;
   }
 #endif
   }
