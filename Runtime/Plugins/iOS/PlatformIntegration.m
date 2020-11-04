@@ -153,7 +153,7 @@ char* _getIPAddress(char* netInterfaceType)
     
     if (getifaddrs(&interfaces) == -1)
     {
-        return convertToCStr(@"" UTF8String);
+        return convertToCStr([@"" UTF8String]);
     }
     struct ifaddrs* runner = interfaces;
     while (runner != NULL)
