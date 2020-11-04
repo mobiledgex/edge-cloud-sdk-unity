@@ -150,15 +150,23 @@ namespace MobiledgeX
     Dictionary<string, string> deviceInfo = new Dictionary<string, string>();
     if (Application.platform == RuntimePlatform.IPhonePlayer)
     {
+        Debug.Log("is iphone player");
       // Fill in device system info
       deviceInfo["ManufacturerCode"] = _getManufacturerCode();
+        Debug.Log("1");
       deviceInfo["DeviceSoftwareVersion"] = _getDeviceSoftwareVersion();
+        Debug.Log("2");
       deviceInfo["DeviceModel"] = _getDeviceModel();
+        Debug.Log("3");
       deviceInfo["OperatingSystem"] = _getOperatingSystem();
+        Debug.Log("4");
       // Fill in carrier/ISO info
       CarrierInfoClass carrierInfo = new CarrierInfoClass();
+        Debug.Log("5");
       deviceInfo["SimOperatorName"] = carrierInfo.GetCurrentCarrierName();
+        Debug.Log("6");
       deviceInfo["SimCountryCodeIso"] = carrierInfo.GetISOCountryCodeFromCarrier();
+        Debug.Log("7");
     }
     return deviceInfo;
   }
