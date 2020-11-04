@@ -24,11 +24,9 @@ using System.Collections.Generic;
         {
             mxi = new MobiledgeXIntegration();
             var deviceInfo = await mxi.GetDeviceInfo();
-            Debug.Log("got device info");
-
             foreach (KeyValuePair<string, string> pair in deviceInfo)
             {
-                Debug.Log("Key is " + pair.Key + ", and Value is " + pair.Value);
+                Debug.Log("DeviceInfo: Key is " + pair.Key + ", and Value is " + pair.Value);
             }
             try
             {
