@@ -329,6 +329,7 @@ namespace MobiledgeX
             if (deviceInfo == null || deviceInfo.Count == 0) {
                 return null;
             }
+            UpdateLocationFromDevice();
             deviceInfo["NetworkCountryIso"] = await carrierInfoClass.ConvertGPSToISOCountryCode(location.longitude, location.latitude);
 #endif
             return deviceInfo;
