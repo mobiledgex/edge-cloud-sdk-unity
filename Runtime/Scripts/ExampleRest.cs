@@ -7,8 +7,9 @@ using DistributedMatchEngine;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System;
+using System.Collections.Generic;
 
-    [RequireComponent(typeof(MobiledgeX.LocationService))]
+[RequireComponent(typeof(MobiledgeX.LocationService))]
     public class ExampleRest : MonoBehaviour
     {
         MobiledgeXIntegration mxi;
@@ -22,6 +23,11 @@ using System;
         async void GetEdgeConnection()
         {
             mxi = new MobiledgeXIntegration();
+            var deviceInfo = await mxi.GetDeviceInfo();
+            foreach (KeyValuePair<string, string> pair in deviceInfo)
+            {
+                Debug.Log("Key is " + pair.Key + ", and Value is " + pair.Value);
+            }
             try
             {
                 await mxi.RegisterAndFindCloudlet();

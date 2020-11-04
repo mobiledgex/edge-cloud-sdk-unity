@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using DistributedMatchEngine;
 using MobiledgeX;
 using UnityEngine;
@@ -133,14 +134,31 @@ namespace MobiledgeX
     }
 #elif UNITY_IOS
   [DllImport("__Internal")]
-  private static extern Dictionary<string, string> _getDeviceInfo();
+  private static extern string _getManufacturerCode();
+
+  [DllImport("__Internal")]
+  private static extern string _getDeviceSoftwareVersion();
+
+  [DllImport("__Internal")]
+  private static extern string _getDeviceModel();
+
+  [DllImport("__Internal")]
+  private static extern string _getOperatingSystem();
 
   public Dictionary<string, string> GetDeviceInfo()
   {
     Dictionary<string, string> deviceInfo = new Dictionary<string, string>();
     if (Application.platform == RuntimePlatform.IPhonePlayer)
     {
-      deviceInfo = _getDeviceInfo());
+      // Fill in device system info
+      deviceInfo["ManufacturerCode"] = _getManufacturerCode();
+      deviceInfo["DeviceSoftwareVersion"] = _getDeviceSoftwareVersion();
+      deviceInfo["DeviceModel"] = _getDeviceModel();
+      deviceInfo["OperatingSystem"] = _getOperatingSystem();
+      // Fill in carrier/ISO info
+      CarrierInfoClass carrierInfo = new CarrierInfoClass();
+      deviceInfo["SimOperatorName"] = carrierInfo.GetCurrentCarrierName();
+      deviceInfo["SimCountryCodeIso"] = carrierInfo.GetISOCountryCodeFromCarrier();
     }
     return deviceInfo;
   }
