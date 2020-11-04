@@ -292,20 +292,24 @@ char* _getISOCountryCodeFromCarrier()
 }
 
 char* _getManufacturerCode() {
+    NSLog(@"in get manu code");
     return "Apple";
 }
 
 char* _getDeviceSoftwareVersion() {
+    NSLog(@"in get software vers");
     UIDevice* device = UIDevice.currentDevice;
     return convertToCStr([device.systemVersion UTF8String]);
 }
 
 char* _getDeviceModel() {
+    NSLog(@"in get model");
     UIDevice* device = UIDevice.currentDevice;
     return convertToCStr([device.model UTF8String]);
 }
 
 char* _getOperatingSystem() {
+    NSLog(@"in get os");
     UIDevice* device = UIDevice.currentDevice;
     return convertToCStr([device.systemName UTF8String]);
 }
