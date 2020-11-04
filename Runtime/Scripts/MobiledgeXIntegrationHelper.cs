@@ -20,6 +20,7 @@ using UnityEngine;
 using DistributedMatchEngine;
 using System.Threading.Tasks;
 using System.Net.Sockets;
+using System.Collections.Generic;
 
 /*
 * Helper functions, private functions, and exceptions used to implement MobiledgeXIntegration wrapper functions
@@ -315,6 +316,18 @@ namespace MobiledgeX
             }
         }
 #endif
+
+        public async Task<Dictionary<string, string>> GetDeviceInfo()
+        {
+            var deviceInfo = matchingEngine.deviceInfo.GetDeviceInfo();
+#if UNITY_IOS
+            if (deviceInfo == null) {
+                return null;
+            }
+            deviceInfo["NetworkCountryIso"] = await carrierInfoClass.ConvertGPSToISOCountryCode(location.longitude, location.latitude);
+#endif
+            return deviceInfo;
+        }
 
         /// <summary>
         /// Checks whether the default netowrk data path Edge is Enabled on the device or not, Edge requires connections to run over cellular interface.
