@@ -36,7 +36,6 @@
 @property CTTelephonyNetworkInfo *networkInfo;
 @property NSDictionary<NSString *,CTCarrier *>* ctCarriers;
 @property CTCarrier* lastCarrier;
-@property UIDevice* device;
 @end
 @implementation NetworkState
 @end
@@ -49,7 +48,6 @@ void _ensureMatchingEnginePlatformIntegration() {
     {
         networkState = [[NetworkState alloc] init];
         networkState.networkInfo = [[CTTelephonyNetworkInfo alloc] init];
-        networkState.device = UIDevice.currentDevice;
         // Give it an initial value, if any.
         if (@available(iOS 12.1, *))
         {
@@ -240,15 +238,15 @@ unsigned int _getCellID()
 
 char* _getUniqueID()
 {
-    _ensureMatchingEnginePlatformIntegration();
-    NSUUID *uuid = networkState.device.identifierForVendor;
+    UIDevice* device = UIDevice.currentDevice;
+    NSUUID *uuid = device.identifierForVendor;
     return convertToCStr([uuid.UUIDString UTF8String]);
 }
 
 char* _getUniqueIDType()
 {
-    _ensureMatchingEnginePlatformIntegration();
-    NSString *aid = networkState.device.model;
+    UIDevice* device = UIDevice.currentDevice;
+    NSString *aid = device.model;
     return convertToCStr([aid UTF8String]);
 }
 
@@ -294,20 +292,20 @@ char* _getISOCountryCodeFromCarrier()
 }
 
 char* _getManufacturerCode() {
-    return "Apple"
+    return "Apple";
 }
 
-char * _getDeviceSoftwareVersion() {
-    _ensureMatchingEnginePlatformIntegration();
-    return convertToCStr([networkState.device.systemVersion UTF8String]);
+char* _getDeviceSoftwareVersion() {
+    UIDevice* device = UIDevice.currentDevice;
+    return convertToCStr([device.systemVersion UTF8String]);
 }
 
 char* _getDeviceModel() {
-    _ensureMatchingEnginePlatformIntegration();
-    return convertToCStr([networkState.device.model UTF8String]);
+    UIDevice* device = UIDevice.currentDevice;
+    return convertToCStr([device.model UTF8String]);
 }
 
 char* _getOperatingSystem() {
-    _ensureMatchingEnginePlatformIntegration();
-    return convertToCStr([networkState.device.systemName UTF8String]);
+    UIDevice* device = UIDevice.currentDevice;
+    return convertToCStr([device.systemName UTF8String]);
 }
