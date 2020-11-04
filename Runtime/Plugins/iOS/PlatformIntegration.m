@@ -36,6 +36,7 @@
 @property CTTelephonyNetworkInfo *networkInfo;
 @property NSDictionary<NSString *,CTCarrier *>* ctCarriers;
 @property CTCarrier* lastCarrier;
+@property UIDevice* device;
 @end
 @implementation NetworkState
 @end
@@ -48,6 +49,7 @@ void _ensureMatchingEnginePlatformIntegration() {
     {
         networkState = [[NetworkState alloc] init];
         networkState.networkInfo = [[CTTelephonyNetworkInfo alloc] init];
+        networkState.device = UIDevice.currentDevice;
         // Give it an initial value, if any.
         if (@available(iOS 12.1, *))
         {
@@ -238,15 +240,15 @@ unsigned int _getCellID()
 
 char* _getUniqueID()
 {
-    UIDevice* device = UIDevice.currentDevice;
-    NSUUID *uuid = device.identifierForVendor;
+    _ensureMatchingEnginePlatformIntegration();
+    NSUUID *uuid = networkState.device.identifierForVendor;
     return convertToCStr([uuid.UUIDString UTF8String]);
 }
 
 char* _getUniqueIDType()
 {
-    UIDevice* device = UIDevice.currentDevice;
-    NSString *aid = device.model;
+    _ensureMatchingEnginePlatformIntegration();
+    NSString *aid = networkState.device.model;
     return convertToCStr([aid UTF8String]);
 }
 
@@ -289,4 +291,20 @@ char* _getISOCountryCodeFromCarrier()
     }
     NSString* capitalizedISOCC = [carrier.isoCountryCode uppercaseString];
     return convertToCStr([capitalizedISOCC UTF8String]);
+}
+
+NSDictionary<char*, char*> _getDeviceInfo()
+{
+    _ensureMatchingEnginePlatformIntegration();
+    NSDictionary *deviceInfo = [NSDictionary dictionary];
+    
+    deviceInfo["ManufacturereCode"] = "Apple";
+    // Get device system information
+    deviceInfo["DeviceSoftwareVersion"] = convertToCStr([networkState.device.systemVersion UTF8String]);
+    deviceInfo["DeviceModel"] = convertToCStr([networkState.device.model UTF8String]);
+    deviceInfo["OperatingSystem"] = convertToCStr([networkState.device.systemName UTF8String]);
+    // Get Carrier/ISO information
+    deviceInfo["SimOperatorName"] = _getCurrentCarrierName();
+    deviceInfo["NetworkCountryIso"] = _getISOCountryCodeFromGPS();
+    deviceInfo["SimCountryCodeIso"] = _getISOCountryCodeFromCarrier();
 }
