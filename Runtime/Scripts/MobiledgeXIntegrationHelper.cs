@@ -321,7 +321,7 @@ namespace MobiledgeX
         {
             var deviceInfo = matchingEngine.deviceInfo.GetDeviceInfo();
 #if UNITY_IOS
-            if (deviceInfo == null) {
+            if (deviceInfo == null || deviceInfo.Count == 0) {
                 return null;
             }
             deviceInfo["NetworkCountryIso"] = await carrierInfoClass.ConvertGPSToISOCountryCode(location.longitude, location.latitude);
