@@ -293,18 +293,21 @@ char* _getISOCountryCodeFromCarrier()
     return convertToCStr([capitalizedISOCC UTF8String]);
 }
 
-NSDictionary<char*, char*> _getDeviceInfo()
-{
+char* _getManufacturerCode() {
+    return "Apple"
+}
+
+char * _getDeviceSoftwareVersion() {
     _ensureMatchingEnginePlatformIntegration();
-    NSDictionary *deviceInfo = [NSDictionary dictionary];
-    
-    deviceInfo["ManufacturereCode"] = "Apple";
-    // Get device system information
-    deviceInfo["DeviceSoftwareVersion"] = convertToCStr([networkState.device.systemVersion UTF8String]);
-    deviceInfo["DeviceModel"] = convertToCStr([networkState.device.model UTF8String]);
-    deviceInfo["OperatingSystem"] = convertToCStr([networkState.device.systemName UTF8String]);
-    // Get Carrier/ISO information
-    deviceInfo["SimOperatorName"] = _getCurrentCarrierName();
-    deviceInfo["NetworkCountryIso"] = _getISOCountryCodeFromGPS();
-    deviceInfo["SimCountryCodeIso"] = _getISOCountryCodeFromCarrier();
+    return convertToCStr([networkState.device.systemVersion UTF8String]);
+}
+
+char* _getDeviceModel() {
+    _ensureMatchingEnginePlatformIntegration();
+    return convertToCStr([networkState.device.model UTF8String]);
+}
+
+char* _getOperatingSystem() {
+    _ensureMatchingEnginePlatformIntegration();
+    return convertToCStr([networkState.device.systemName UTF8String]);
 }
