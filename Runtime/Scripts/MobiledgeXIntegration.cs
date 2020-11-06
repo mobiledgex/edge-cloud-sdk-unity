@@ -78,7 +78,7 @@ namespace MobiledgeX
         FindCloudletMode mode = FindCloudletMode.PROXIMITY; // FindCloudlet mode
         AppPort latestAppPort = null;
         AppPort[] latestAppPortList = null;
-        Location fallbackLocation = new Location(-121.8863286, 37.3382082);
+        Location fallbackLocation = new Location(0,0);
         CarrierInfoClass carrierInfoClass = new CarrierInfoClass(); // used for IsRoaming check
         MelMessaging melMessaging;
 

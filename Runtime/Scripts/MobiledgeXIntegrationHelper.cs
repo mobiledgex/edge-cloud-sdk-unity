@@ -165,6 +165,11 @@ namespace MobiledgeX
 
             try
             {
+                if(fallbackLocation.Longitude == 0 && fallbackLocation.Latitude == 0)
+                {
+                    LocationFromIPAddress locationFromIP = await GetLocationFromIP();
+                    fallbackLocation = new Location(locationFromIP.longitude, locationFromIP.latitude);
+                }
                 await UpdateLocationAndCarrierInfo();
             }
             catch (CarrierInfoException cie)
