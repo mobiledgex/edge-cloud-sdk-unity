@@ -23,11 +23,6 @@ using System.Collections.Generic;
         async void GetEdgeConnection()
         {
             mxi = new MobiledgeXIntegration();
-            var deviceInfo = await mxi.GetDeviceInfo();
-            foreach (KeyValuePair<string, string> pair in deviceInfo)
-            {
-                Debug.Log("DeviceInfo: Key is " + pair.Key + ", and Value is " + pair.Value);
-            }
             try
             {
                 await mxi.RegisterAndFindCloudlet();
