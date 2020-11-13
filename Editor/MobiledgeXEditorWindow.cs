@@ -123,9 +123,9 @@ namespace MobiledgeX
         [MenuItem("MobiledgeX/Remove MobiledgeX", false, 40)]
         public static void RemoveMobiledgeX()
         {
-             Enhancement.SDKRemoved();
              if (EditorUtility.DisplayDialog("MobiledgeX","Choosing Remove will delete MobiledgeX package and close Unity Editor", "Remove", "Cancel"))
                 {
+                    Enhancement.SDKRemoved();
                     if(Directory.Exists(Path.Combine("Assets", "Plugins/MobiledgeX")))
                     {
                          Directory.Delete(Path.Combine("Assets", "Plugins/MobiledgeX"), true);
