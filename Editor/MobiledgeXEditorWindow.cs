@@ -24,6 +24,7 @@ using UnityEditor;
 using UnityEngine;
 using DistributedMatchEngine;
 using UnityEditor.PackageManager;
+using EnhancementManager;
 
 namespace MobiledgeX
 {
@@ -108,6 +109,7 @@ namespace MobiledgeX
         {
             string sdkPath = Path.GetFullPath("Packages/com.mobiledgex.sdk");
             AssetDatabase.ImportPackage(Path.Combine(sdkPath, "Resources/Examples/EdgeMultiplay.unitypackage"), true);
+            Enhancement.EdgeMultiplayImported();
         }
 
         [MenuItem("MobiledgeX/Examples/Computer Vision", false, 20)]
@@ -115,6 +117,7 @@ namespace MobiledgeX
         {
             string sdkPath = Path.GetFullPath("Packages/com.mobiledgex.sdk");
             AssetDatabase.ImportPackage(Path.Combine(sdkPath, "Resources/Examples/ComputerVision.unitypackage"), true);
+            Enhancement.CVImported();
         }
 
         [MenuItem("MobiledgeX/Remove MobiledgeX", false, 40)]
@@ -122,6 +125,7 @@ namespace MobiledgeX
         {
              if (EditorUtility.DisplayDialog("MobiledgeX","Choosing Remove will delete MobiledgeX package and close Unity Editor", "Remove", "Cancel"))
                 {
+                    Enhancement.SDKRemoved();
                     if(Directory.Exists(Path.Combine("Assets", "Plugins/MobiledgeX")))
                     {
                          Directory.Delete(Path.Combine("Assets", "Plugins/MobiledgeX"), true);
@@ -157,6 +161,7 @@ namespace MobiledgeX
                 }
                 else
                 {
+                    Enhancement.SDKInstalled(Application.version);
                     editorPopUp = true;
                 }
 
@@ -279,6 +284,7 @@ namespace MobiledgeX
                 progressText = "";
                 if (await CheckCredentials())
                 {
+                    Enhancement.SetupStep();
                     progressText += "\nConnected !\nSee App Information in MobiledgeXSettings!";
                     ShowSettings();
                     EditorUtility.SetDirty(settings);
