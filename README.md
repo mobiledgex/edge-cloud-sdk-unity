@@ -258,6 +258,64 @@ MobiledgeX Unity Package comes with  WebSocket Implementation (MobiledgeXWebSock
      }
  
  ```
+ **Communicating with your Edge Server using UDP**
+
+ MobiledgeX Unity Package comes with  UDP Client Implementation (MobiledgeXUDPClient).
+  
+  For Using MobiledgeXUDPClient :
+  1. Start the UDP Connection
+  2. Handle received messages from your Edge server.
+  3. Send messages. (Text or Binary)
+  
+  For full example code, Please check [RunTime/Scripts/ExampleUDP.cs](https://github.com/mobiledgex/edge-cloud-sdk-unity/blob/master/Runtime/Scripts/ExampleUDP.cs)
+  
+  
+  
+  ```csharp
+      async void GetEdgeConnection()
+         {
+             mxi = new MobiledgeXIntegration();
+             await mxi.RegisterAndFindCloudlet();
+             // udpSendPort is the udp port exposed on your EdgeServer
+             int udpSendPort = mxi.GetAppPort(LProto.L_PROTO_UDP).public_port;
+             int udpReceivePort = 5000; //You can define the receive port
+             udpHost = mxi.GetHost();
+             SendUDPMessage("Hi, From client to server", udpHost, udpSendPort, udpReceivePort);
+         }
+         
+      void SendUDPMessage(string message, string udpHost, int udpSendPort, int udpReceivePort)
+         {
+             udpClient = new MobiledgeXUDPClient(udpHost, udpSendPort, udpReceivePort);
+             udpClient.Connect();
+             if (udpClient.run)
+             {
+                 udpClient.Send(message);
+             }
+             
+             //You can send binary also
+             //byte[] messageBinary = Encoding.ASCII.GetBytes(message);
+             //udpClient.Send(messageBinary);
+         }
+      
+      // Handle received messages from your Edge server
+      // Using MonoBehaviour callback Update to dequeue Received UDP Messages every frame (if there is any)
+      void Update()
+          {
+              if (udpClient == null)
+              {
+                  return;
+              }
+              //udp receive queue
+              byte[] udpMsg;
+              var udp_queue = udpClient.receiveQueue;
+              while (udp_queue.TryPeek(out udpMsg))
+              {
+                  udp_queue.TryDequeue(out udpMsg);
+                  string udpReceivedMsg = Encoding.UTF8.GetString(udpMsg);
+                  print("Received UDP Message : " + udpReceivedMsg);
+              }
+          }
+  ```
 
 ## Location
 MobiledgeX SDK uses a combination of device Location  & MCC-MNC code to connect you to the closet Edge data center where your backend is deployed.
