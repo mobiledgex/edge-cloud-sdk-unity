@@ -43,10 +43,7 @@ public class ExampleUDP : MonoBehaviour
     {
         udpClient = new MobiledgeXUDPClient(udpHost, udpSendPort, udpReceivePort);
         udpClient.Connect();
-        if (udpClient.run)
-        {
-            udpClient.Send(message);
-        }
+        udpClient.Send(message);
       
         //You can send binary also
         //byte[] messageBinary = Encoding.ASCII.GetBytes(message);
