@@ -7,8 +7,9 @@ using DistributedMatchEngine;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System;
+using System.Collections.Generic;
 
-    [RequireComponent(typeof(MobiledgeX.LocationService))]
+[RequireComponent(typeof(MobiledgeX.LocationService))]
     public class ExampleRest : MonoBehaviour
     {
         MobiledgeXIntegration mxi;
