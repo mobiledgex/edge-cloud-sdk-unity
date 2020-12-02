@@ -22,16 +22,7 @@ public class ExampleUDP : MonoBehaviour
     async void GetEdgeConnection()
     {
         mxi = new MobiledgeXIntegration();
-        try
-        {
-            await mxi.RegisterAndFindCloudlet();
-        }
-        catch (DmeDnsException dde)
-        {
-            Debug.Log("Dme dns Exception: " + dde.Message);
-            mxi.UseWifiOnly(true);
-            await mxi.RegisterAndFindCloudlet();
-        }
+        await mxi.RegisterAndFindCloudlet();
         udpSendPort = mxi.GetAppPort(LProto.L_PROTO_UDP).public_port;
         udpHost = mxi.GetHost();
         Debug.Log("UDP HOST : " + udpHost);
