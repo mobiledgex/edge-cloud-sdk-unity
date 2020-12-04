@@ -90,8 +90,6 @@ namespace MobiledgeX
                 {
                     case "EU":
                         return EU_DME;
-                    case "KR":
-                        return KR_DME;
                     case "JP":
                         return JP_DME;
                     case "US":
