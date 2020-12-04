@@ -71,7 +71,7 @@ namespace MobiledgeX
 
         private string sdkVersion;
         private int selectedRegionIndex = 0;
-        private List<string> regionOptions = new List<string>(5) { "Nearest", "EU", "JP", "KR", "US" };
+        private List<string> regionOptions = new List<string>(5) { "Nearest", "EU", "JP", "US" };
 
         #endregion
 
@@ -92,16 +92,10 @@ namespace MobiledgeX
             EditorGUIUtility.PingObject(settings);
         }
 
-        [MenuItem("MobiledgeX/Docs/API References", false, 20)]
-        public static void OpenAPIReferencesURL()
-        {
-            Application.OpenURL("https://api.mobiledgex.net/#section/Edge-SDK-Unity");
-        }
-
         [MenuItem("MobiledgeX/Docs/SDK Documentation", false, 20)]
         public static void OpenDocumentationURL()
         {
-            Application.OpenURL("https://developers.mobiledgex.com/sdk-libraries/unity-sdk");
+            Application.OpenURL("https://mobiledgex.github.io/unity-samples/index.html");
         }
 
         [MenuItem("MobiledgeX/Examples/EdgeMultiplay", false, 20)]
@@ -118,6 +112,12 @@ namespace MobiledgeX
             string sdkPath = Path.GetFullPath("Packages/com.mobiledgex.sdk");
             AssetDatabase.ImportPackage(Path.Combine(sdkPath, "Resources/Examples/ComputerVision.unitypackage"), true);
             Enhancement.CVImported(getId());
+        }
+
+        [MenuItem("MobiledgeX/Join the Community", false, 20)]
+        public static void JoinTheCommunity()
+        {
+            Application.OpenURL("https://discord.com/invite/w25dC4g8");
         }
 
         [MenuItem("MobiledgeX/Remove MobiledgeX", false, 40)]
@@ -152,19 +152,26 @@ namespace MobiledgeX
             {
                 SetUpLocationSettings();
             }
-            if (!editorPopUp && settings.orgName.Length < 1)
+            if (!editorPopUp && settings.orgName.Length > 0)
             {
                 if (!EditorUtility.DisplayDialog("MobiledgeX",
-                "Have you already created an Account?", "Yes", "No"))
+                "Do you have MobiledgeX Account?", "Yes/Will create later", "I want to create one"))
                 {
-                    Application.OpenURL("https://console.mobiledgex.net/");
+                    if (EditorUtility.DisplayDialog("MobiledgeX",
+                "How would you like to connect with us?", "Discord", "Schedule an Meeting"))
+                    {
+                        Application.OpenURL("https://discord.com/invite/w25dC4g8");
+                    }
+                    else
+                    {
+                        Application.OpenURL("https://developers.mobiledgex.com/getting-started");
+                    }
                 }
                 else
                 {
                     Enhancement.SDKInstalled(getId(), Application.unityVersion);
                     editorPopUp = true;
                 }
-
             }
         }
 
