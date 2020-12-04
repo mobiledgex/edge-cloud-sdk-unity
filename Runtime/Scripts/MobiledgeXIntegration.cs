@@ -103,7 +103,6 @@ namespace MobiledgeX
 
         const string WIFI_DME = "wifi.dme.mobiledgex.net";
         const string EU_DME = "eu-mexdemo.dme.mobiledgex.net";
-        const string KR_DME = "kr-mexdemo.dme.mobiledgex.net";
         const string US_DME = "us-mexdemo.dme.mobiledgex.net";
         const string JP_DME = "jp-mexdemo.dme.mobiledgex.net";
 
