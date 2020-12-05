@@ -131,7 +131,7 @@ namespace MobiledgeX
                     Directory.Delete(Path.Combine("Assets", "Plugins/MobiledgeX"), true);
                     File.Delete(Path.Combine("Assets", "Plugins/MobiledgeX") + ".meta");
                 }
-                EditorPrefs.DeleteKey("mobiledegx-user");
+                EditorPrefs.DeleteKey("mobiledgex-user");
                 AssetDatabase.Refresh();
                 Client.Remove("com.mobiledgex.sdk");
                 EditorApplication.Exit(0);
@@ -152,7 +152,7 @@ namespace MobiledgeX
             {
                 SetUpLocationSettings();
             }
-            if (!editorPopUp && settings.orgName.Length > 0)
+            if (!editorPopUp && settings.orgName.Length < 1)
             {
                 if (!EditorUtility.DisplayDialog("MobiledgeX",
                 "Do you have MobiledgeX Account?", "Yes/Will create later", "I want to create one"))
@@ -487,8 +487,8 @@ namespace MobiledgeX
 
         static string getId()
         {
-            string id = EditorPrefs.GetString("mobiledegx-user", Guid.NewGuid().ToString());
-            EditorPrefs.SetString("mobiledegx-user", id);
+            string id = EditorPrefs.GetString("mobiledgex-user", Guid.NewGuid().ToString());
+            EditorPrefs.SetString("mobiledgex-user", id);
             return id;
         }
 
