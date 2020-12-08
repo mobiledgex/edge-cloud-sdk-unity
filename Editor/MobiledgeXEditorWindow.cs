@@ -117,7 +117,7 @@ namespace MobiledgeX
         [MenuItem("MobiledgeX/Join the Community", false, 20)]
         public static void JoinTheCommunity()
         {
-            Application.OpenURL("https://discord.com/invite/w25dC4g8");
+            Application.OpenURL("https://discord.gg/k22WcfMFZ3");
         }
 
         [MenuItem("MobiledgeX/Remove MobiledgeX", false, 40)]
@@ -160,7 +160,7 @@ namespace MobiledgeX
                     if (EditorUtility.DisplayDialog("MobiledgeX",
                 "How would you like to connect with us?", "Discord", "Schedule an Meeting"))
                     {
-                        Application.OpenURL("https://discord.com/invite/w25dC4g8");
+                        Application.OpenURL("https://discord.gg/k22WcfMFZ3");
                     }
                     else
                     {
