@@ -1,6 +1,21 @@
 # Changelog
 All notable changes to this package will be documented in this file.
 
+## [2.4.0] - 2020-12-10
+
+### Fix & Improvements.
+- UDP Client added to the SDK (MobiledgeXUDPClient.cs), and  ExampleUDP.cs as an example of using  MobiledgeXUDPClient.
+- In UnityEditor if fallback location is not defined, the location from the IP address will be used.
+- Multiplayer Sample using Websockets & UDP (EdgeMultiplay), to be found under MobiledgeX Menu (MobiledgeX/Examples).
+- MobiledgeX Editor Window (KR region removed - Links updated).
+- ComputerVision Example Updated (CV Instances in EU & US - Readme added - LProto.HTTP removed).
+- SDK Readme updated (Location section - How to communicate with your Edge server using MobiledgeXUDPClient).
+- DeviceInfoIntegration added as part of the PlatformIntegration constructor.
+- LProto.HTTP removed, use LProto.TCP instead.
+- Join The Community added to MobiledgeX Menu links to "MobiledgeX Community" Discord server.
+### MobiledgeX Settings
+- region is added to MobiledgeXSettings.
+
 ## [2.1.3] - 2020-09-16
 
 ### Fix & Improvements.
