@@ -212,7 +212,7 @@ namespace MobiledgeX
                         byte[] result = response.Values.First().GetBuffer();
                         if (result != null && result.Length > 0)
                         {
-                            Debug.Log("Received: " + result);
+                            // Debug.Log("Received: " + result);
                             receiveQueueBinary.Enqueue(result);
                         }
                     }
