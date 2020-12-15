@@ -25,10 +25,12 @@ using UnityEngine;
 using System.Linq;
 namespace MobiledgeX
 {
-    // MobiledgeXUDPClient is a UDP Client Implementation offered with MobiledgeX Unity Package
-    // MobiledgeXUDPClient concurrency model supports the use of a single queue for
-    // send, and another queue for recieve. MobiledgeXUDPClient here has 1 independent thread
-    // per send or receive direction of communication.
+    /// <summary>
+    ///  MobiledgeXUDPClient is a UDP Client Implementation offered with MobiledgeX Unity Package.
+    ///  MobiledgeXUDPClient concurrency model supports the use of a single queue for
+    ///  send, and another queue for recieve. MobiledgeXUDPClient here has 1 independent thread
+    ///  per send or receive direction of communication.
+    /// </summary>
     public class MobiledgeXUDPClient : IDisposable
     {
         private UdpClient udpClient;
@@ -36,7 +38,7 @@ namespace MobiledgeX
         private int port;
         Thread receiveThread { get; set; }
         Thread sendThread { get; set; }
-        static UTF8Encoding encoder;
+        UTF8Encoding encoder;
         public ConcurrentQueue<byte[]> receiveQueue { get; }
         public BlockingCollection<ArraySegment<byte>> sendQueue { get; }
         public bool run = true;
@@ -77,7 +79,6 @@ namespace MobiledgeX
 
         public void Send(string message)
         {
-
             byte[] buffer = encoder.GetBytes(message);
             if (buffer.Length > MAXPAYLOADSIZE)
             {
@@ -109,7 +110,7 @@ namespace MobiledgeX
                 {
                     msg = sendQueue.Take();
                     long count = sendQueue.Count;
-                    Debug.Log("Dequeued this message to send: " + msg + ", queueSize: " + count);
+                    //Debug.Log("Dequeued this message to send: " + msg + ", queueSize: " + count);
                     IPEndPoint serverEndpoint = new IPEndPoint(IPAddress.Parse(host), port);
                     await udpClient.SendAsync(msg.Array, msg.Count, serverEndpoint);
                 }
@@ -120,7 +121,7 @@ namespace MobiledgeX
         {
             while (run)
             {
-                Debug.Log("Awaiting Receive...");
+                //Debug.Log("Awaiting Receive...");
                 UdpReceiveResult result = await udpClient.ReceiveAsync();
                 if (result != null && result.Buffer.Length > 0)
                 {
