@@ -26,7 +26,7 @@ using System.Linq;
 namespace MobiledgeX
 {
     /// <summary>
-    ///  MobiledgeXUDPClient is a UDP Client Implementation offered with MobiledgeX Unity Package
+    ///  MobiledgeXUDPClient is a UDP Client Implementation offered with MobiledgeX Unity Package.
     ///  MobiledgeXUDPClient concurrency model supports the use of a single queue for
     ///  send, and another queue for recieve. MobiledgeXUDPClient here has 1 independent thread
     ///  per send or receive direction of communication.
@@ -125,7 +125,7 @@ namespace MobiledgeX
                 UdpReceiveResult result = await udpClient.ReceiveAsync();
                 if (result != null && result.Buffer.Length > 0)
                 {
-                    receiveQueue.Enqueue(result.Buffer); 
+                    receiveQueue.Enqueue(result.Buffer);
                 }
                 else
                 {
