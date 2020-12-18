@@ -36,6 +36,7 @@ namespace MobiledgeX
         private UdpClient udpClient;
         private string host;
         private int port;
+        private IPEndPoint serverEndpoint;
         Thread receiveThread { get; set; }
         Thread sendThread { get; set; }
         UTF8Encoding encoder;
@@ -68,6 +69,7 @@ namespace MobiledgeX
             receiveThread.Start();
             sendQueue = new BlockingCollection<ArraySegment<byte>>();
             sendThread = new Thread(RunSend);
+            serverEndpoint = new IPEndPoint(IPAddress.Parse(host), port);
             sendThread.Start();
             Connect();
         }
@@ -109,9 +111,8 @@ namespace MobiledgeX
                 while (!sendQueue.IsCompleted)
                 {
                     msg = sendQueue.Take();
-                    long count = sendQueue.Count;
+                    //long count = sendQueue.Count;
                     //Debug.Log("Dequeued this message to send: " + msg + ", queueSize: " + count);
-                    IPEndPoint serverEndpoint = new IPEndPoint(IPAddress.Parse(host), port);
                     await udpClient.SendAsync(msg.Array, msg.Count, serverEndpoint);
                 }
             }
