@@ -101,7 +101,6 @@ namespace MobiledgeX
 
       if (aid != null) {
         string hashedAdId = HexUtil.HexStringSha512(aid);
-        Debug.Log("Hashed ID (if any): " + hashedAdId);
         return hashedAdId;
       }
       return aid;
@@ -131,7 +130,6 @@ namespace MobiledgeX
       string adId = UnityEngine.iOS.Device.advertisingIdentifier;
       if (adId != null) {
         string hashedAdId = HexUtil.HexStringSha512(adId);
-        Debug.Log("Hashed Advertising ID (if any): " + hashedAdId);
         return hashedAdId;
       }
       return adId;
