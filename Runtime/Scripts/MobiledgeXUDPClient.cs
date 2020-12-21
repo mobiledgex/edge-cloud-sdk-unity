@@ -36,6 +36,7 @@ namespace MobiledgeX
         private UdpClient udpClient;
         private string host;
         private int port;
+        private IPEndPoint serverEndpoint;
         Thread receiveThread { get; set; }
         Thread sendThread { get; set; }
         UTF8Encoding encoder;
@@ -44,17 +45,17 @@ namespace MobiledgeX
         public bool run = true;
         const int MAXPAYLOADSIZE = 508; // max payload size guaranteed to be deliverable (not guaranteed to be delivered)
 
-        public MobiledgeXUDPClient(string hostName, int sendPort, int receivePort)
+        public MobiledgeXUDPClient(string hostName, int sendPort)
         {
             try
             {
-                udpClient = new UdpClient(receivePort);
+                udpClient = new UdpClient();
                 udpClient.DontFragment = true;
 
             }
             catch (Exception e)
             {
-                Debug.LogError("Failed to listen to UDP Messages at port " + receivePort + ": " + e.Message);
+                Debug.LogError("Failed to listen to UDP Messages at port : " + e.Message);
                 return;
             }
 
@@ -68,12 +69,8 @@ namespace MobiledgeX
             receiveThread.Start();
             sendQueue = new BlockingCollection<ArraySegment<byte>>();
             sendThread = new Thread(RunSend);
+            serverEndpoint = new IPEndPoint(IPAddress.Parse(host), port);
             sendThread.Start();
-            Connect();
-        }
-
-        public void Connect()
-        {
             run = true;
         }
 
@@ -109,9 +106,8 @@ namespace MobiledgeX
                 while (!sendQueue.IsCompleted)
                 {
                     msg = sendQueue.Take();
-                    long count = sendQueue.Count;
+                    //long count = sendQueue.Count;
                     //Debug.Log("Dequeued this message to send: " + msg + ", queueSize: " + count);
-                    IPEndPoint serverEndpoint = new IPEndPoint(IPAddress.Parse(host), port);
                     await udpClient.SendAsync(msg.Array, msg.Count, serverEndpoint);
                 }
             }

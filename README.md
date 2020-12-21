@@ -278,15 +278,13 @@ MobiledgeX Unity Package comes with  WebSocket Implementation (MobiledgeXWebSock
              await mxi.RegisterAndFindCloudlet();
              // udpSendPort is the udp port exposed on your EdgeServer
              int udpSendPort = mxi.GetAppPort(LProto.L_PROTO_UDP).public_port;
-             int udpReceivePort = 5000; //You can define the receive port
              udpHost = mxi.GetHost();
-             SendUDPMessage("Hi, From client to server", udpHost, udpSendPort, udpReceivePort);
+             SendUDPMessage("Hi, From client to server", udpHost, udpSendPort);
          }
          
-      void SendUDPMessage(string message, string udpHost, int udpSendPort, int udpReceivePort)
+      void SendUDPMessage(string message, string udpHost, int udpSendPort)
          {
-             udpClient = new MobiledgeXUDPClient(udpHost, udpSendPort, udpReceivePort);
-             udpClient.Connect();
+             udpClient = new MobiledgeXUDPClient(udpHost, udpSendPort);
              udpClient.Send(message);
                  
              //You can send binary also
