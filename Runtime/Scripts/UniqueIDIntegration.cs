@@ -46,7 +46,7 @@ namespace MobiledgeX
 
     public string GetUniqueIDType()
     {
-      return "";
+      return SystemInfo.deviceModel;
     }
 
     public String GetUniqueID()
@@ -101,7 +101,6 @@ namespace MobiledgeX
 
       if (aid != null) {
         string hashedAdId = HexUtil.HexStringSha512(aid);
-        Debug.Log("Hashed ID (if any): " + hashedAdId);
         return hashedAdId;
       }
       return aid;
@@ -131,7 +130,6 @@ namespace MobiledgeX
       string adId = UnityEngine.iOS.Device.advertisingIdentifier;
       if (adId != null) {
         string hashedAdId = HexUtil.HexStringSha512(adId);
-        Debug.Log("Hashed Advertising ID (if any): " + hashedAdId);
         return hashedAdId;
       }
       return adId;
@@ -156,11 +154,11 @@ namespace MobiledgeX
   {
     public string GetUniqueIDType()
     {
-      return "";
+      return SystemInfo.deviceModel;
     }
     public string GetUniqueID()
     {
-      return "";
+      return HexUtil.HexStringSha512(SystemInfo.deviceUniqueIdentifier);
     }
   }
 }

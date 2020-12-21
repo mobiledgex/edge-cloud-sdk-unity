@@ -114,7 +114,7 @@ namespace MobiledgeX
       return PlatformIntegrationUtil.GetStatic<int>(version, "SDK_INT");
     }
 
-    AndroidJavaObject GetTelephonyManager()
+    public AndroidJavaObject GetTelephonyManager()
     {
       AndroidJavaClass unityPlayer = PlatformIntegrationUtil.GetAndroidJavaClass("com.unity3d.player.UnityPlayer");
       if (unityPlayer == null)
@@ -470,7 +470,7 @@ namespace MobiledgeX
       return false;
     }
 
-    private async Task<string> ConvertGPSToISOCountryCode(double longitude, double latitude)
+    public async Task<string> ConvertGPSToISOCountryCode(double longitude, double latitude)
     {
       if (Application.platform == RuntimePlatform.IPhonePlayer)
       {
@@ -488,7 +488,7 @@ namespace MobiledgeX
       return null;
     }  
 
-    private string GetISOCountryCodeFromGPS()
+    public string GetISOCountryCodeFromGPS()
     {
       string isoCC = null;
       if (Application.platform == RuntimePlatform.IPhonePlayer)
@@ -498,7 +498,7 @@ namespace MobiledgeX
       return isoCC;
     }
 
-    private string GetISOCountryCodeFromCarrier()
+    public string GetISOCountryCodeFromCarrier()
     {
       string isoCC = null;
       if (Application.platform == RuntimePlatform.IPhonePlayer)

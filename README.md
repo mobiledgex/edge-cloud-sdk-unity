@@ -258,9 +258,77 @@ MobiledgeX Unity Package comes with  WebSocket Implementation (MobiledgeXWebSock
      }
  
  ```
+ **Communicating with your Edge Server using UDP**
 
+ MobiledgeX Unity Package comes with  UDP Client Implementation (MobiledgeXUDPClient).
+  
+  For Using MobiledgeXUDPClient :
+  1. Start the UDP Connection
+  2. Handle received messages from your Edge server.
+  3. Send messages. (Text or Binary)
+  
+  For full example code, Please check [RunTime/Scripts/ExampleUDP.cs](https://github.com/mobiledgex/edge-cloud-sdk-unity/blob/master/Runtime/Scripts/ExampleUDP.cs)
+  
+  
+  
+  ```csharp
+      async void GetEdgeConnection()
+         {
+             mxi = new MobiledgeXIntegration();
+             await mxi.RegisterAndFindCloudlet();
+             // udpSendPort is the udp port exposed on your EdgeServer
+             int udpSendPort = mxi.GetAppPort(LProto.L_PROTO_UDP).public_port;
+             udpHost = mxi.GetHost();
+             SendUDPMessage("Hi, From client to server", udpHost, udpSendPort);
+         }
+         
+      void SendUDPMessage(string message, string udpHost, int udpSendPort)
+         {
+             udpClient = new MobiledgeXUDPClient(udpHost, udpSendPort);
+             udpClient.Send(message);
+                 
+             //You can send binary also
+             //byte[] messageBinary = Encoding.ASCII.GetBytes(message);
+             //udpClient.Send(messageBinary);
+         }
+      
+      // Handle received messages from your Edge server
+      // Using MonoBehaviour callback Update to dequeue Received UDP Messages every frame (if there is any)
+      void Update()
+          {
+              if (udpClient == null)
+              {
+                  return;
+              }
+              //udp receive queue
+              byte[] udpMsg;
+              var udp_queue = udpClient.receiveQueue;
+              while (udp_queue.TryPeek(out udpMsg))
+              {
+                  udp_queue.TryDequeue(out udpMsg);
+                  string udpReceivedMsg = Encoding.UTF8.GetString(udpMsg);
+                  print("Received UDP Message : " + udpReceivedMsg);
+              }
+          }
+  ```
 
+## Location
+MobiledgeX SDK uses a combination of device Location  & MCC-MNC code to connect you to the closet Edge data center where your backend is deployed.
 
+The SDK comes with an easy to integrate Location Service Solution (LocationService.cs) that asks for the user permission and access the user GPS location, LocationService.cs must be added to the Scene in order for the SDK to automatically ask for Location Permission and use the user location.
+
+You can find LocationService in the Unity Editor Inspector.
+Select AddComponent then select (MobiledgeX/LocationService)
+![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-unity-location-service.png)
+Different way to get the device's location :
+
+```csharp
+   MobiledgeXIntegration mxi = new MobiledgeXIntegration();
+   mxi.SetFallbackLocation(longtiude, latitude);
+   // Fallback location is used by default in Unity Editor
+   // To enable location overloading outside the Editor
+   mxi.useFallbackLocation = true; 
+```
 ## Platform Specific
 
 ### Android

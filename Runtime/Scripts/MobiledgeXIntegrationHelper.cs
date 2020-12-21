@@ -20,6 +20,7 @@ using UnityEngine;
 using DistributedMatchEngine;
 using System.Threading.Tasks;
 using System.Net.Sockets;
+using System.Collections.Generic;
 
 /*
 * Helper functions, private functions, and exceptions used to implement MobiledgeXIntegration wrapper functions
@@ -61,6 +62,14 @@ namespace MobiledgeX
         /// </summary>
         public bool useFallbackLocation = false;
 
+        /// <summary>
+        /// You don't need this option in UnityEditor by default the region used will be the region selected in MobiledgeX Editor Window
+        /// Set to true to use the Region selected in MobiledgeX Editor Window in production
+        /// It's not recommended to use this option in production since the SDK will automatically select the best region.
+        /// You can use this option for non-sim card devices such as Oculus or MagicLeap
+        /// </summary>
+        public bool useSelectedRegionInProduction = false;
+
         /// Call once, or when the carrier changes. May throw DistributedMatchEngine.HttpException.
         /// <summary>
         /// Wrapper for Register Client. First call to establish the connection with your backend(server) deployed on MobiledgeX
@@ -82,44 +91,58 @@ namespace MobiledgeX
             }
             catch (CarrierInfoException cie)
             {
-                Debug.LogError("Register Exception: " + cie.Message);
+                Debug.LogError("MobiledgeX: Register Exception: " + cie.Message);
                 throw new RegisterClientException(cie.Message);
             }
 
             RegisterClientReply reply = null;
             try
             {
-                if (dmeHost == null || dmePort == 0)
+                if (dmeHost != null && dmePort != 0)
                 {
-                    Debug.Log("Doing Register Client, with req: " + req);
-                    reply = await matchingEngine.RegisterClient(req);
+                    Debug.Log("MobiledgeX: Doing Register Client with DME: " + dmeHost + ", p: " + dmePort + " with req: " + req);
+                    reply = await matchingEngine.RegisterClient(dmeHost, dmePort, req);
                 }
                 else
-                {
-                    Debug.Log("Doing Register Client with DME: " + dmeHost + ", p: " + dmePort + " with req: " + req);
-                    reply = await matchingEngine.RegisterClient(dmeHost, dmePort, req);
+                { 
+                    if (!useSelectedRegionInProduction)
+                    {
+#if UNITY_EDITOR
+                        Debug.Log("MobiledgeX: Doing Register Client with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
+                        Debug.LogWarning("MobiledgeX: Region Selection will work only in UnityEditor not on Mobile Devices");
+                        reply = await matchingEngine.RegisterClient(region, MatchingEngine.defaultDmeRestPort, req);
+#else
+                        Debug.Log("MobiledgeX: Doing Register Client, with req: " + req);
+                        reply = await matchingEngine.RegisterClient(req);
+#endif
+                    }
+                    else
+                    {
+                    Debug.Log("MobiledgeX: Doing Register Client with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
+                    reply = await matchingEngine.RegisterClient(region, MatchingEngine.defaultDmeRestPort, req);
+                    }
                 }
             }
             catch (HttpException httpe)
             {
-                Debug.LogError("RegisterClient HttpException: " + httpe.Message);
+                Debug.LogError("MobiledgeX: RegisterClient HttpException: " + httpe.Message);
                 throw new RegisterClientException("RegisterClient Exception: " + httpe.Message + ", HTTP StatusCode: " + httpe.HttpStatusCode + ", API ErrorCode: " + httpe.ErrorCode + "\nStack: " + httpe.StackTrace);
             }
             catch (Exception e)
             {
-                Debug.LogError("RegisterClient Exception: " + e.Message);
+                Debug.LogError("MobiledgeX: RegisterClient Exception: " + e.Message);
                 throw e;
             }
             finally
             {
                 if (reply == null)
                 {
-                    Debug.LogError("Register reply NULL!");
+                    Debug.LogError("MobiledgeX: Register reply NULL!");
                     throw new RegisterClientException("RegisterClient returned null.");
                 }
                 if (reply.status != ReplyStatus.RS_SUCCESS)
                 {
-                    Debug.LogError("Register Failed: " + reply.status);
+                    Debug.LogError("MobiledgeX: Register Failed: " + reply.status);
                     throw new RegisterClientException("Bad RegisterClient. RegisterClient status is " + reply.status);
                 }
             }
@@ -143,6 +166,11 @@ namespace MobiledgeX
 
             try
             {
+                if(fallbackLocation.Longitude == 0 && fallbackLocation.Latitude == 0)
+                {
+                    LocationFromIPAddress locationFromIP = await GetLocationFromIP();
+                    fallbackLocation = new Location(locationFromIP.longitude, locationFromIP.latitude);
+                }
                 await UpdateLocationAndCarrierInfo();
             }
             catch (CarrierInfoException cie)
@@ -160,16 +188,29 @@ namespace MobiledgeX
                 }
                 Debug.Log("FindCloudlet Location: " + location.longitude + ", lat: " + location.latitude);
                 FindCloudletRequest req = matchingEngine.CreateFindCloudletRequest(location, "");
-
-                if (dmeHost == null || dmePort == 0)
+                if (dmeHost != null && dmePort != 0)
                 {
-                    Debug.Log("Doing FindCloudlet, with req: " + req);
-                    reply = await matchingEngine.FindCloudlet(req, mode);
+                    Debug.Log("MobiledgeX: Doing FindCloudlet with DME: " + dmeHost + ", p: " + dmePort + " with req: " + req);
+                    reply = await matchingEngine.FindCloudlet(dmeHost, dmePort, req, mode);
                 }
                 else
-                {
-                    Debug.Log("Doing FindCloudlet with DME: " + dmeHost + ", p: " + dmePort + " with req: " + req);
-                    reply = await matchingEngine.FindCloudlet(dmeHost, dmePort, req, mode);
+                { 
+                    if (!useSelectedRegionInProduction)
+                    {
+#if UNITY_EDITOR
+                        Debug.Log("MobiledgeX: Doing FindCloudlet with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
+                        Debug.LogWarning("MobiledgeX: Region Selection will work only in UnityEditor not on Mobile Devices");
+                        reply = await matchingEngine.FindCloudlet(region, MatchingEngine.defaultDmeRestPort, req);
+#else
+                        Debug.Log("MobiledgeX: Doing FindCloudlet, with req: " + req);
+                        reply = await matchingEngine.FindCloudlet(req, mode);
+#endif
+                    }
+                    else
+                    {
+                        Debug.Log("MobiledgeX: Doing FindCloudlet with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
+                        reply = await matchingEngine.FindCloudlet(region, MatchingEngine.defaultDmeRestPort, req, mode);
+                    }
                 }
             }
             catch (HttpException httpe)
@@ -280,6 +321,19 @@ namespace MobiledgeX
             }
         }
 #endif
+
+        public async Task<Dictionary<string, string>> GetDeviceInfo()
+        {
+            var deviceInfo = matchingEngine.deviceInfo.GetDeviceInfo();
+#if UNITY_IOS
+            if (deviceInfo == null || deviceInfo.Count == 0) {
+                return new Dictionary<string, string>();
+            }
+            UpdateLocationFromDevice();
+            deviceInfo["NetworkCountryIso"] = await carrierInfoClass.ConvertGPSToISOCountryCode(location.longitude, location.latitude);
+#endif
+            return deviceInfo;
+        }
 
         /// <summary>
         /// Checks whether the default netowrk data path Edge is Enabled on the device or not, Edge requires connections to run over cellular interface.

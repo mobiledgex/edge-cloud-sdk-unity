@@ -57,7 +57,6 @@ namespace MobiledgeX
         public uint cellID { get; set; } = 0;
         public string uniqueIDType { get; set; } = "";
         public string uniqueID { get; set; } = "";
-        public Tag[] tags { get; set; } = new Tag[0];
         public Loc location { get; set; } = new Loc();
 
         /// <summary>
@@ -79,14 +78,38 @@ namespace MobiledgeX
         FindCloudletMode mode = FindCloudletMode.PROXIMITY; // FindCloudlet mode
         AppPort latestAppPort = null;
         AppPort[] latestAppPortList = null;
-        Location fallbackLocation = new Location(-121.8863286, 37.3382082);
+        Location fallbackLocation = new Location(0,0);
         CarrierInfoClass carrierInfoClass = new CarrierInfoClass(); // used for IsRoaming check
         MelMessaging melMessaging;
+
+        string region
+        {
+            get
+            {
+                switch (settings.region)
+                {
+                    case "EU":
+                        return EU_DME;
+                    case "JP":
+                        return JP_DME;
+                    case "US":
+                        return US_DME;
+                    case "Nearest":
+                    default:
+                        return WIFI_DME;
+                }
+            }
+        }
+
+        const string WIFI_DME = "wifi.dme.mobiledgex.net";
+        const string EU_DME = "eu-mexdemo.dme.mobiledgex.net";
+        const string US_DME = "us-mexdemo.dme.mobiledgex.net";
+        const string JP_DME = "jp-mexdemo.dme.mobiledgex.net";
 
         /// <summary>
         /// Constructor for MobiledgeXIntegration. This class has functions that wrap DistributedMatchEngine functions for ease of use
         /// </summary>
-        public MobiledgeXIntegration(CarrierInfo carrierInfo = null, NetInterface netInterface = null, UniqueID uniqueId = null)
+        public MobiledgeXIntegration(CarrierInfo carrierInfo = null, NetInterface netInterface = null, UniqueID uniqueId = null, DeviceInfo deviceInfo = null)
         {
             ConfigureMobiledgeXSettings();
             // Set the platform specific way to get SIM carrier information.
@@ -96,7 +119,8 @@ namespace MobiledgeX
             matchingEngine = new MatchingEngine(
               carrierInfo == null ? pIntegration.CarrierInfo : carrierInfo,
               netInterface == null ? pIntegration.NetInterface : netInterface,
-              uniqueId == null ? pIntegration.UniqueID : uniqueId);
+              uniqueId == null ? pIntegration.UniqueID : uniqueId,
+              deviceInfo == null ? pIntegration.DeviceInfo : deviceInfo);
 
             melMessaging = new MelMessaging(appName);
             matchingEngine.SetMelMessaging(melMessaging);
@@ -211,9 +235,6 @@ namespace MobiledgeX
                     break;
                 case LProto.L_PROTO_UDP:
                     appPortsDict = matchingEngine.GetUDPAppPorts(latestFindCloudletReply);
-                    break;
-                case LProto.L_PROTO_HTTP:
-                    appPortsDict = matchingEngine.GetTCPAppPorts(latestFindCloudletReply);
                     break;
                 default:
                     throw new AppPortException(proto + " is not supported");

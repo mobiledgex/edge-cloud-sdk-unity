@@ -7,8 +7,9 @@ using DistributedMatchEngine;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System;
+using System.Collections.Generic;
 
-    [RequireComponent(typeof(MobiledgeX.LocationService))]
+[RequireComponent(typeof(MobiledgeX.LocationService))]
     public class ExampleRest : MonoBehaviour
     {
         MobiledgeXIntegration mxi;
@@ -32,7 +33,7 @@ using System;
                 mxi.UseWifiOnly(true);
                 await mxi.RegisterAndFindCloudlet();
             }
-            mxi.GetAppPort(LProto.L_PROTO_HTTP);
+            mxi.GetAppPort(LProto.L_PROTO_TCP);
             string url = mxi.GetUrl("http");
             Debug.Log("Rest URL is : " + url); // Once you have your edge server url you can start communicating with your Edge server deployed on MobiledgeX Console
 
