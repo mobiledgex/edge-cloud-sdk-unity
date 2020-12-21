@@ -11,7 +11,6 @@ public class ExampleUDP : MonoBehaviour
     MobiledgeXUDPClient udpClient;
     string udpHost; // the UDP url for your app instance
     int udpSendPort; // the public UDP port of your app instance
-    int udpReceivePort = 6000; // You can specify the UDP port to receive messages from the server, 6000 is just an example
 
     IEnumerator Start()
     {
@@ -32,8 +31,7 @@ public class ExampleUDP : MonoBehaviour
 
     void SendUDPMessage(string message)
     {
-        udpClient = new MobiledgeXUDPClient(udpHost, udpSendPort, udpReceivePort);
-        udpClient.Connect();
+        udpClient = new MobiledgeXUDPClient(udpHost, udpSendPort);
         udpClient.Send(message);
       
         //You can send binary also
