@@ -214,20 +214,10 @@ namespace MobiledgeX
 
             FindCloudletReply reply = await integration.matchingEngine.RegisterAndFindCloudlet(orgName, appName, appVers, testLocation, "");
             await Task.Delay(TimeSpan.FromMilliseconds(200));
-            DistributedMatchEngine.AppPort appPort;
+            AppPort appPort;
 
-            switch (proto)
-	    {
-                case "http":
-                     appPort = integration.GetAppPort(DistributedMatchEngine.LProto.L_PROTO_HTTP);
-                    break;
-                case "ws":
-                     appPort = integration.GetAppPort(DistributedMatchEngine.LProto.L_PROTO_TCP);
-                    break;
-                default:
-                    appPort = integration.GetAppPort(DistributedMatchEngine.LProto.L_PROTO_HTTP);
-                    break;
-            }
+            appPort = integration.GetAppPort(LProto.L_PROTO_TCP);
+
             string url = integration.GetUrl(proto, appPort);
             return url;
         }

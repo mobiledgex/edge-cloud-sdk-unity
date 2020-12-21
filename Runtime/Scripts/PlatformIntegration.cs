@@ -19,6 +19,7 @@
 using UnityEngine;
 using DistributedMatchEngine;
 using System.Runtime.InteropServices; //for importing IOS functions
+using System.Collections.Generic;
 
 namespace MobiledgeX
 {
@@ -30,6 +31,7 @@ namespace MobiledgeX
     public CarrierInfo CarrierInfo { get; }
     public NetInterface NetInterface { get; }
     public UniqueID UniqueID { get; }
+    public DeviceInfo DeviceInfo { get; }
 
     public PlatformIntegration()
     {
@@ -49,22 +51,26 @@ namespace MobiledgeX
           NetworkInterfaceName = new MacNetworkInterfaceName();
           CarrierInfo = new TestCarrierInfoClass();
           UniqueID = new TestUniqueIDClass();
+          DeviceInfo = new TestDeviceInfo();
           break;
         case RuntimePlatform.LinuxPlayer:
         case RuntimePlatform.LinuxEditor:
           NetworkInterfaceName = new LinuxNetworkInterfaceName();
           CarrierInfo = new TestCarrierInfoClass();
           UniqueID = new TestUniqueIDClass();
+          DeviceInfo = new TestDeviceInfo();
           break;
         case RuntimePlatform.WindowsPlayer:
         case RuntimePlatform.WindowsEditor:
           NetworkInterfaceName = new Windows10NetworkInterfaceName();
           CarrierInfo = new TestCarrierInfoClass();
           UniqueID = new TestUniqueIDClass();
+          DeviceInfo = new TestDeviceInfo();
           break;
         default:
           CarrierInfo = new CarrierInfoClass();
           UniqueID = new UniqueIDClass();
+          DeviceInfo = new DeviceInfoIntegration();
           break;
       }
       NetInterface = new NetInterfaceClass(NetworkInterfaceName);

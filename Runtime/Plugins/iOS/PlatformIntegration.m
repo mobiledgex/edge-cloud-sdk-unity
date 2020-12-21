@@ -153,7 +153,7 @@ char* _getIPAddress(char* netInterfaceType)
     
     if (getifaddrs(&interfaces) == -1)
     {
-        return "";
+        return convertToCStr([@"" UTF8String]);
     }
     struct ifaddrs* runner = interfaces;
     while (runner != NULL)
@@ -289,4 +289,23 @@ char* _getISOCountryCodeFromCarrier()
     }
     NSString* capitalizedISOCC = [carrier.isoCountryCode uppercaseString];
     return convertToCStr([capitalizedISOCC UTF8String]);
+}
+
+char* _getManufacturerCode() {
+    return convertToCStr([@"Apple" UTF8String]);
+}
+
+char* _getDeviceSoftwareVersion() {
+    UIDevice* device = UIDevice.currentDevice;
+    return convertToCStr([device.systemVersion UTF8String]);
+}
+
+char* _getDeviceModel() {
+    UIDevice* device = UIDevice.currentDevice;
+    return convertToCStr([device.model UTF8String]);
+}
+
+char* _getOperatingSystem() {
+    UIDevice* device = UIDevice.currentDevice;
+    return convertToCStr([device.systemName UTF8String]);
 }

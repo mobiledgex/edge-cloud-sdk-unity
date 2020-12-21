@@ -19,6 +19,11 @@ using System;
 using UnityEngine;
 using DistributedMatchEngine;
 using System.Threading.Tasks;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
+using System.IO;
+using System.Text;
+using System.Net.Http;
 
 /*
 * Utility functions to help developer configure their MobiledgeXIntegration object
@@ -73,6 +78,51 @@ namespace MobiledgeX
         {
             fallbackLocation.Longitude = longitude;
             fallbackLocation.Latitude = latitude;
+        }
+
+        public static async Task<LocationFromIPAddress> GetLocationFromIP()
+        {
+            HttpClient httpClient = new HttpClient();
+            try
+            {
+                HttpResponseMessage response = await httpClient.GetAsync("https://freegeoip.app/json/").ConfigureAwait(false);
+                string responseBodyStr = response.Content.ReadAsStringAsync().Result;
+                LocationFromIPAddress location = Messaging<LocationFromIPAddress>.Deserialize(responseBodyStr);
+                return location;
+            }
+            catch (Exception)
+            {
+                return new LocationFromIPAddress()
+                {
+                    latitude = 37.3382f,
+                    longitude = 121.8863f
+                };
+            }
+        }
+
+        [DataContract]
+        public class LocationFromIPAddress
+        {
+            [DataMember]
+            public float longitude;
+            [DataMember]
+            public float latitude;
+        }
+
+        public static class Messaging<T>
+        {
+            public static T Deserialize(string jsonString)
+            {
+                MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(jsonString ?? ""));
+                return Deserialize(ms);
+            }
+
+            public static T Deserialize(Stream stream)
+            {
+                DataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(T));
+                T t = (T)deserializer.ReadObject(stream);
+                return t;
+            }
         }
     }
 }

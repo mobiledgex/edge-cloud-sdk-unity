@@ -19,10 +19,12 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using DistributedMatchEngine;
 using UnityEditor.PackageManager;
+using EnhancementManager;
 
 namespace MobiledgeX
 {
@@ -69,34 +71,7 @@ namespace MobiledgeX
 
         private string sdkVersion;
         private int selectedRegionIndex = 0;
-        private string[] regionOptions = new string[5] { "Nearest", "EU", "JP", "KR", "US" };
-        private string region;
-        public string Region
-        {
-            set { region = value; }
-            get
-            {
-                switch (region)
-                {
-                    case "EU":
-                        return EU_DME;
-                    case "KR":
-                        return KR_DME;
-                    case "JP":
-                        return JP_DME;
-                    case "US":
-                        return US_DME;
-                    case "Nearest":
-                    default:
-                        return WIFI_DME;
-                }
-            }
-        }
-        const string WIFI_DME = "wifi.dme.mobiledgex.net";
-        const string EU_DME = "eu-mexdemo.dme.mobiledgex.net";
-        const string KR_DME = "kr-mexdemo.dme.mobiledgex.net";
-        const string US_DME = "us-mexdemo.dme.mobiledgex.net";
-        const string JP_DME = "jp-mexdemo.dme.mobiledgex.net";
+        private List<string> regionOptions = new List<string>(5) { "Nearest", "EU", "JP", "US" };
 
         #endregion
 
@@ -105,7 +80,7 @@ namespace MobiledgeX
         [MenuItem("MobiledgeX/Setup", false, 0)]
         public static void ShowWindow()
         {
-            MobiledgeXEditorWindow window = (MobiledgeXEditorWindow)EditorWindow.GetWindow(typeof(MobiledgeXEditorWindow));
+            MobiledgeXEditorWindow window = (MobiledgeXEditorWindow)EditorWindow.GetWindow(typeof(MobiledgeXEditorWindow), false, "MobiledgeX");
             window.Show();
         }
 
@@ -117,40 +92,50 @@ namespace MobiledgeX
             EditorGUIUtility.PingObject(settings);
         }
 
-        [MenuItem("MobiledgeX/Docs/API References", false, 20)]
-        public static void OpenAPIReferencesURL()
-        {
-            Application.OpenURL("https://api.mobiledgex.net/#section/Edge-SDK-Unity");
-        }
-
         [MenuItem("MobiledgeX/Docs/SDK Documentation", false, 20)]
         public static void OpenDocumentationURL()
         {
-            Application.OpenURL("https://developers.mobiledgex.com/sdk-libraries/unity-sdk");
+            Application.OpenURL("https://mobiledgex.github.io/unity-samples/index.html");
         }
 
+        [MenuItem("MobiledgeX/Examples/EdgeMultiplay", false, 20)]
+        public static void ImportEdgeMultiplayExample()
+        {
+            string sdkPath = Path.GetFullPath("Packages/com.mobiledgex.sdk");
+            AssetDatabase.ImportPackage(Path.Combine(sdkPath, "Resources/Examples/EdgeMultiplay.unitypackage"), true);
+            Enhancement.EdgeMultiplayImported(getId());
+        }
 
         [MenuItem("MobiledgeX/Examples/Computer Vision", false, 20)]
         public static void ImportComputerVisionExample()
         {
             string sdkPath = Path.GetFullPath("Packages/com.mobiledgex.sdk");
             AssetDatabase.ImportPackage(Path.Combine(sdkPath, "Resources/Examples/ComputerVision.unitypackage"), true);
+            Enhancement.CVImported(getId());
+        }
+
+        [MenuItem("MobiledgeX/Join the Community", false, 20)]
+        public static void JoinTheCommunity()
+        {
+            Application.OpenURL("https://discord.gg/k22WcfMFZ3");
         }
 
         [MenuItem("MobiledgeX/Remove MobiledgeX", false, 40)]
         public static void RemoveMobiledgeX()
         {
-             if (EditorUtility.DisplayDialog("MobiledgeX","Choosing Remove will delete MobiledgeX package and close Unity Editor", "Remove", "Cancel"))
+            if (EditorUtility.DisplayDialog("MobiledgeX", "Choosing Remove will delete MobiledgeX package and close Unity Editor", "Remove", "Cancel"))
+            {
+                Enhancement.SDKRemoved(getId());
+                if (Directory.Exists(Path.Combine("Assets", "Plugins/MobiledgeX")))
                 {
-                    if(Directory.Exists(Path.Combine("Assets", "Plugins/MobiledgeX")))
-                    {
-                         Directory.Delete(Path.Combine("Assets", "Plugins/MobiledgeX"), true);
-                         File.Delete(Path.Combine("Assets", "Plugins/MobiledgeX")+".meta");
-                    }
-                    AssetDatabase.Refresh();
-                    Client.Remove("com.mobiledgex.sdk");
-                    EditorApplication.Exit(0);
+                    Directory.Delete(Path.Combine("Assets", "Plugins/MobiledgeX"), true);
+                    File.Delete(Path.Combine("Assets", "Plugins/MobiledgeX") + ".meta");
                 }
+                EditorPrefs.DeleteKey("mobiledgex-user");
+                AssetDatabase.Refresh();
+                Client.Remove("com.mobiledgex.sdk");
+                EditorApplication.Exit(0);
+            }
         }
 
         #endregion
@@ -163,7 +148,6 @@ namespace MobiledgeX
             settings = (MobiledgeXSettings)Resources.Load("MobiledgeXSettings", typeof(MobiledgeXSettings));
             settings.sdkVersion = GetSDKVersion();
             sdkVersion = settings.sdkVersion;
-
             if (PlayerSettings.iOS.locationUsageDescription.Length < 1)
             {
                 SetUpLocationSettings();
@@ -171,19 +155,26 @@ namespace MobiledgeX
             if (!editorPopUp && settings.orgName.Length < 1)
             {
                 if (!EditorUtility.DisplayDialog("MobiledgeX",
-                "Have you already created an Account?", "Yes", "No"))
+                "Do you have MobiledgeX Account?", "Yes/Will create later", "I want to create one"))
                 {
-                    Application.OpenURL("https://console.mobiledgex.net/");
+                    if (EditorUtility.DisplayDialog("MobiledgeX",
+                "How would you like to connect with us?", "Discord", "Schedule an Meeting"))
+                    {
+                        Application.OpenURL("https://discord.gg/k22WcfMFZ3");
+                    }
+                    else
+                    {
+                        Application.OpenURL("https://developers.mobiledgex.com/getting-started");
+                    }
                 }
                 else
                 {
+                    Enhancement.SDKInstalled(getId(), Application.unityVersion);
                     editorPopUp = true;
                 }
-
             }
-
-
         }
+
         void OnGUI()
         {
             Init();
@@ -243,7 +234,7 @@ namespace MobiledgeX
             EditorGUILayout.BeginHorizontal();
             Rect reservedRect = GUILayoutUtility.GetRect(240, 40);
             Rect LogoRect = new Rect(0, 0, 150, 25);
-            Rect LogoLayout = new Rect((reservedRect.width/2)-(LogoRect.width / 2), (reservedRect.height/2)-(LogoRect.height/2), LogoRect.width, LogoRect.height);
+            Rect LogoLayout = new Rect((reservedRect.width / 2) - (LogoRect.width / 2), (reservedRect.height / 2) - (LogoRect.height / 2), LogoRect.width, LogoRect.height);
             GUI.DrawTexture(LogoLayout, mexLogo, ScaleMode.ScaleToFit, true, 6);
             EditorGUILayout.EndHorizontal();
         }
@@ -262,13 +253,29 @@ namespace MobiledgeX
             settings.orgName = EditorGUILayout.TextField("Organization Name", settings.orgName);
             settings.appName = EditorGUILayout.TextField("App Name", settings.appName);
             settings.appVers = EditorGUILayout.TextField("App Version", settings.appVers);
-            EditorGUI.BeginChangeCheck();
-            selectedRegionIndex = EditorGUILayout.Popup("Region (Editor Only)", selectedRegionIndex, regionOptions);
-
-            if (EditorGUI.EndChangeCheck())
+            if (settings.region.Length > 0)
             {
-                Region = regionOptions[selectedRegionIndex];
+                try
+                {
+                    selectedRegionIndex = regionOptions.FindIndex(region => region == settings.region);
+                    if (selectedRegionIndex == -1)
+                    {
+                        selectedRegionIndex = 0;
+                    }
+                }
+                catch (ArgumentNullException)
+                {
+                    selectedRegionIndex = 0;
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    selectedRegionIndex = 0;
+                }
             }
+            EditorGUI.BeginChangeCheck();
+            selectedRegionIndex = EditorGUILayout.Popup("Region (Editor Only)", selectedRegionIndex, regionOptions.ToArray());
+            EditorGUI.EndChangeCheck();
+            settings.region = regionOptions[selectedRegionIndex];
             EditorGUILayout.BeginVertical(headerStyle);
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(300), GUILayout.Height(100));
             GUILayout.Label(progressText, labelStyle);
@@ -283,6 +290,7 @@ namespace MobiledgeX
                 progressText = "";
                 if (await CheckCredentials())
                 {
+                    Enhancement.SetupStep(getId());
                     progressText += "\nConnected !\nSee App Information in MobiledgeXSettings!";
                     ShowSettings();
                     EditorUtility.SetDirty(settings);
@@ -327,16 +335,10 @@ namespace MobiledgeX
                 Application.OpenURL("https://developers.mobiledgex.com/guides-and-tutorials");
             }
             EditorGUILayout.Space();
-            GUILayout.Label("For MobiledgeX API References", labelStyle);
-            if (GUILayout.Button("MobiledgeX API References"))
+            GUILayout.Label("Reporting Issues and Bugs", labelStyle);
+            if (GUILayout.Button("Report a Bug"))
             {
-                Application.OpenURL("https://api.mobiledgex.net/#section/Edge-SDK-Unity");
-            }
-            EditorGUILayout.Space();
-            GUILayout.Label("For Issues and Contributions", labelStyle);
-            if (GUILayout.Button("Mobiledgex SDK &Samples Github"))
-            {
-                Application.OpenURL("https://github.com/mobiledgex/edge-cloud-sampleapps");
+                Application.OpenURL("https://github.com/mobiledgex/edge-cloud-sdk-unity/issues/new?body=Reported%20on%20Unity"+Application.unityVersion+"%0DSDK%20"+sdkVersion);
             }
             EditorGUILayout.Space();
             GUILayout.Label("Terms of Use", labelStyle);
@@ -381,8 +383,8 @@ namespace MobiledgeX
             {
                 // Register and find cloudlet:
                 clog("Registering to DME ...", "");
-                checkResult = await integration.Register(Region, MatchingEngine.defaultDmeRestPort);
-                bool foundCloudlet = await integration.FindCloudlet(Region, MatchingEngine.defaultDmeRestPort);
+                checkResult = await integration.Register();
+                bool foundCloudlet = await integration.FindCloudlet();
 
                 if (!foundCloudlet)
                 {
@@ -441,7 +443,7 @@ namespace MobiledgeX
                 MoveFile(@linkXMLPath, Path.Combine(@mobiledgeXFolderPath, @"link.xml"), true);
                 if (!Directory.Exists(Path.Combine(@mobiledgeXFolderPath, @"Resources")))
                 {
-                    AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "Resources"); 
+                    AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "Resources");
                 }
                 MoveFile(@settingPath, Path.Combine(@mobiledgeXFolderPath, @"Resources/MobiledgeXSettings.asset"), true);
                 MoveFile(@sdkPath, Path.Combine(@mobiledgeXFolderPath, @"MatchingEngineSDKRestLibrary.dll"), true);
@@ -483,6 +485,13 @@ namespace MobiledgeX
             PlayerSettings.iOS.locationUsageDescription = "Geo-Location is used by MobiledgeX SDK to locate the closest edge cloudlet server and (where supported) for carrier enhanced Verify Location services.";
         }
 
+        static string getId()
+        {
+            string id = EditorPrefs.GetString("mobiledgex-user", Guid.NewGuid().ToString());
+            EditorPrefs.SetString("mobiledgex-user", id);
+            return id;
+        }
+
         #endregion
     }
 }
@@ -491,5 +500,5 @@ namespace MobiledgeX
 public class PackageDetails
 {
     public string version;
-    
+
 }

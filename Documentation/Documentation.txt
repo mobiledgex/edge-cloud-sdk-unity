@@ -1,0 +1,6 @@
+MobiledgeX Unity SDK on Github:
+https://github.com/mobiledgex/edge-cloud-sdk-unity
+MobiledgeX Developers Portal:
+http://developers.mobiledgex.com/
+MobiledgeX Tutorials on YouTube:
+https://www.youtube.com/channel/UC41LaIqKFq9jykonX0gsKNw

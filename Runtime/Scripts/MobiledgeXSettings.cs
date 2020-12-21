@@ -27,5 +27,6 @@ namespace MobiledgeX
         public string appName;
         public string appVers;
         public string authPublicKey;
+        public string region;
     }
 }
