@@ -31,7 +31,7 @@ namespace MobiledgeX
     public CarrierInfo CarrierInfo { get; }
     public NetInterface NetInterface { get; }
     public UniqueID UniqueID { get; }
-    public DeviceInfo DeviceInfo { get; }
+    public DeviceInfoApp DeviceInfo { get; }
 
     public PlatformIntegration()
     {

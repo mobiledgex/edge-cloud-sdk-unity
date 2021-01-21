@@ -8,7 +8,7 @@ using UnityEngine.Android;
 
 namespace MobiledgeX
 {
-  public class DeviceInfoIntegration : DeviceInfo
+  public class DeviceInfoIntegration : DeviceInfoApp
   {
     public DeviceInfoIntegration()
     {
