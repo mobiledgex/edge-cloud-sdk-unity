@@ -21,6 +21,7 @@ using DistributedMatchEngine;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Collections.Generic;
+using Google.Protobuf.Collections;
 
 /*
 * Helper functions, private functions, and exceptions used to implement MobiledgeXIntegration wrapper functions
@@ -81,9 +82,9 @@ namespace MobiledgeX
 
             RegisterClientRequest req = matchingEngine.CreateRegisterClientRequest(orgName, appName, appVers, developerAuthToken.Length > 0 ? developerAuthToken : null);
 
-            Debug.Log("MobiledgeX: OrgName: " + req.org_name);
-            Debug.Log("MobiledgeX: AppName: " + req.app_name);
-            Debug.Log("MobiledgeX: AppVers: " + req.app_vers);
+            Debug.Log("MobiledgeX: OrgName: " + req.OrgName);
+            Debug.Log("MobiledgeX: AppName: " + req.AppName);
+            Debug.Log("MobiledgeX: AppVers: " + req.AppVers);
 
             try
             {
@@ -108,9 +109,9 @@ namespace MobiledgeX
                     if (!useSelectedRegionInProduction)
                     {
 #if UNITY_EDITOR
-                        Debug.Log("MobiledgeX: Doing Register Client with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
+                        Debug.Log("MobiledgeX: Doing Register Client with DME: " + region + ", p: " + MatchingEngine.defaultDmeGrpcPort + " with req: " + req);
                         Debug.LogWarning("MobiledgeX: Region Selection will work only in UnityEditor not on Mobile Devices");
-                        reply = await matchingEngine.RegisterClient(region, MatchingEngine.defaultDmeRestPort, req);
+                        reply = await matchingEngine.RegisterClient(region, MatchingEngine.defaultDmeGrpcPort, req);
 #else
                         Debug.Log("MobiledgeX: Doing Register Client, with req: " + req);
                         reply = await matchingEngine.RegisterClient(req);
@@ -118,8 +119,8 @@ namespace MobiledgeX
                     }
                     else
                     {
-                    Debug.Log("MobiledgeX: Doing Register Client with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
-                    reply = await matchingEngine.RegisterClient(region, MatchingEngine.defaultDmeRestPort, req);
+                    Debug.Log("MobiledgeX: Doing Register Client with DME: " + region + ", p: " + MatchingEngine.defaultDmeGrpcPort + " with req: " + req);
+                    reply = await matchingEngine.RegisterClient(region, MatchingEngine.defaultDmeGrpcPort, req);
                     }
                 }
             }
@@ -140,10 +141,10 @@ namespace MobiledgeX
                     Debug.LogError("MobiledgeX: Register reply NULL!");
                     throw new RegisterClientException("RegisterClient returned null.");
                 }
-                if (reply.status != ReplyStatus.RS_SUCCESS)
+                if (reply.Status != ReplyStatus.RsSuccess)
                 {
-                    Debug.LogError("MobiledgeX: Register Failed: " + reply.status);
-                    throw new RegisterClientException("Bad RegisterClient. RegisterClient status is " + reply.status);
+                    Debug.LogError("MobiledgeX: Register Failed: " + reply.Status);
+                    throw new RegisterClientException("Bad RegisterClient. RegisterClient status is " + reply.Status);
                 }
             }
 
@@ -186,7 +187,7 @@ namespace MobiledgeX
                 {
                     throw new FindCloudletException("Location must not be null!");
                 }
-                Debug.Log("FindCloudlet Location: " + location.longitude + ", lat: " + location.latitude);
+                Debug.Log("FindCloudlet Location: " + location.Longitude + ", lat: " + location.Latitude);
                 FindCloudletRequest req = matchingEngine.CreateFindCloudletRequest(location, "");
                 if (dmeHost != null && dmePort != 0)
                 {
@@ -198,9 +199,9 @@ namespace MobiledgeX
                     if (!useSelectedRegionInProduction)
                     {
 #if UNITY_EDITOR
-                        Debug.Log("MobiledgeX: Doing FindCloudlet with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
+                        Debug.Log("MobiledgeX: Doing FindCloudlet with DME: " + region + ", p: " + MatchingEngine.defaultDmeGrpcPort + " with req: " + req);
                         Debug.LogWarning("MobiledgeX: Region Selection will work only in UnityEditor not on Mobile Devices");
-                        reply = await matchingEngine.FindCloudlet(region, MatchingEngine.defaultDmeRestPort, req);
+                        reply = await matchingEngine.FindCloudlet(region, MatchingEngine.defaultDmeGrpcPort, req);
 #else
                         Debug.Log("MobiledgeX: Doing FindCloudlet, with req: " + req);
                         reply = await matchingEngine.FindCloudlet(req, mode);
@@ -208,8 +209,8 @@ namespace MobiledgeX
                     }
                     else
                     {
-                        Debug.Log("MobiledgeX: Doing FindCloudlet with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
-                        reply = await matchingEngine.FindCloudlet(region, MatchingEngine.defaultDmeRestPort, req, mode);
+                        Debug.Log("MobiledgeX: Doing FindCloudlet with DME: " + region + ", p: " + MatchingEngine.defaultDmeGrpcPort + " with req: " + req);
+                        reply = await matchingEngine.FindCloudlet(region, MatchingEngine.defaultDmeGrpcPort, req, mode);
                     }
                 }
             }
@@ -227,16 +228,21 @@ namespace MobiledgeX
                 {
                     throw new FindCloudletException("FindCloudletReply returned null. Make Sure you created App Instances for your Application and they are deployed in the correct region.");
                 }
-                if (reply.status != FindCloudletReply.FindStatus.FIND_FOUND)
+                if (reply.Status != FindCloudletReply.Types.FindStatus.FindFound)
                 {
-                    throw new FindCloudletException("Unable to findCloudlet. Status is " + reply.status);
+                    throw new FindCloudletException("Unable to findCloudlet. Status is " + reply.Status);
                 }
             }
 
-            Debug.Log("FindCloudlet with DME result: " + reply.status);
+            Debug.Log("FindCloudlet with DME result: " + reply.Status);
             latestFindCloudletReply = reply;
-            latestAppPortList = reply.ports;
-            return reply.status == FindCloudletReply.FindStatus.FIND_FOUND;
+            int porti = 0;
+            latestAppPortList = new AppPort[reply.Ports.Count];
+            foreach (var aport in reply.Ports)
+            {
+               latestAppPortList[porti++] = aport;
+            }
+            return reply.Status == FindCloudletReply.Types.FindStatus.FindFound;
         }
 
         /// <summary>
@@ -265,8 +271,8 @@ namespace MobiledgeX
 
 #if UNITY_EDITOR
             Debug.Log("MobiledgeX: Cannot Get location in Unity Editor. Returning fallback location. Developer can configure fallback location with SetFallbackLocation");
-            location.longitude = fallbackLocation.Longitude;
-            location.latitude = fallbackLocation.Latitude;
+            location.Longitude = fallbackLocation.Longitude;
+            location.Latitude = fallbackLocation.Latitude;
 #else
             if (useFallbackLocation)
             {
@@ -312,7 +318,7 @@ namespace MobiledgeX
 
             try
             {
-                return await carrierInfoClass.IsRoaming(location.longitude, location.latitude);
+                return await carrierInfoClass.IsRoaming(location.Longitude, location.Latitude);
             }
             catch (CarrierInfoException cie)
             {
@@ -330,7 +336,7 @@ namespace MobiledgeX
                 return new Dictionary<string, string>();
             }
             UpdateLocationFromDevice();
-            deviceInfo["NetworkCountryIso"] = await carrierInfoClass.ConvertGPSToISOCountryCode(location.longitude, location.latitude);
+            deviceInfo["NetworkCountryIso"] = await carrierInfoClass.ConvertGPSToISOCountryCode(location.Longitude, location.Latitude);
 #endif
             return deviceInfo;
         }
