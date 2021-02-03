@@ -309,7 +309,7 @@ namespace MobiledgeX
         {
 #if !UNITY_EDITOR
             // 0,0 is fine in Unity Editor
-            if (location.longitude == 0 && location.latitude == 0)
+            if (location.Longitude == 0 && location.Latitude == 0)
             {
                 Debug.LogError("Invalid location: (0,0). Please wait for valid location information before checking roaming status.");
                 throw new CarrierInfoException("Invalid location: (0,0). Please wait for valid location information before checking roaming status.");
