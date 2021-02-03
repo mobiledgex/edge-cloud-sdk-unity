@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2020 MobiledgeX, Inc. All rights and licenses reserved.
+ * Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
  * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,8 +28,7 @@ namespace MobiledgeX
     [AddComponentMenu("MobiledgeX/LocationService")]
     public class LocationService : MonoBehaviour
     {
-        private static bool locationPermissionRejected = false;
-
+        private static bool locationPermissionRejected;
         void Awake()
         {
             StartCoroutine(LocationServiceFlow());
@@ -40,7 +39,6 @@ namespace MobiledgeX
             // First, check if user has location service enabled
             if (!Input.location.isEnabledByUser)
             {
-
 #if UNITY_IOS
                 //if isEnabledByUser is false and you start location updates anyway,
                 //the CoreLocation framework prompts the user with a confirmation panel
@@ -51,7 +49,7 @@ namespace MobiledgeX
 #elif UNITY_EDITOR
                 Debug.LogWarning("MobiledgeX: Location Service disabled in UnityEditor");
 #else
-                throw new Exception("MobiledgeX: Location Service disabled by user."); // 
+                locationPermissionRejected = true;
 #endif
             }
 
@@ -68,13 +66,13 @@ namespace MobiledgeX
             // Service didn't initialize in 20 seconds
             if (maxWait < 1)
             {
-                throw new Exception("MobiledgeX: InitalizingLocationService coroutine Timed out");
+                locationPermissionRejected = true;
             }
 
             // Connection has failed
             if (Input.location.status == LocationServiceStatus.Failed)
             {
-                throw new Exception("MobiledgeX: Location Service is unable to determine device location");
+                locationPermissionRejected = true;
             }
             else
             {
@@ -83,7 +81,7 @@ namespace MobiledgeX
 #if UNITY_EDITOR
                     Debug.LogWarning("MobiledgeX: Location Service disabled in UnityEditor");
 #else
-                    throw new Exception("MobiledgeX: Location Service disabled by user.");
+                    locationPermissionRejected = true;
 #endif
                 }
                 // Access granted and location value could be retrieved
@@ -99,27 +97,39 @@ namespace MobiledgeX
 
         /// <summary>
         /// EnsureLocation Confirm that user location is valid, user location is essential for MobiledgeX services
-        /// If Location permission is denied by User an exception will be thrown (for Android) in LocationServiceFlow()
-        ///                                                                      (for iOS) in InitalizeLocationService()
+        /// If Location permission is denied by User an exception will be thrown once RetreiveLocation() is called
         /// </summary>
         public static IEnumerator EnsureLocation()
         {
+            if (!SystemInfo.supportsLocationService)
+            {
+                yield return null;
+            }
+
 #if UNITY_EDITOR
             yield return null;
 #else
             if (Input.location.status == LocationServiceStatus.Initializing)
             {
-                yield return new WaitUntil(() => (Input.location.status == LocationServiceStatus.Running));
+                yield return new WaitUntil(() => (Input.location.status != LocationServiceStatus.Initializing));
+            }
+            if(locationPermissionRejected == true || Input.location.status == LocationServiceStatus.Failed || !Input.location.isEnabledByUser)
+            {
+                yield return null;
             }
             else
             {
-                yield return new WaitUntil(() => (Input.location.lastData.latitude != 0 && Input.location.lastData.longitude != 0) || locationPermissionRejected == true);
+                yield return new WaitUntil(() => (Input.location.lastData.latitude != 0 && Input.location.lastData.longitude != 0));
             }
 #endif
         }
 
         public IEnumerator LocationServiceFlow()
         {
+            if (!SystemInfo.supportsLocationService)
+            {
+                yield return null;
+            }
             if (Application.platform == RuntimePlatform.Android)
             {
                 if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
@@ -129,7 +139,6 @@ namespace MobiledgeX
                     if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
                     {
                         locationPermissionRejected = true;
-                        throw new Exception("MobiledgeX: Location Permission denied by user!");
                     }
                     else
                     {
@@ -141,7 +150,12 @@ namespace MobiledgeX
                     yield return StartCoroutine(InitalizeLocationService());
                 }
             }
-            else //iOS - Permission Request are enabled once the application request location info
+            //iOS - Permission Request  once the application request location info
+            if (Application.platform == RuntimePlatform.IPhonePlayer)
+            {
+                yield return StartCoroutine(InitalizeLocationService());
+            }
+            else
             {
                 yield return StartCoroutine(InitalizeLocationService());
             }
@@ -151,6 +165,10 @@ namespace MobiledgeX
         public static Loc RetrieveLocation()
         {
             LocationInfo locationInfo = Input.location.lastData;
+            if((locationInfo.latitude == 0 && locationInfo.longitude == 0) || !Input.location.isEnabledByUser || Input.location.status == LocationServiceStatus.Failed)
+            {
+                throw new LocationException("MobiledgeX: Location Service disabled by user.");
+            }
             Debug.Log("Location Info: [" + locationInfo.longitude + "," + locationInfo.latitude + "]");
             return ConvertUnityLocationToDMELoc(locationInfo);
         }
@@ -169,7 +187,6 @@ namespace MobiledgeX
         public static Loc ConvertUnityLocationToDMELoc(LocationInfo info)
         {
             Timestamp ts = ConvertTimestamp(info.timestamp);
-
             Loc loc = new Loc
             {
                 latitude = info.latitude,
@@ -181,8 +198,18 @@ namespace MobiledgeX
                 speed = 0f,
                 timestamp = ts
             };
-
             return loc;
         }
     }
+
+    public class LocationException : Exception
+    {
+        public LocationException()
+        {
+        }
+
+        public LocationException(string message): base(message)
+        {
+        }
+  }
 }
