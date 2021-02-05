@@ -28,7 +28,7 @@ namespace MobiledgeX
     [AddComponentMenu("MobiledgeX/LocationService")]
     public class LocationService : MonoBehaviour
     {
-        private static bool locationPermissionRejected;
+        public static bool locationPermissionRejected;
         void Awake()
         {
             StartCoroutine(LocationServiceFlow());
@@ -46,8 +46,6 @@ namespace MobiledgeX
                 //The user can enable or disable location services altogether from the Settings application
                 //by toggling the switch in Settings>General>LocationServices.
                 //https://docs.unity3d.com/ScriptReference/LocationService-isEnabledByUser.html
-#elif UNITY_EDITOR
-                Debug.LogWarning("MobiledgeX: Location Service disabled in UnityEditor");
 #else
                 locationPermissionRejected = true;
 #endif
@@ -76,14 +74,12 @@ namespace MobiledgeX
             }
             else
             {
+#if !UNITY_EDITOR
                 if (Input.location.lastData.latitude == 0 && Input.location.lastData.longitude == 0)
                 {
-#if UNITY_EDITOR
-                    Debug.LogWarning("MobiledgeX: Location Service disabled in UnityEditor");
-#else
                     locationPermissionRejected = true;
-#endif
                 }
+#endif
                 // Access granted and location value could be retrieved
                 //Debug.Log("MobiledgeX: Location Service has location: " + Input.location.lastData.latitude + " " + Input.location.lastData.longitude + " " + Input.location.lastData.altitude + " " + Input.location.lastData.horizontalAccuracy + " " + Input.location.lastData.timestamp);
             }
@@ -165,11 +161,11 @@ namespace MobiledgeX
         public static Loc RetrieveLocation()
         {
             LocationInfo locationInfo = Input.location.lastData;
-            if((locationInfo.latitude == 0 && locationInfo.longitude == 0) || !Input.location.isEnabledByUser || Input.location.status == LocationServiceStatus.Failed)
+            if ((locationInfo.latitude == 0 && locationInfo.longitude == 0) || !Input.location.isEnabledByUser || Input.location.status == LocationServiceStatus.Failed)
             {
                 throw new LocationException("MobiledgeX: Location Service disabled by user.");
             }
-            Debug.Log("Location Info: [" + locationInfo.longitude + "," + locationInfo.latitude + "]");
+            //Debug.Log("Location Info: [" + locationInfo.longitude + "," + locationInfo.latitude + "]");
             return ConvertUnityLocationToDMELoc(locationInfo);
         }
 
@@ -208,8 +204,8 @@ namespace MobiledgeX
         {
         }
 
-        public LocationException(string message): base(message)
+        public LocationException(string message):base(message)
         {
         }
-  }
+    }
 }
