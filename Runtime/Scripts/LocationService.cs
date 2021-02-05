@@ -93,7 +93,7 @@ namespace MobiledgeX
 
         /// <summary>
         /// EnsureLocation Confirm that user location is valid, user location is essential for MobiledgeX services
-        /// If Location permission is denied by User an exception will be thrown once RetreiveLocation() is called
+        /// If Location permission is denied by User an exception will be thrown once RetrieveLocation() is called
         /// </summary>
         public static IEnumerator EnsureLocation()
         {
