@@ -64,11 +64,10 @@ namespace MobiledgeX
       CarrierInfoClass carrierInfo = new CarrierInfoClass();
       Dictionary<string, string> map;
       int sdk_int = carrierInfo.getAndroidSDKVers();
-      if (UnityEngine.XR.XRSettings.isDeviceActive && UnityEngine.XR.XRSettings.loadedDeviceName.Contains("oculus"))
+      if (UnityEngine.XR.XRSettings.enabled)
       {
-           map = new Dictionary<string, string>();
-           map["Build.VERSION.SDK_INT"] = sdk_int.ToString();
-           return map;
+          map["Build.VERSION.SDK_INT"] = sdk_int.ToString();
+          return map;
       }
       AndroidJavaObject telephonyManager = carrierInfo.GetTelephonyManager();
       if (telephonyManager == null)
