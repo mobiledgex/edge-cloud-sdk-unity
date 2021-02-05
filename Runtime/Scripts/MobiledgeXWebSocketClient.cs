@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2020 MobiledgeX, Inc. All rights and licenses reserved.
+ * Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
  * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -83,14 +83,14 @@ namespace MobiledgeX
 
         public async Task Connect(Uri uri)
         {
-            Debug.Log("Connecting to: " + uri);
+            //Debug.Log("Connecting to: " + uri);
             await ws.ConnectAsync(uri, tokenSource.Token);
             while (ws.State == WebSocketState.Connecting)
             {
-                Debug.Log("Waiting to connect...");
+                //Debug.Log("Waiting to connect...");
                 Task.Delay(50).Wait();
             }
-            Debug.Log("Connect status: " + ws.State);
+            //Debug.Log("Connect status: " + ws.State);
             run = true;
         }
 
@@ -122,7 +122,7 @@ namespace MobiledgeX
         public async void RunSend()
         {
             ArraySegment<byte> msg;
-            Debug.Log("RunSend entered.");
+            //Debug.Log("RunSend entered.");
             while (run)
             {
                 while (!sendQueue.IsCompleted)
@@ -141,7 +141,7 @@ namespace MobiledgeX
         public async void RunSendBinary()
         {
             ArraySegment<byte> msg;
-            Debug.Log("RunSend entered.");
+            //Debug.Log("RunSend entered.");
             while (run)
             {
                 while (!sendQueueBinary.IsCompleted)
@@ -189,7 +189,7 @@ namespace MobiledgeX
         /// </summary>
         public async void RunReceive()
         {
-            Debug.Log("WebSocket Message Receiver looping.");
+            //Debug.Log("WebSocket Message Receiver looping.");
             Dictionary<WebSocketMessageType, MemoryStream> response = new Dictionary<WebSocketMessageType, MemoryStream>(1);
             while (run)
             {
@@ -203,7 +203,7 @@ namespace MobiledgeX
                         string result = StreamToString(response.Values.First(), Encoding.UTF8);
                         if (result != null && result.Length > 0)
                         {
-                            Debug.Log("Received: " + result);
+                            //Debug.Log("Received: " + result);
                             receiveQueue.Enqueue(result);
                         }
                     }

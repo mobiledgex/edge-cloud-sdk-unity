@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2018-2020 MobiledgeX, Inc. All rights and licenses reserved.
+ * Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
  * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,9 +34,9 @@ namespace MobiledgeX
       {
         return new AndroidJavaClass(pkg);
       }
-      catch (Exception e)
+      catch (Exception)
       {
-        Debug.Log("Could not get AndroidJavaClass " + pkg + ". Exception is: " + e.Message);
+        //Debug.Log("Could not get AndroidJavaClass " + pkg + ". Exception is: " + e.Message);
         return null;
       }
     }
@@ -47,9 +47,9 @@ namespace MobiledgeX
       {
         return new AndroidJavaObject(pkg);
       }
-      catch (Exception e)
+      catch (Exception)
       {
-        Debug.Log("Could not get AndroidJavaObject " + pkg + ". Exception is: " + e.Message);
+        //Debug.Log("Could not get AndroidJavaObject " + pkg + ". Exception is: " + e.Message);
         return null;
       }
     }
@@ -60,9 +60,9 @@ namespace MobiledgeX
       {
         return obj.Call<AndroidJavaObject>("getClass", emptyObjectArr).Call<string>("getSimpleName", emptyObjectArr);
       }
-      catch (Exception e)
+      catch (Exception)
       {
-        Debug.Log("Could not getSimpleName. Exception is " + e.Message);
+        //Debug.Log("Could not getSimpleName. Exception is " + e.Message);
         return "";
       }
     }
@@ -75,9 +75,9 @@ namespace MobiledgeX
       {
         return c.GetStatic<T>(member);
       }
-      catch (Exception e)
+      catch (Exception)
       {
-        Debug.Log("Could not GetStatic " + typeof(T) + ". Exception: " + e.Message);
+        //Debug.Log("Could not GetStatic " + typeof(T) + ". Exception: " + e.Message);
         return default(T);
       }
     }
@@ -93,9 +93,9 @@ namespace MobiledgeX
       {
         return c.CallStatic<T>(method, param);
       }
-      catch (Exception e)
+      catch (Exception)
       {
-        Debug.Log("Could not CallStatic " + typeof(T) + ". Exception: " + e.Message);
+        //Debug.Log("Could not CallStatic " + typeof(T) + ". Exception: " + e.Message);
         return default(T);
       }
     }
@@ -111,9 +111,9 @@ namespace MobiledgeX
       {
         return obj.Call<T>(method, param);
       }
-      catch (Exception e)
+      catch (Exception)
       {
-        Debug.Log("Could not Call " + typeof(T) + " method " + method + ". Exception: " + e.Message);
+        //Debug.Log("Could not Call " + typeof(T) + " method " + method + ". Exception: " + e.Message);
         return default(T);
       }
     }
