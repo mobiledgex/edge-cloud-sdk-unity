@@ -57,6 +57,7 @@ namespace MobiledgeX
         public void UseWifiOnly(bool useWifi)
         {
             matchingEngine.useOnlyWifi = useWifi;
+            MobiledgeXLogger.Print("Setting useWifiOnly to " + useWifi);
         }
 
         /// <summary>
@@ -67,6 +68,7 @@ namespace MobiledgeX
         public void UseFindCloudletPerformanceMode(bool performanceMode)
         {
             mode = performanceMode ? FindCloudletMode.PERFORMANCE : FindCloudletMode.PROXIMITY;
+            MobiledgeXLogger.Print("Setting FindCloudlet mode to " + mode);
         }
 
         /// <summary>

@@ -54,42 +54,42 @@ namespace MobiledgeX
       AndroidJavaClass unityPlayer = PlatformIntegrationUtil.GetAndroidJavaClass("com.unity3d.player.UnityPlayer");
       if (unityPlayer == null)
       {
-        //Debug.Log("Can't get UnityPlayer");
+        MobiledgeXLogger.Print("Can't get UnityPlayer");
         return null;
       }
 
       AndroidJavaObject activity = PlatformIntegrationUtil.GetStatic<AndroidJavaObject>(unityPlayer, "currentActivity");
       if (activity == null)
       {
-        //Debug.Log("Can't find an activity!");
+        MobiledgeXLogger.Print("Can't find an activity!");
         return null;
       }
 
       AndroidJavaObject context = PlatformIntegrationUtil.Call<AndroidJavaObject>(activity, "getApplicationContext");
       if (context == null)
       {
-        //Debug.Log("Can't find an app context!");
+        MobiledgeXLogger.Print("Can't find an app context!");
         return null;
       }
 
       AndroidJavaObject contentResolver = PlatformIntegrationUtil.Call<AndroidJavaObject>(context, "getContentResolver");
       if (contentResolver == null)
       {
-        //Debug.Log("Can't get content resolver from context");
+        MobiledgeXLogger.Print("Can't get content resolver from context");
         return null;
       }
 
       AndroidJavaClass secureClass = PlatformIntegrationUtil.GetAndroidJavaClass("android.provider.Settings$Secure");
       if (secureClass == null)
       {
-        //Debug.Log("Can't get secure class");
+        MobiledgeXLogger.Print("Can't get secure class");
         return null;
       }
 
       AndroidJavaObject androidID = PlatformIntegrationUtil.GetStatic<AndroidJavaObject>(secureClass, "ANDROID_ID");
       if (androidID == null)
       {
-        //Debug.Log("Cant get Android ID static string");
+        MobiledgeXLogger.Print("Cant get Android ID static string");
         return null;
       }
 
@@ -138,12 +138,12 @@ namespace MobiledgeX
 
     public string GetUniqueIDType()
     {
-      //Debug.Log("GetUniqueIDType is NOT IMPLEMENTED");
+      MobiledgeXLogger.Print("GetUniqueIDType is NOT IMPLEMENTED");
       return null;
     }
     public string GetUniqueID()
     {
-      //Debug.Log("GetUniqueID is NOT IMPLEMENTED");
+      MobiledgeXLogger.Print("GetUniqueID is NOT IMPLEMENTED");
       return null;
     }
 #endif

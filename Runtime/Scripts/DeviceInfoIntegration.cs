@@ -63,7 +63,9 @@ namespace MobiledgeX
     {
       if (UnityEngine.XR.XRSettings.enabled)
       {
-          return null;
+           map = new Dictionary<string, string>();
+           map["Build.VERSION.SDK_INT"] = sdk_int.ToString();
+           return map;
       }
       CarrierInfoClass carrierInfo = new CarrierInfoClass();
       AndroidJavaObject telephonyManager = carrierInfo.GetTelephonyManager();
@@ -71,7 +73,7 @@ namespace MobiledgeX
 
       if (telephonyManager == null)
       {
-        //Debug.Log("No TelephonyManager!");
+        MobiledgeXLogger.Print("No TelephonyManager!");
         return null;
       }
       map = new Dictionary<string, string>();
@@ -94,7 +96,7 @@ namespace MobiledgeX
       }
       catch (Exception e)
       {
-        //Debug.Log("Exception retrieving properties: " + e.GetBaseException() + ", " + e.Message);
+        MobiledgeXLogger.PrintWarning("Exception retrieving properties: " + e.GetBaseException() + ", " + e.Message);
       }
 
       try
@@ -108,7 +110,7 @@ namespace MobiledgeX
       }
       catch (Exception e)
       {
-        //Debug.Log("Exception retrieving properties: " + e.GetBaseException() + ", " + e.Message);
+        MobiledgeXLogger.PrintWarning("Exception retrieving properties: " + e.GetBaseException() + ", " + e.Message);
       }
 
       AndroidJavaClass versionCodesClass = new AndroidJavaClass("android.os.Build$VERSION_CODES");
@@ -186,7 +188,7 @@ namespace MobiledgeX
 #else // Unsupported platform.
   public Dictionary<string, string> GetDeviceInfo()
   {
-    //Debug.LogFormat("DeviceInfo not implemented!");
+    MobiledgeXLogger.Print("DeviceInfo not implemented!");
     return null;
   }
 #endif

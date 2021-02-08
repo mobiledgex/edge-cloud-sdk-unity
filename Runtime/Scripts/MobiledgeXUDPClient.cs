@@ -100,14 +100,14 @@ namespace MobiledgeX
         public async void RunSend()
         {
             ArraySegment<byte> msg;
-            //Debug.Log("RunSend entered.");
+            MobiledgeXLogger.Print("RunSend entered.");
             while (run)
             {
                 while (!sendQueue.IsCompleted)
                 {
                     msg = sendQueue.Take();
-                    //long count = sendQueue.Count;
-                    //Debug.Log("Dequeued this message to send: " + msg + ", queueSize: " + count);
+                    long count = sendQueue.Count;
+                    MobiledgeXLogger.Print("Dequeued this message to send: " + msg + ", queueSize: " + count);
                     await udpClient.SendAsync(msg.Array, msg.Count, serverEndpoint);
                 }
             }
@@ -117,7 +117,7 @@ namespace MobiledgeX
         {
             while (run)
             {
-                //Debug.Log("Awaiting Receive...");
+                MobiledgeXLogger.Print("Awaiting Receive...");
                 UdpReceiveResult result = await udpClient.ReceiveAsync();
                 if (result != null && result.Buffer.Length > 0)
                 {

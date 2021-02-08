@@ -139,7 +139,7 @@ namespace MobiledgeX
                 Debug.LogError("Register Failed!");
                 return false;
             }
-            //Debug.Log("Register OK!");
+            MobiledgeXLogger.Print("Register OK!");
             bool found = await FindCloudlet(dmeHost, dmePort);
             if (!found)
             {
@@ -222,7 +222,7 @@ namespace MobiledgeX
         {
             if (latestFindCloudletReply == null)
             {
-                Debug.LogWarning("MobiledgeX: Last FindCloudlet returned null. Call FindCloudlet again before GetAppPort");
+                Debug.LogError("MobiledgeX: Last FindCloudlet returned null. Call FindCloudlet again before GetAppPort");
                 throw new AppPortException("Last FindCloudlet returned null. Call FindCloudlet again before GetAppPort");
             }
 
@@ -248,7 +248,7 @@ namespace MobiledgeX
 
             if (port == 0)
             {
-                //Debug.Log("MobiledgeX: No port specified. Grabbing first AppPort in dictionary");
+                MobiledgeXLogger.Print("MobiledgeX: No port specified. Grabbing first AppPort in dictionary");
                 port = appPortsDict.OrderBy(kvp => kvp.Key).First().Key;
             }
 

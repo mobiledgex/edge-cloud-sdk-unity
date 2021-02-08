@@ -81,6 +81,10 @@ namespace MobiledgeX
 
             RegisterClientRequest req = matchingEngine.CreateRegisterClientRequest(orgName, appName, appVers, developerAuthToken.Length > 0 ? developerAuthToken : null);
 
+            MobiledgeXLogger.Print("MobiledgeX: OrgName: " + req.org_name);
+            MobiledgeXLogger.Print("MobiledgeX: AppName: " + req.app_name);
+            MobiledgeXLogger.Print("MobiledgeX: AppVers: " + req.app_vers);
+
             try
             {
                 await UpdateLocationAndCarrierInfo();
@@ -96,7 +100,7 @@ namespace MobiledgeX
             {
                 if (dmeHost != null && dmePort != 0)
                 {
-                    //Debug.Log("MobiledgeX: Doing Register Client with DME: " + dmeHost + ", p: " + dmePort + " with req: " + req);
+                    MobiledgeXLogger.Print("MobiledgeX: Doing Register Client with DME: " + dmeHost + ", p: " + dmePort + " with req: " + req);
                     reply = await matchingEngine.RegisterClient(dmeHost, dmePort, req);
                 }
                 else
@@ -104,17 +108,17 @@ namespace MobiledgeX
                     if (!useSelectedRegionInProduction)
                     {
 #if UNITY_EDITOR
-                        //Debug.Log("MobiledgeX: Doing Register Client with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
-                        //Debug.Log("MobiledgeX: Region Selection will work only in UnityEditor not on Mobile Devices");
+                        MobiledgeXLogger.Print("MobiledgeX: Doing Register Client with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
+                        MobiledgeXLogger.PrintWarning("MobiledgeX: Region Selection will work only in UnityEditor not on Mobile Devices");
                         reply = await matchingEngine.RegisterClient(region, MatchingEngine.defaultDmeRestPort, req);
 #else
-                        //Debug.Log("MobiledgeX: Doing Register Client, with req: " + req);
+                        MobiledgeXLogger.Print("MobiledgeX: Doing Register Client, with req: " + req);
                         reply = await matchingEngine.RegisterClient(req);
 #endif
                     }
                     else
                     {
-                    //Debug.Log("MobiledgeX: Doing Register Client with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
+                    MobiledgeXLogger.Print("MobiledgeX: Doing Register Client with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
                     reply = await matchingEngine.RegisterClient(region, MatchingEngine.defaultDmeRestPort, req);
                     }
                 }
@@ -182,11 +186,11 @@ namespace MobiledgeX
                 {
                     throw new FindCloudletException("Location must not be null!");
                 }
-                //Debug.Log("FindCloudlet Location: " + location.longitude + ", lat: " + location.latitude);
+                MobiledgeXLogger.Print("FindCloudlet Location: " + location.longitude + ", lat: " + location.latitude);
                 FindCloudletRequest req = matchingEngine.CreateFindCloudletRequest(location, "");
                 if (dmeHost != null && dmePort != 0)
                 {
-                    //Debug.Log("MobiledgeX: Doing FindCloudlet with DME: " + dmeHost + ", p: " + dmePort + " with req: " + req);
+                    MobiledgeXLogger.Print("MobiledgeX: Doing FindCloudlet with DME: " + dmeHost + ", p: " + dmePort + " with req: " + req);
                     reply = await matchingEngine.FindCloudlet(dmeHost, dmePort, req, mode);
                 }
                 else
@@ -194,17 +198,17 @@ namespace MobiledgeX
                     if (!useSelectedRegionInProduction)
                     {
 #if UNITY_EDITOR
-                        //Debug.Log("MobiledgeX: Doing FindCloudlet with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
-                        //Debug.Log("MobiledgeX: Region Selection will work only in UnityEditor not on Mobile Devices");
+                        MobiledgeXLogger.Print("MobiledgeX: Doing FindCloudlet with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
+                        MobiledgeXLogger.PrintWarning("MobiledgeX: Region Selection will work only in UnityEditor not on Mobile Devices");
                         reply = await matchingEngine.FindCloudlet(region, MatchingEngine.defaultDmeRestPort, req);
 #else
-                        //Debug.Log("MobiledgeX: Doing FindCloudlet, with req: " + req);
+                        MobiledgeXLogger.Print("MobiledgeX: Doing FindCloudlet, with req: " + req);
                         reply = await matchingEngine.FindCloudlet(req, mode);
 #endif
                     }
                     else
                     {
-                        //Debug.Log("MobiledgeX: Doing FindCloudlet with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
+                        MobiledgeXLogger.Print("MobiledgeX: Doing FindCloudlet with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
                         reply = await matchingEngine.FindCloudlet(region, MatchingEngine.defaultDmeRestPort, req, mode);
                     }
                 }
@@ -229,7 +233,7 @@ namespace MobiledgeX
                 }
             }
 
-            //Debug.Log("FindCloudlet with DME result: " + reply.status);
+            MobiledgeXLogger.Print("FindCloudlet with DME result: " + reply.status);
             latestFindCloudletReply = reply;
             latestAppPortList = reply.ports;
             return reply.status == FindCloudletReply.FindStatus.FIND_FOUND;
@@ -247,7 +251,7 @@ namespace MobiledgeX
             bool isRoaming = await IsRoaming();
             if (isRoaming) {
                 UseWifiOnly(true);
-                //Debug.Log("IOS Device is roaming. Unable to get current network information from IOS device. Switching to wifi mode");
+                MobiledgeXLogger.Print("IOS Device is roaming. Unable to get current network information from IOS device. Switching to wifi mode");
             }
 #endif
             UpdateCarrierName();
@@ -262,7 +266,7 @@ namespace MobiledgeX
             // technically valid, though less likely real, as of writing.
 
 #if UNITY_EDITOR
-            //Debug.Log("MobiledgeX: Cannot Get location in Unity Editor. Returning fallback location. Developer can configure fallback location with SetFallbackLocation");
+            MobiledgeXLogger.Print("MobiledgeX: Cannot Get location in Unity Editor. Returning fallback location. Developer can configure fallback location with SetFallbackLocation");
             location.longitude = fallbackLocation.Longitude;
             location.latitude = fallbackLocation.Latitude;
 #else
@@ -270,7 +274,7 @@ namespace MobiledgeX
             {
                 location.longitude = fallbackLocation.Longitude;
                 location.latitude = fallbackLocation.Latitude;
-                //Debug.Log("MobiledgeX: Using FallbackLocation ["+location.latitude+", "+location.longitude+"]");
+                MobiledgeXLogger.Print("MobiledgeX: Using FallbackLocation ["+location.latitude+", "+location.longitude+"]");
             }
             else
             {
@@ -368,10 +372,10 @@ namespace MobiledgeX
             if (matchingEngine.useOnlyWifi)
             {
 #if UNITY_EDITOR
-                //Debug.Log("MobiledgeX: useWifiOnly must be false in production. useWifiOnly can be used only for testing");
+                MobiledgeXLogger.Print("MobiledgeX: useWifiOnly must be false in production. useWifiOnly can be used only for testing");
                 return true;
 #else
-                //Debug.Log("MobiledgeX: useOnlyWifi must be false to enable edge connection");
+                MobiledgeXLogger.Print("MobiledgeX: useOnlyWifi must be false to enable edge connection");
                 return false;
 #endif
             }
@@ -380,7 +384,7 @@ namespace MobiledgeX
             {
                 if (!matchingEngine.netInterface.HasCellular())
                 {
-                    Debug.Log(proto + " connection requires a cellular interface to run connection over edge.");
+                    MobiledgeXLogger.Print(proto + " connection requires a cellular interface to run connection over edge.");
                     return false;
                 }
             }
@@ -390,7 +394,7 @@ namespace MobiledgeX
                 // We need to make sure wifi is off
                 if (!matchingEngine.netInterface.HasCellular() || matchingEngine.netInterface.HasWifi())
                 {
-                    //Debug.Log("MobiledgeX: " + proto + " connection requires the cellular interface to be up and the wifi interface to be off to run connection over edge.");
+                    MobiledgeXLogger.Print("MobiledgeX: " + proto + " connection requires the cellular interface to be up and the wifi interface to be off to run connection over edge.");
                     return false;
                 }
             }
@@ -404,7 +408,7 @@ namespace MobiledgeX
                     AddressFamily.InterNetwork);
             if (cellularIPAddressV4 == null && cellularIPAddressV6 == null)
             {
-                //Debug.Log("MobiledgeX: Unable to find ip address for local cellular interface.");
+                MobiledgeXLogger.Print("MobiledgeX: Unable to find ip address for local cellular interface.");
                 return false;
             }
 

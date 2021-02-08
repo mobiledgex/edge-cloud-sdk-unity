@@ -40,6 +40,8 @@ namespace MobiledgeX
       NetworkInterfaceName = new AndroidNetworkInterfaceName();
 #elif UNITY_IOS
       NetworkInterfaceName = new IOSNetworkInterfaceName();
+#else
+      MobiledgeXLogger.PrintWarning("Unknown or unsupported platform. Please create WiFi and Cellular interface name Object for your platform");
 #endif
       // Editor or Player network management (overrides target device platform):
       switch (Application.platform)

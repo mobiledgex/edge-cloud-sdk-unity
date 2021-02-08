@@ -19,21 +19,25 @@ using UnityEngine;
 
 namespace MobiledgeX
 {
-    public class MobiledgeXSettings: ScriptableObject
+    public class MobiledgeXLogger
     {
-        [HideInInspector]
-        public string sdkVersion;
-        public string orgName;
-        public string appName;
-        public string appVers;
-        public string authPublicKey;
-        public string region;
-        public MobiledgeXLogger.LogType logType = MobiledgeXLogger.LogType.ErrorsOnly;
-        
-        //Called in the editor only, once input changed in the inspector
-        private void OnValidate()
+        public enum LogType { All, ErrorsAndWarnings, ErrorsOnly}
+        public static LogType logType;
+
+        public static void PrintWarning(string message)
         {
-            MobiledgeXLogger.logType = logType;
+            if (logType == LogType.All || logType == LogType.ErrorsAndWarnings)
+            {
+                Debug.LogWarning(message);
+            }
+        }
+
+        public static void Print(string message)
+        {
+            if(logType == LogType.All)
+            {
+                Debug.Log(message);
+            }
         }
     }
 }
