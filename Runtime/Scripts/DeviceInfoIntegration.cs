@@ -64,7 +64,7 @@ namespace MobiledgeX
       CarrierInfoClass carrierInfo = new CarrierInfoClass();
       Dictionary<string, string> map;
       int sdk_int = carrierInfo.getAndroidSDKVers();
-      if (UnityEngine.XR.XRSettings.enabled)
+      if (UnityEngine.XR.XRSettings.loadedDeviceName.Contains("oculus"))
       {
           map["Build.VERSION.SDK_INT"] = sdk_int.ToString();
           return map;
