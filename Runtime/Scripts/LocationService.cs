@@ -65,6 +65,7 @@ namespace MobiledgeX
             if (maxWait < 1)
             {
                 locationPermissionRejected = true;
+                Input.location.Stop();
             }
 
             // Connection has failed
@@ -79,9 +80,9 @@ namespace MobiledgeX
                 {
                     locationPermissionRejected = true;
                 }
-#endif
                 // Access granted and location value could be retrieved
-                //Debug.Log("MobiledgeX: Location Service has location: " + Input.location.lastData.latitude + " " + Input.location.lastData.longitude + " " + Input.location.lastData.altitude + " " + Input.location.lastData.horizontalAccuracy + " " + Input.location.lastData.timestamp);
+                Logger.Log("Location Service has location: " + Input.location.lastData.latitude + " " + Input.location.lastData.longitude + " " + Input.location.lastData.altitude + " " + Input.location.lastData.horizontalAccuracy + " " + Input.location.lastData.timestamp);
+#endif
             }
 
             // Stop service if there is no need to query location updates continuously
@@ -99,6 +100,7 @@ namespace MobiledgeX
         {
             if (!SystemInfo.supportsLocationService)
             {
+                Logger.Log("Your Device doesn't support LocationService");
                 yield return null;
             }
 
@@ -107,14 +109,17 @@ namespace MobiledgeX
 #else
             if (Input.location.status == LocationServiceStatus.Initializing)
             {
+                Logger.Log("Location Service is intializing");
                 yield return new WaitUntil(() => (Input.location.status != LocationServiceStatus.Initializing));
             }
             if(locationPermissionRejected == true || Input.location.status == LocationServiceStatus.Failed || !Input.location.isEnabledByUser)
             {
+                Logger.Log("Location Service Permission is rejected");
                 yield return null;
             }
             else
             {
+                Logger.Log("Waiting to obtain Input.location data");
                 yield return new WaitUntil(() => (Input.location.lastData.latitude != 0 && Input.location.lastData.longitude != 0));
             }
 #endif
@@ -146,11 +151,7 @@ namespace MobiledgeX
                     yield return StartCoroutine(InitalizeLocationService());
                 }
             }
-            //iOS - Permission Request  once the application request location info
-            if (Application.platform == RuntimePlatform.IPhonePlayer)
-            {
-                yield return StartCoroutine(InitalizeLocationService());
-            }
+            //In iOS Permission Request appears  once the application request location info 
             else
             {
                 yield return StartCoroutine(InitalizeLocationService());
@@ -165,7 +166,7 @@ namespace MobiledgeX
             {
                 throw new LocationException("MobiledgeX: Location Service disabled by user.");
             }
-            //Debug.Log("Location Info: [" + locationInfo.longitude + "," + locationInfo.latitude + "]");
+            Logger.Log("Location Info: [" + locationInfo.longitude + "," + locationInfo.latitude + "]");
             return ConvertUnityLocationToDMELoc(locationInfo);
         }
 
@@ -204,7 +205,7 @@ namespace MobiledgeX
         {
         }
 
-        public LocationException(string message):base(message)
+        public LocationException(string message) : base(message)
         {
         }
     }
