@@ -1,4 +1,21 @@
-﻿using System;
+﻿/**
+ * Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
+ * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using DistributedMatchEngine;
@@ -45,20 +62,21 @@ namespace MobiledgeX
     public Dictionary<string, string> GetDeviceInfo()
     {
       CarrierInfoClass carrierInfo = new CarrierInfoClass();
-      AndroidJavaObject telephonyManager = carrierInfo.GetTelephonyManager();
       Dictionary<string, string> map;
-
+      int sdk_int = carrierInfo.getAndroidSDKVers();
+      if (UnityEngine.XR.XRSettings.loadedDeviceName.Contains("oculus"))
+      {
+          map["Build.VERSION.SDK_INT"] = sdk_int.ToString();
+          return map;
+      }
+      AndroidJavaObject telephonyManager = carrierInfo.GetTelephonyManager();
       if (telephonyManager == null)
       {
         Debug.Log("No TelephonyManager!");
         return null;
       }
       map = new Dictionary<string, string>();
-
-      AndroidJavaClass versionClass = new AndroidJavaClass("android.os.Build$VERSION");
-      int sdk_int = PlatformIntegrationUtil.GetStatic<int>(versionClass, "SDK_INT");
       map["Build.VERSION.SDK_INT"] = sdk_int.ToString();
-
       const string readPhoneStatePermissionString = "android.permission.READ_PHONE_STATE";
       try
       {
@@ -163,7 +181,7 @@ namespace MobiledgeX
     return deviceInfo;
   }
 #else // Unsupported platform.
-  public Dictionary<string, string> GetDeviceInfo()
+        public Dictionary<string, string> GetDeviceInfo()
   {
     Debug.LogFormat("DeviceInfo not implemented!");
     return null;
