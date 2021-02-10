@@ -64,7 +64,7 @@ namespace MobiledgeX
         }
         catch (SocketException se)
         {
-          MobiledgeXLogger.Print("Exception trying to test endpoint: " + se.Message);
+          Logger.Log("Exception trying to test endpoint: " + se.Message);
         }
       }
       return defaultEndPoint;

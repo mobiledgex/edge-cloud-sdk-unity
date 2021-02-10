@@ -36,7 +36,7 @@ namespace MobiledgeX
       }
       catch (Exception e)
       {
-        MobiledgeXLogger.Print("Could not get AndroidJavaClass " + pkg + ". Exception is: " + e.Message);
+        Logger.Log("Could not get AndroidJavaClass " + pkg + ". Exception is: " + e.Message);
         return null;
       }
     }
@@ -49,7 +49,7 @@ namespace MobiledgeX
       }
       catch (Exception e)
       {
-        MobiledgeXLogger.Print("Could not get AndroidJavaObject " + pkg + ". Exception is: " + e.Message);
+        Logger.Log("Could not get AndroidJavaObject " + pkg + ". Exception is: " + e.Message);
         return null;
       }
     }
@@ -62,7 +62,7 @@ namespace MobiledgeX
       }
       catch (Exception e)
       {
-        MobiledgeXLogger.Print("Could not getSimpleName. Exception is " + e.Message);
+        Logger.Log("Could not getSimpleName. Exception is " + e.Message);
         return "";
       }
     }
@@ -77,7 +77,7 @@ namespace MobiledgeX
       }
       catch (Exception e)
       {
-        MobiledgeXLogger.Print("Could not GetStatic " + typeof(T) + ". Exception: " + e.Message);
+        Logger.Log("Could not GetStatic " + typeof(T) + ". Exception: " + e.Message);
         return default(T);
       }
     }
@@ -95,7 +95,7 @@ namespace MobiledgeX
       }
       catch (Exception e)
       {
-        MobiledgeXLogger.Print("Could not CallStatic " + typeof(T) + ". Exception: " + e.Message);
+        Logger.Log("Could not CallStatic " + typeof(T) + ". Exception: " + e.Message);
         return default(T);
       }
     }
@@ -113,7 +113,7 @@ namespace MobiledgeX
       }
       catch (Exception e)
       {
-        MobiledgeXLogger.Print("Could not Call " + typeof(T) + " method " + method + ". Exception: " + e.Message);
+        Logger.Log("Could not Call " + typeof(T) + " method " + method + ". Exception: " + e.Message);
         return default(T);
       }
     }

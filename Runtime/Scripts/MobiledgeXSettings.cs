@@ -28,12 +28,6 @@ namespace MobiledgeX
         public string appVers;
         public string authPublicKey;
         public string region;
-        public MobiledgeXLogger.LogType logType = MobiledgeXLogger.LogType.ErrorsOnly;
-        
-        //Called in the editor only, once input changed in the inspector
-        private void OnValidate()
-        {
-            MobiledgeXLogger.logType = logType;
-        }
+        public Logger.LogType logType = Logger.LogType.ErrorsAndWarnings;
     }
 }

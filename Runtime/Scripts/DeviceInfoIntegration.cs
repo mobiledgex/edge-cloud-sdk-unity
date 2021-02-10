@@ -56,32 +56,24 @@ namespace MobiledgeX
       NETWORK_TYPE_UNKNOWN = 0
     };
 
-    // Placeholder, if available, just use the Unity version.
-
+    // Placeholder, if available, just use the Unity version
 #if UNITY_ANDROID
     public Dictionary<string, string> GetDeviceInfo()
     {
-      if (UnityEngine.XR.XRSettings.enabled)
-      {
-           map = new Dictionary<string, string>();
-           map["Build.VERSION.SDK_INT"] = sdk_int.ToString();
-           return map;
-      }
       CarrierInfoClass carrierInfo = new CarrierInfoClass();
+      Dictionary<string, string> map = new Dictionary<string, string>();
+      int sdk_int = carrierInfo.getAndroidSDKVers();
+      map["Build.VERSION.SDK_INT"] = sdk_int.ToString();
+      if (UnityEngine.XR.XRSettings.loadedDeviceName.Contains("oculus"))
+      {
+          return map;
+      }
       AndroidJavaObject telephonyManager = carrierInfo.GetTelephonyManager();
-      Dictionary<string, string> map;
-
       if (telephonyManager == null)
       {
-        MobiledgeXLogger.Print("No TelephonyManager!");
-        return null;
+          Logger.Log("No TelephonyManager!");
+          return map;
       }
-      map = new Dictionary<string, string>();
-
-      AndroidJavaClass versionClass = new AndroidJavaClass("android.os.Build$VERSION");
-      int sdk_int = PlatformIntegrationUtil.GetStatic<int>(versionClass, "SDK_INT");
-      map["Build.VERSION.SDK_INT"] = sdk_int.ToString();
-
       const string readPhoneStatePermissionString = "android.permission.READ_PHONE_STATE";
       try
       {
@@ -96,7 +88,7 @@ namespace MobiledgeX
       }
       catch (Exception e)
       {
-        MobiledgeXLogger.PrintWarning("Exception retrieving properties: " + e.GetBaseException() + ", " + e.Message);
+        Logger.LogWarning("Exception retrieving properties: " + e.GetBaseException() + ", " + e.Message);
       }
 
       try
@@ -110,7 +102,7 @@ namespace MobiledgeX
       }
       catch (Exception e)
       {
-        MobiledgeXLogger.PrintWarning("Exception retrieving properties: " + e.GetBaseException() + ", " + e.Message);
+        Logger.LogWarning("Exception retrieving properties: " + e.GetBaseException() + ", " + e.Message);
       }
 
       AndroidJavaClass versionCodesClass = new AndroidJavaClass("android.os.Build$VERSION_CODES");
@@ -156,46 +148,51 @@ namespace MobiledgeX
       return map;
     }
 #elif UNITY_IOS
-  [DllImport("__Internal")]
-  private static extern string _getManufacturerCode();
+    [DllImport("__Internal")]
+    private static extern string _getManufacturerCode();
+    
+    [DllImport("__Internal")]
+    private static extern string _getDeviceSoftwareVersion();
+    
+    [DllImport("__Internal")]
+    private static extern string _getDeviceModel();
+    
+    [DllImport("__Internal")]
+    private static extern string _getOperatingSystem();
 
-  [DllImport("__Internal")]
-  private static extern string _getDeviceSoftwareVersion();
-
-  [DllImport("__Internal")]
-  private static extern string _getDeviceModel();
-
-  [DllImport("__Internal")]
-  private static extern string _getOperatingSystem();
-
-  public Dictionary<string, string> GetDeviceInfo()
-  {
-    Dictionary<string, string> deviceInfo = new Dictionary<string, string>();
-    if (Application.platform == RuntimePlatform.IPhonePlayer)
+    public Dictionary<string, string> GetDeviceInfo()
     {
-      // Fill in device system info
-      deviceInfo["ManufacturerCode"] = _getManufacturerCode();
-      deviceInfo["DeviceSoftwareVersion"] = _getDeviceSoftwareVersion();
-      deviceInfo["DeviceModel"] = _getDeviceModel();
-      deviceInfo["OperatingSystem"] = _getOperatingSystem();
-      // Fill in carrier/ISO info
-      CarrierInfoClass carrierInfo = new CarrierInfoClass();
-      deviceInfo["SimOperatorName"] = carrierInfo.GetCurrentCarrierName();
-      deviceInfo["SimCountryCodeIso"] = carrierInfo.GetISOCountryCodeFromCarrier();
+      Dictionary<string, string> deviceInfo = new Dictionary<string, string>();
+      if (Application.platform == RuntimePlatform.IPhonePlayer)
+      {
+        // Fill in device system info
+        deviceInfo["ManufacturerCode"] = _getManufacturerCode();
+        deviceInfo["DeviceSoftwareVersion"] = _getDeviceSoftwareVersion();
+        deviceInfo["DeviceModel"] = _getDeviceModel();
+        deviceInfo["OperatingSystem"] = _getOperatingSystem();
+        // Fill in carrier/ISO info
+        CarrierInfoClass carrierInfo = new CarrierInfoClass();
+        deviceInfo["SimOperatorName"] = carrierInfo.GetCurrentCarrierName();
+        deviceInfo["SimCountryCodeIso"] = carrierInfo.GetISOCountryCodeFromCarrier();
+      }
+      return deviceInfo;
     }
-    return deviceInfo;
-  }
 #else // Unsupported platform.
-  public Dictionary<string, string> GetDeviceInfo()
-  {
-    MobiledgeXLogger.Print("DeviceInfo not implemented!");
-    return null;
-  }
+    public Dictionary<string, string> GetDeviceInfo()
+    {
+      Logger.Log("DeviceInfo not implemented!");
+      return null;
+    }
 #endif
   }
 
   // Used for DeviceInfo in UnityEditor (any target platform)
-  public class TestDeviceInfo : DeviceInfoIntegration
+  public class TestDeviceInfo : DeviceInfo
   {
+      public Dictionary<string, string> GetDeviceInfo()
+      {
+          Logger.Log("DeviceInfo not implemented!");
+          return null;
+      }
   }
 }

@@ -79,7 +79,7 @@ namespace MobiledgeX
             byte[] buffer = encoder.GetBytes(message);
             if (buffer.Length > MAXPAYLOADSIZE)
             {
-                Debug.LogError("Max UDP payload size is "+ MAXPAYLOADSIZE + " bytes, try slicing your message to suit the max payload size");
+                Debug.LogError("MobiledgeX: Max UDP payload size is "+ MAXPAYLOADSIZE + " bytes, try slicing your message to suit the max payload size");
                 return;
             }
             var sendBuf = new ArraySegment<byte>(buffer);
@@ -90,7 +90,7 @@ namespace MobiledgeX
         {
             if (buffer.Length > MAXPAYLOADSIZE)
             {
-                Debug.LogError("Max UDP payload size is " + MAXPAYLOADSIZE + " bytes, try slicing your buffer to suit the max payload size");
+                Debug.LogError("MobiledgeX: Max UDP payload size is " + MAXPAYLOADSIZE + " bytes, try slicing your buffer to suit the max payload size");
                 return;
             }
             var sendBuf = new ArraySegment<byte>(buffer);
@@ -100,14 +100,14 @@ namespace MobiledgeX
         public async void RunSend()
         {
             ArraySegment<byte> msg;
-            MobiledgeXLogger.Print("RunSend entered.");
+            Logger.Log("UDP Client RunSend entered.");
             while (run)
             {
                 while (!sendQueue.IsCompleted)
                 {
                     msg = sendQueue.Take();
                     long count = sendQueue.Count;
-                    MobiledgeXLogger.Print("Dequeued this message to send: " + msg + ", queueSize: " + count);
+                    Logger.Log("UDP Client Dequeued this message to send: " + msg + ", queueSize: " + count);
                     await udpClient.SendAsync(msg.Array, msg.Count, serverEndpoint);
                 }
             }
@@ -117,7 +117,7 @@ namespace MobiledgeX
         {
             while (run)
             {
-                MobiledgeXLogger.Print("Awaiting Receive...");
+                Logger.Log("UDP Awaiting Receive...");
                 UdpReceiveResult result = await udpClient.ReceiveAsync();
                 if (result != null && result.Buffer.Length > 0)
                 {

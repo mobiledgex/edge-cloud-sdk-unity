@@ -139,12 +139,12 @@ namespace MobiledgeX
                 Debug.LogError("Register Failed!");
                 return false;
             }
-            MobiledgeXLogger.Print("Register OK!");
+            Logger.Log("Register OK!");
             bool found = await FindCloudlet(dmeHost, dmePort);
             if (!found)
             {
-              Debug.LogError("FindCloudlet Failed!");
-              return false;
+                Debug.LogError("FindCloudlet Failed!");
+                return false;
             }
             return true;
         }
@@ -248,7 +248,7 @@ namespace MobiledgeX
 
             if (port == 0)
             {
-                MobiledgeXLogger.Print("MobiledgeX: No port specified. Grabbing first AppPort in dictionary");
+                Logger.Log("No port specified. Grabbing first AppPort in dictionary");
                 port = appPortsDict.OrderBy(kvp => kvp.Key).First().Key;
             }
 

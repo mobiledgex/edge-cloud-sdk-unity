@@ -64,7 +64,7 @@ namespace MobiledgeX
       sdkVersion = getAndroidSDKVers();
       if (sdkVersion < 0)
       {
-        MobiledgeXLogger.Print("Could not get valid sdkVersion: " + sdkVersion);
+        Logger.Log("Could not get valid sdkVersion: " + sdkVersion);
         return;
       }
 
@@ -108,7 +108,7 @@ namespace MobiledgeX
       AndroidJavaClass version = PlatformIntegrationUtil.GetAndroidJavaClass("android.os.Build$VERSION");
       if (version == null)
       {
-        MobiledgeXLogger.Print("Unable to get Build Version");
+        Logger.Log("Unable to get Build Version");
         return 0;
       }
       return PlatformIntegrationUtil.GetStatic<int>(version, "SDK_INT");
@@ -119,20 +119,20 @@ namespace MobiledgeX
       AndroidJavaClass unityPlayer = PlatformIntegrationUtil.GetAndroidJavaClass("com.unity3d.player.UnityPlayer");
       if (unityPlayer == null)
       {
-        MobiledgeXLogger.Print("Unable to get UnityPlayer");
+        Logger.Log("Unable to get UnityPlayer");
         return null;
       }
       AndroidJavaObject activity = PlatformIntegrationUtil.GetStatic<AndroidJavaObject>(unityPlayer, "currentActivity");
       if (activity == null)
       {
-        MobiledgeXLogger.Print("Can't find an activity!");
+        Logger.Log("Can't find an activity!");
         return null;
       }
 
       AndroidJavaObject context = PlatformIntegrationUtil.Call<AndroidJavaObject>(activity, "getApplicationContext");
       if (context == null)
       {
-        MobiledgeXLogger.Print("Can't find an app context!");
+        Logger.Log("Can't find an app context!");
         return null;
       }
 
@@ -140,7 +140,7 @@ namespace MobiledgeX
       string CONTEXT_TELEPHONY_SERVICE = context.GetStatic<string>("TELEPHONY_SERVICE");
       if (CONTEXT_TELEPHONY_SERVICE == null)
       {
-        MobiledgeXLogger.Print("Can't get Context Telephony Service");
+        Logger.Log("Can't get Context Telephony Service");
         return null;
       }
 
@@ -156,13 +156,13 @@ namespace MobiledgeX
       // Call SubscriptionManager to get a specific telManager:
       AndroidJavaClass subscriptionManagerCls = PlatformIntegrationUtil.GetAndroidJavaClass("android.telephony.SubscriptionManager");
       if (subscriptionManagerCls == null) {
-        MobiledgeXLogger.Print("Can't get Subscription Manager Class.");
+        Logger.Log("Can't get Subscription Manager Class.");
         return null;
       }
       int subId = PlatformIntegrationUtil.CallStatic<int>(subscriptionManagerCls, "getDefaultDataSubscriptionId");
       int invalidSubId = PlatformIntegrationUtil.GetStatic<int>(subscriptionManagerCls, "INVALID_SUBSCRIPTION_ID");
       if (subId == invalidSubId) {
-        MobiledgeXLogger.Print("The Subscription ID is invalid: " + subId);
+        Logger.Log("The Subscription ID is invalid: " + subId);
         return null;
       }
       object[] idParam = new object[1] { subId };
@@ -174,24 +174,24 @@ namespace MobiledgeX
     public string GetCurrentCarrierName()
     {
       string networkOperatorName = "";
-      MobiledgeXLogger.Print("Device platform: " + Application.platform);
+      Logger.Log("Device platform: " + Application.platform);
       if (Application.platform != RuntimePlatform.Android)
       {
-        MobiledgeXLogger.Print("Not on android device.");
+        Logger.Log("Not on android device.");
         return "";
       }
 
       AndroidJavaObject telManager = GetTelephonyManager();
       if (telManager == null)
       {
-        MobiledgeXLogger.Print("Can't get telephony manager!");
+        Logger.Log("Can't get telephony manager!");
         return "";
       }
 
       networkOperatorName = PlatformIntegrationUtil.Call<string>(telManager, "getNetworkOperatorName");
       if (networkOperatorName == null)
       {
-        MobiledgeXLogger.Print("Network Operator Name is not found on the device");
+        Logger.Log("Network Operator Name is not found on the device");
         networkOperatorName = "";
       }
 
@@ -203,14 +203,14 @@ namespace MobiledgeX
       string mccmnc = null;
       if (Application.platform != RuntimePlatform.Android)
       {
-        MobiledgeXLogger.Print("Not on android device.");
+        Logger.Log("Not on android device.");
         return null;
       }
 
       AndroidJavaObject telManager = GetTelephonyManager();
       if (telManager == null)
       {
-        MobiledgeXLogger.Print("Can't get telephony manager!");
+        Logger.Log("Can't get telephony manager!");
         return null;
       }
 
@@ -236,7 +236,7 @@ namespace MobiledgeX
       AndroidJavaObject cellIdentity = PlatformIntegrationUtil.Call<AndroidJavaObject>(cellInfo, "getCellIdentity");
       if (cellIdentity == null)
       {
-        MobiledgeXLogger.Print("Unable to get cellIdentity");
+        Logger.Log("Unable to get cellIdentity");
         return pair;
       }
 
@@ -290,7 +290,7 @@ namespace MobiledgeX
       }
       else
       {
-        MobiledgeXLogger.Print("Object is not an instance of a CellInfo class");
+        Logger.Log("Object is not an instance of a CellInfo class");
       }
 
       return pair;
@@ -301,14 +301,14 @@ namespace MobiledgeX
     {
       if (Application.platform != RuntimePlatform.Android)
       {
-        MobiledgeXLogger.Print("Not on android device.");
+        Logger.Log("Not on android device.");
         return null;
       }
 
       AndroidJavaObject telManager = GetTelephonyManager();
       if (telManager == null)
       {
-        MobiledgeXLogger.Print("Can't get telephony manager!");
+        Logger.Log("Can't get telephony manager!");
         return null;
       }
 
@@ -320,14 +320,14 @@ namespace MobiledgeX
       AndroidJavaObject cellInfoList = PlatformIntegrationUtil.Call<AndroidJavaObject>(telManager, "getAllCellInfo");
       if (cellInfoList == null)
       {
-        MobiledgeXLogger.Print("Can't get list of cellInfo objects.");
+        Logger.Log("Can't get list of cellInfo objects.");
         return null;
       }
 
       int length = PlatformIntegrationUtil.Call<int>(cellInfoList, "size");
       if (length <= 0)
       {
-        MobiledgeXLogger.Print("Unable to get valid length for cellInfoList");
+        Logger.Log("Unable to get valid length for cellInfoList");
         return null;
       }
 
@@ -369,7 +369,7 @@ namespace MobiledgeX
 
       if (cellInfoList == null || cellInfoList.Count == 0)
       {
-        MobiledgeXLogger.Print("no cellID");
+        Logger.Log("no cellID");
         return cellID;
       }
 
@@ -453,7 +453,7 @@ namespace MobiledgeX
           Debug.LogError("Unable to get ISO country code from gps");
           throw new CarrierInfoException("Unable to get ISO country code from gps");
         }
-        MobiledgeXLogger.Print("ISO country code from gps location is " + isoCCFromGPS);
+        Logger.Log("ISO country code from gps location is " + isoCCFromGPS);
 
         string isoCCFromCarrier = GetISOCountryCodeFromCarrier();
         if (isoCCFromCarrier == null)
@@ -461,7 +461,7 @@ namespace MobiledgeX
           Debug.LogError("Unable to get ISO country code from carrier");
           throw new CarrierInfoException("Unable to get ISO country code from carrier");
         }
-        MobiledgeXLogger.Print("ISO country code from carrier is " + isoCCFromCarrier);
+        Logger.Log("ISO country code from carrier is " + isoCCFromCarrier);
 
         return isoCCFromGPS != isoCCFromCarrier;
       }
@@ -513,19 +513,19 @@ namespace MobiledgeX
     // Implement CarrierInfo
     public string GetCurrentCarrierName()
     {
-      MobiledgeXLogger.Print("GetCurrentCarrierName is NOT IMPLEMENTED");
+      Logger.Log("GetCurrentCarrierName is NOT IMPLEMENTED");
       return null;
     }
 
     public string GetMccMnc()
     {
-      MobiledgeXLogger.Print("GetMccMnc is NOT IMPLEMENTED");
+      Logger.Log("GetMccMnc is NOT IMPLEMENTED");
       return null;
     }
 
     public ulong GetCellID()
     {
-      MobiledgeXLogger.Print("GetCellID is NOT IMPLEMENTED");
+      Logger.Log("GetCellID is NOT IMPLEMENTED");
       return 0;
     }
 
