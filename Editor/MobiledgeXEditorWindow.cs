@@ -102,7 +102,7 @@ namespace MobiledgeX
         [MenuItem("MobiledgeX/Examples/EdgeMultiplay", false, 20)]
         public static void ImportEdgeMultiplayExample()
         {
-            DownloadFile("https://github.com/mobiledgex/edge-multiplay-unity-client/raw/master/EdgeMultiplay.unitypackage",
+            DownloadFile("https://github.com/mobiledgex/edge-multiplay-unity-client/raw/main/EdgeMultiplay.unitypackage",
                 Path.Combine(Application.dataPath,"EdgeMultiplay.unitypackage"));
             Enhancement.EdgeMultiplayImported(getId());
         }
