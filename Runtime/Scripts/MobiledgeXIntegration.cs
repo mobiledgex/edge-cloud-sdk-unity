@@ -1,5 +1,5 @@
 /**
-* Copyright 2018-2020 MobiledgeX, Inc. All rights and licenses reserved.
+* Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
 * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -139,12 +139,12 @@ namespace MobiledgeX
                 Debug.LogError("Register Failed!");
                 return false;
             }
-            Debug.Log("Register OK!");
+            Logger.Log("Register OK!");
             bool found = await FindCloudlet(dmeHost, dmePort);
             if (!found)
             {
-              Debug.LogError("FindCloudlet Failed!");
-              return false;
+                Debug.LogError("FindCloudlet Failed!");
+                return false;
             }
             return true;
         }
@@ -222,7 +222,7 @@ namespace MobiledgeX
         {
             if (latestFindCloudletReply == null)
             {
-                Debug.Log("MobiledgeX: Last FindCloudlet returned null. Call FindCloudlet again before GetAppPort");
+                Debug.LogError("MobiledgeX: Last FindCloudlet returned null. Call FindCloudlet again before GetAppPort");
                 throw new AppPortException("Last FindCloudlet returned null. Call FindCloudlet again before GetAppPort");
             }
 
@@ -248,7 +248,7 @@ namespace MobiledgeX
 
             if (port == 0)
             {
-                Debug.Log("MobiledgeX: No port specified. Grabbing first AppPort in dictionary");
+                Logger.Log("No port specified. Grabbing first AppPort in dictionary");
                 port = appPortsDict.OrderBy(kvp => kvp.Key).First().Key;
             }
 

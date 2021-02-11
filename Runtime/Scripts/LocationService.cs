@@ -23,7 +23,6 @@ using System;
 
 namespace MobiledgeX
 {
-
     // Unity Location Service, based on the documentation example
     [AddComponentMenu("MobiledgeX/LocationService")]
     public class LocationService : MonoBehaviour
