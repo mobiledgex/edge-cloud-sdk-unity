@@ -119,8 +119,8 @@ namespace MobiledgeX
                     }
                     else
                     {
-                    Debug.Log("MobiledgeX: Doing Register Client with DME: " + region + ", p: " + MatchingEngine.defaultDmeGrpcPort + " with req: " + req);
-                    reply = await matchingEngine.RegisterClient(region, MatchingEngine.defaultDmeGrpcPort, req);
+                        Debug.Log("MobiledgeX: Doing Register Client with DME: " + region + ", p: " + MatchingEngine.defaultDmeGrpcPort + " with req: " + req);
+                        reply = await matchingEngine.RegisterClient(region, MatchingEngine.defaultDmeGrpcPort, req);
                     }
                 }
             }
@@ -131,7 +131,7 @@ namespace MobiledgeX
             }
             catch (Exception e)
             {
-                Debug.LogError("MobiledgeX: RegisterClient Exception: " + e.Message);
+                Debug.LogError("MobiledgeX: RegisterClient Exception Type: " + e.GetType() + ", Message: " + e.Message);
                 throw e;
             }
             finally
