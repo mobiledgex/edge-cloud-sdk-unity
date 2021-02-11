@@ -344,6 +344,12 @@ namespace MobiledgeX
             string wifiIpV4 = null;
             string wifiIpV6 = null;
 
+            if (!matchingEngine.EnableEnhancedLocationServices)
+            {
+                Debug.LogWarning("MatchingEngine EnableEnhancedLocationServices is set to false.");
+                return false;
+            }
+
             if (matchingEngine.netInterface.HasWifi())
             {
                 string wifi = matchingEngine.GetAvailableWiFiName(matchingEngine.netInterface.GetNetworkInterfaceName());
@@ -374,6 +380,12 @@ namespace MobiledgeX
                 Debug.Log("MobiledgeX: useOnlyWifi must be false to enable edge connection");
                 return false;
 #endif
+            }
+
+            if (!matchingEngine.EnableEnhancedLocationServices)
+            {
+                Debug.LogWarning("MatchingEngine EnableEnhancedLocationServices is set to false.");
+                return false;
             }
 
             if (proto == GetConnectionProtocol.TCP || proto == GetConnectionProtocol.UDP)
