@@ -118,8 +118,8 @@ namespace MobiledgeX
                     }
                     else
                     {
-                    Logger.Log("Doing Register Client with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
-                    reply = await matchingEngine.RegisterClient(region, MatchingEngine.defaultDmeRestPort, req);
+                        Logger.Log("MobiledgeX: Doing Register Client with DME: " + region + ", p: " + MatchingEngine.defaultDmeRestPort + " with req: " + req);
+                        reply = await matchingEngine.RegisterClient(region, MatchingEngine.defaultDmeRestPort, req);
                     }
                 }
             }
@@ -130,7 +130,7 @@ namespace MobiledgeX
             }
             catch (Exception e)
             {
-                Debug.LogError("MobiledgeX: RegisterClient Exception: " + e.Message);
+                Debug.LogError("MobiledgeX: RegisterClient Exception Type: " + e.GetType() + ", Message: " + e.Message);
                 throw e;
             }
             finally
@@ -348,6 +348,12 @@ namespace MobiledgeX
             string wifiIpV4 = null;
             string wifiIpV6 = null;
 
+            if (!matchingEngine.EnableEnhancedLocationServices)
+            {
+                Debug.LogWarning("MatchingEngine EnableEnhancedLocationServices is set to false.");
+                return false;
+            }
+
             if (matchingEngine.netInterface.HasWifi())
             {
                 string wifi = matchingEngine.GetAvailableWiFiName(matchingEngine.netInterface.GetNetworkInterfaceName());
@@ -378,6 +384,12 @@ namespace MobiledgeX
                 Logger.Log("useOnlyWifi must be false to enable edge connection");
                 return false;
 #endif
+            }
+
+            if (!matchingEngine.EnableEnhancedLocationServices)
+            {
+                Debug.LogWarning("MatchingEngine EnableEnhancedLocationServices is set to false.");
+                return false;
             }
 
             if (proto == GetConnectionProtocol.TCP || proto == GetConnectionProtocol.UDP)
