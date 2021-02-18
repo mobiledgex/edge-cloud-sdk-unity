@@ -348,7 +348,7 @@ namespace MobiledgeX
             string wifiIpV4 = null;
             string wifiIpV6 = null;
 
-            if (!matchingEngine.EnableEnhancedLocationServices)
+            if (!MatchingEngine.EnableEnhancedLocationServices)
             {
                 Debug.LogWarning("MatchingEngine EnableEnhancedLocationServices is set to false.");
                 return false;
@@ -386,7 +386,7 @@ namespace MobiledgeX
 #endif
             }
 
-            if (!matchingEngine.EnableEnhancedLocationServices)
+            if (!MatchingEngine.EnableEnhancedLocationServices)
             {
                 Debug.LogWarning("MatchingEngine EnableEnhancedLocationServices is set to false.");
                 return false;

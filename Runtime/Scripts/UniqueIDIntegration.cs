@@ -126,6 +126,12 @@ namespace MobiledgeX
 
     public string GetUniqueID()
     {
+      // Permission Guard:
+      if (!MatchingEngine.EnableEnhancedLocationServices)
+      {
+        return null;
+      }
+
       // Directly retrieve on IOS. The Unity UI Thread Agent isn't needed.
       string adId = UnityEngine.iOS.Device.advertisingIdentifier;
       if (adId != null) {
