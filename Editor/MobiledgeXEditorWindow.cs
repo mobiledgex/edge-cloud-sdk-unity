@@ -17,6 +17,7 @@
 
 using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -101,8 +102,8 @@ namespace MobiledgeX
         [MenuItem("MobiledgeX/Examples/EdgeMultiplay", false, 20)]
         public static void ImportEdgeMultiplayExample()
         {
-            string sdkPath = Path.GetFullPath("Packages/com.mobiledgex.sdk");
-            AssetDatabase.ImportPackage(Path.Combine(sdkPath, "Resources/Examples/EdgeMultiplay.unitypackage"), true);
+            DownloadFile("https://github.com/mobiledgex/edge-multiplay-unity-client/raw/main/EdgeMultiplay.unitypackage",
+                Path.Combine(Application.dataPath,"EdgeMultiplay.unitypackage"));
             Enhancement.EdgeMultiplayImported(getId());
         }
 
@@ -200,6 +201,12 @@ namespace MobiledgeX
             }
             GUILayout.Label(sdkVersion, sdkVersionStyle);
         }
+
+        void OnInspectorUpdate()
+        {
+            Repaint();
+        }
+
         #endregion 
 
 
@@ -490,6 +497,29 @@ namespace MobiledgeX
             string id = EditorPrefs.GetString("mobiledgex-user", Guid.NewGuid().ToString());
             EditorPrefs.SetString("mobiledgex-user", id);
             return id;
+        }
+
+        static void DownloadFile(string fileUrl, string filePath)
+        {
+            using (WebClient wc = new WebClient())
+            {
+                wc.DownloadProgressChanged += wc_DownloadProgressChanged;
+                wc.DownloadFileAsync(new Uri(fileUrl), filePath);
+                wc.DownloadDataCompleted += DownloadDataCompleted;
+            }
+        }
+
+       static void wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        {
+            if (e.ProgressPercentage < 100)
+                EditorUtility.DisplayProgressBar("Downloading", "Download in progress ...", e.ProgressPercentage);
+            else
+                EditorUtility.ClearProgressBar();
+        }
+
+        static void DownloadDataCompleted (object sender, DownloadDataCompletedEventArgs e)
+        {
+            AssetDatabase.ImportPackage(Application.dataPath + "/EdgeMultiplay.unitypackage", true);
         }
 
         #endregion
