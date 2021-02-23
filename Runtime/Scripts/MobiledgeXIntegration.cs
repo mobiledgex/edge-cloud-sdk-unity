@@ -50,10 +50,10 @@ namespace MobiledgeX
         /// MatchingEngine API parameters
         /// </summary>
         public string carrierName { get; set; } = ""; // carrierName depends on the available subscriber SIM card and roaming carriers, and must be supplied by platform API.
-        public static string orgName { get; set; } = ""; // Organization name
-        public static string appName { get; set; } = ""; // Your appName, if you have created this in the MobiledgeX console.
-        public static string appVers { get; set; } = ""; // Your app version uploaded to the docker registry.
-        public static string developerAuthToken { get; set; } = ""; // This is an opaque string value supplied by the developer.
+        public string orgName { get; set; } = ""; // Organization name
+        public string appName { get; set; } = ""; // Your appName, if you have created this in the MobiledgeX console.
+        public string appVers { get; set; } = ""; // Your app version uploaded to the docker registry.
+        public string developerAuthToken { get; set; } = ""; // This is an opaque string value supplied by the developer.
         public uint cellID { get; set; } = 0;
         public string uniqueIDType { get; set; } = "";
         public string uniqueID { get; set; } = "";
@@ -121,6 +121,25 @@ namespace MobiledgeX
               netInterface == null ? pIntegration.NetInterface : netInterface,
               uniqueId == null ? pIntegration.UniqueID : uniqueId,
               deviceInfo == null ? pIntegration.DeviceInfo : deviceInfo);
+
+            melMessaging = new MelMessaging(appName);
+            matchingEngine.SetMelMessaging(melMessaging);
+        }
+        
+        /// <summary>
+        /// Constructor for MobiledgeXIntegration. This class has functions that wrap DistributedMatchEngine functions for ease of use
+        /// </summary>
+        public MobiledgeXIntegration(string orgName, string appName , string appVers , string developerAuthToken = "")
+        {
+            this.orgName = orgName;
+            this.appVers = appVers;
+            this.appName = appName;
+            this.developerAuthToken = developerAuthToken;
+
+            // Set the platform specific way to get SIM carrier information.
+            pIntegration = new PlatformIntegration();
+
+            matchingEngine = new MatchingEngine(pIntegration.CarrierInfo, pIntegration.NetInterface, pIntegration.UniqueID, pIntegration.DeviceInfo);
 
             melMessaging = new MelMessaging(appName);
             matchingEngine.SetMelMessaging(melMessaging);

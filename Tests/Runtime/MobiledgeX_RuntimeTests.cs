@@ -47,9 +47,6 @@ namespace MobiledgeX
         public void Clean()
         {
             integration = null;
-            MobiledgeXIntegration.orgName = "";
-            MobiledgeXIntegration.appName = "";
-            MobiledgeXIntegration.appVers = "";
         }
 
         #endregion
@@ -60,9 +57,9 @@ namespace MobiledgeX
         [TestCase("MobiledgeX", "MobiledgeX SDK Demo", "2.0")]
         public void RegisterClient(string orgName, string appName, string appVers)
         {
-            MobiledgeXIntegration.orgName = orgName;
-            MobiledgeXIntegration.appName = appName;
-            MobiledgeXIntegration.appVers = appVers;
+            integration.orgName = orgName;
+            integration.appName = appName;
+            integration.appVers = appVers;
             var task = Task.Run(async () =>
             {
                 return await RegisterHelper();
@@ -76,9 +73,9 @@ namespace MobiledgeX
         [TestCase("MobiledgeX", "MobiledgeX SDK Demo", "2.0")]
         public void FindCloudlet(string orgName, string appName, string appVers)
         {
-            MobiledgeXIntegration.orgName = orgName;
-            MobiledgeXIntegration.appName = appName;
-            MobiledgeXIntegration.appVers = appVers;
+            integration.orgName = orgName;
+            integration.appName = appName;
+            integration.appVers = appVers;
             var task = Task.Run(async () =>
             {
                 bool registered = await RegisterHelper();
@@ -94,9 +91,9 @@ namespace MobiledgeX
         [TestCase("MobiledgeX", "MobiledgeX SDK Demo", "2.0")]
         public void GetRestUrl(string orgName, string appName, string appVers)
         {
-            MobiledgeXIntegration.orgName = orgName;
-            MobiledgeXIntegration.appName = appName;
-            MobiledgeXIntegration.appVers = appVers;
+            integration.orgName = orgName;
+            integration.appName = appName;
+            integration.appVers = appVers;
             var task = Task.Run(async () =>
             {
                 return await GetUrlHelper(orgName, appName, appVers, "http");
@@ -109,9 +106,9 @@ namespace MobiledgeX
         [TestCase("MobiledgeX", "MobiledgeX SDK Demo", "2.0")]
         public void GetWSUrl(string orgName, string appName, string appVers)
         {
-            MobiledgeXIntegration.orgName = orgName;
-            MobiledgeXIntegration.appName = appName;
-            MobiledgeXIntegration.appVers = appVers;
+            integration.orgName = orgName;
+            integration.appName = appName;
+            integration.appVers = appVers;
             var task = Task.Run(async () =>
             {
                 return await GetUrlHelper(orgName, appName, appVers, "ws");
@@ -124,9 +121,9 @@ namespace MobiledgeX
         [TestCase("WrongCredentials", "WrongAppName", "WrongAppVersion")]
         public void GetRestURIException(string orgName, string appName, string appVers)
         {
-            MobiledgeXIntegration.orgName = orgName;
-            MobiledgeXIntegration.appName = appName;
-            MobiledgeXIntegration.appVers = appVers;
+            integration.orgName = orgName;
+            integration.appName = appName;
+            integration.appVers = appVers;
             try
             {
                 GetRestUrl(orgName, appName, appVers);
@@ -152,9 +149,9 @@ namespace MobiledgeX
         [TestCase("MobiledgeX", "PingPong", "2.0")]
         public void WebSocketTest(string orgName, string appName, string appVers)
         {
-            MobiledgeXIntegration.orgName = orgName;
-            MobiledgeXIntegration.appName = appName;
-            MobiledgeXIntegration.appVers = appVers;
+            integration.orgName = orgName;
+            integration.appName = appName;
+            integration.appVers = appVers;
             var task = Task.Run(async () =>
             {
                 return await WebSocketTestHelper(orgName, appName, appVers);
@@ -168,9 +165,9 @@ namespace MobiledgeX
         [TestCase("WrongCredentials", "WrongAppName", "WrongAppVersion")]
         public void WebSocketTestExpectedException(string orgName, string appName, string appVers)
         {
-            MobiledgeXIntegration.orgName = orgName;
-            MobiledgeXIntegration.appName = appName;
-            MobiledgeXIntegration.appVers = appVers;
+            integration.orgName = orgName;
+            integration.appName = appName;
+            integration.appVers = appVers;
             try
             {
                 WebSocketTest(orgName, appName, appVers);
