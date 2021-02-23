@@ -129,17 +129,17 @@ namespace MobiledgeX
         /// <summary>
         /// Constructor for MobiledgeXIntegration. This class has functions that wrap DistributedMatchEngine functions for ease of use
         /// </summary>
-        public MobiledgeXIntegration(string OrgName , string AppName , string AppVers , string DeveloperAuthToken = "")
+        public MobiledgeXIntegration(string orgName, string appName , string appVers , string developerAuthToken = "")
         {
-            orgName = OrgName;
-            appVers = AppVers;
-            appName = AppName;
-            developerAuthToken = DeveloperAuthToken;
+            this.orgName = orgName;
+            this.appVers = appVers;
+            this.appName = appName;
+            this.developerAuthToken = developerAuthToken;
 
             // Set the platform specific way to get SIM carrier information.
             pIntegration = new PlatformIntegration();
 
-            matchingEngine = new MatchingEngine(pIntegration.CarrierInfo,pIntegration.NetInterface,pIntegration.UniqueID,pIntegration.DeviceInfo);
+            matchingEngine = new MatchingEngine(pIntegration.CarrierInfo, pIntegration.NetInterface, pIntegration.UniqueID, pIntegration.DeviceInfo);
 
             melMessaging = new MelMessaging(appName);
             matchingEngine.SetMelMessaging(melMessaging);

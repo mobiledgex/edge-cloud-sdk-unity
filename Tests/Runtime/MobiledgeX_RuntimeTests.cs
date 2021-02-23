@@ -47,9 +47,6 @@ namespace MobiledgeX
         public void Clean()
         {
             integration = null;
-            integration.orgName = "";
-            integration.appName = "";
-            integration.appVers = "";
         }
 
         #endregion
