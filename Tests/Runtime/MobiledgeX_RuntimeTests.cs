@@ -42,7 +42,7 @@ namespace MobiledgeX
                 Assert.Fail("MobiledgeX Plugins are not loaded in the project, Can't preform tests");
             }
         }
-        
+
         #endregion
 
         #region Run Time Tests
@@ -51,16 +51,14 @@ namespace MobiledgeX
         [TestCase("MobiledgeX-Samples", "sdktest", "9.0")]
         public void RegisterClient(string orgName, string appName, string appVers)
         {
-            MobiledgeXIntegration mix = new MobiledgeXIntegration(new CarrierInfoClass(),null,new UniqueIDClass(), new TestDeviceInfo());
-            mix.appName = appName;
-            mix.appVers = appVers;
-            mix.orgName = orgName;
+            MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
+            mxi.appName = appName;
+            mxi.appVers = appVers;
+            mxi.orgName = orgName;
             var task = Task.Run(async () =>
             {
-                return await RegisterHelper(mix);
+                return await RegisterHelper(mxi);
             });
-
-            Debug.Log("result of registerClient is " + task.Result);
             Assert.True(task.Result);
         }
 
@@ -68,18 +66,16 @@ namespace MobiledgeX
         [TestCase("MobiledgeX-Samples", "sdktest", "9.0")]
         public void FindCloudlet(string orgName, string appName, string appVers)
         {
-            MobiledgeXIntegration mix = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
-            mix.appName = appName;
-            mix.appVers = appVers;
-            mix.orgName = orgName;
+            MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
+            mxi.appName = appName;
+            mxi.appVers = appVers;
+            mxi.orgName = orgName;
             var task = Task.Run(async () =>
             {
-                bool registered = await RegisterHelper(mix);
+                bool registered = await RegisterHelper(mxi);
                 Assert.True(registered, "Unable to register");
-                return await FindCloudletHelper(mix);
+                return await FindCloudletHelper(mxi);
             });
-
-            Debug.Log("result of findCloudlet is " + task.Result);
             Assert.True(task.Result);
         }
 
@@ -91,16 +87,17 @@ namespace MobiledgeX
         [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "udp", 2015)]
         public void GetUrl(string orgName, string appName, string appVers, string proto, int port)
         {
-            MobiledgeXIntegration mix = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
-            mix.appName = appName;
-            mix.appVers = appVers;
-            mix.orgName = orgName;
+            MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
+            mxi.appName = appName;
+            mxi.appVers = appVers;
+            mxi.orgName = orgName;
             var task = Task.Run(async () =>
             {
-                return await GetUrlHelper(mix, proto, port);
+                return await GetUrlHelper(mxi, proto, port);
             });
             Debug.Log(task.Result);
-            Assert.IsNotEmpty(task.Result);
+            Assert.True(task.Result.Contains(proto));
+            Assert.True(task.Result.Contains(port.ToString()));
         }
 
         [Test]
@@ -111,14 +108,13 @@ namespace MobiledgeX
         [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "udp", 2015)]
         public void GetHost(string orgName, string appName, string appVers, string proto, int port)
         {
-            MobiledgeXIntegration mix = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
-            mix.appName = appName;
-            mix.appVers = appVers;
-            mix.orgName = orgName;
+            MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
+            mxi.appName = appName;
+            mxi.appVers = appVers;
+            mxi.orgName = orgName;
             var task = Task.Run(async () =>
             {
-                Debug.Log("In get host" + proto);
-                return await GetHostHelper(mix, proto, port);
+                return await GetHostHelper(mxi, proto, port);
             });
             Debug.Log(task.Result);
             Assert.IsNotEmpty(task.Result);
@@ -128,15 +124,15 @@ namespace MobiledgeX
         [TestCase("WrongCredentials", "WrongAppName", "WrongAppVersion")]
         public void RegisterClientFaliure(string orgName, string appName, string appVers)
         {
-            MobiledgeXIntegration mix = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
-            mix.appName = appName;
-            mix.appVers = appVers;
-            mix.orgName = orgName;
+            MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
+            mxi.appName = appName;
+            mxi.appVers = appVers;
+            mxi.orgName = orgName;
             try
             {
                 var task = Task.Run(async () =>
                 {
-                     await RegisterHelper(mix);
+                    await RegisterHelper(mxi);
                 });
             }
             catch (Exception e)
@@ -156,21 +152,21 @@ namespace MobiledgeX
         }
 
         [Test]
-        [TestCase("MobiledgeX-Samples", "sdktest", "9.0", -44949, 29393)]
-        public void FindCloudletFaliure(string orgName, string appName, string appVers , double longtiude, double latitude)
+        [TestCase("MobiledgeX-Samples", "sdktest", "9.0", 104.1954, 35.8617)]
+        public void FindCloudletFaliure(string orgName, string appName, string appVers, double latitude, double longitude)
         {
-            MobiledgeXIntegration mix = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
-            mix.appName = appName;
-            mix.appVers = appVers;
-            mix.orgName = orgName;
+            MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
+            mxi.appName = appName;
+            mxi.appVers = appVers;
+            mxi.orgName = orgName;
             try
             {
                 var task = Task.Run(async () =>
                 {
-                    mix.useFallbackLocation = true;
-                    mix.SetFallbackLocation(longtiude, latitude);
-                    await RegisterHelper(mix);
-                    return  await FindCloudletHelper(mix);
+                    mxi.useFallbackLocation = true;
+                    mxi.SetFallbackLocation(longitude, latitude);
+                    await RegisterHelper(mxi);
+                    return await FindCloudletHelper(mxi);
                 });
             }
             catch (Exception e)
@@ -190,24 +186,24 @@ namespace MobiledgeX
         }
 
         [Test]
-        [TestCase("MobiledgeX-Samples", "sdktest", "9.0","ws", 3765, 20000)]
+        [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "ws", 3765, 20000)]
         public void WebSocketTest(string orgName, string appName, string appVers, string proto, int port, int timeOutMs)
         {
-            MobiledgeXIntegration mix = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
-            mix.appName = appName;
-            mix.appVers = appVers;
-            mix.orgName = orgName;
+            MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
+            mxi.appName = appName;
+            mxi.appVers = appVers;
+            mxi.orgName = orgName;
             var getUrlTask = Task.Run(async () =>
             {
-               return await GetUrlHelper(mix, proto, port);
+                return await GetUrlHelper(mxi, proto, port);
             });
-            string url = getUrlTask.Result+ "/ws";
+            string url = getUrlTask.Result + "/ws";
             MobiledgeXWebSocketClient wsClient = new MobiledgeXWebSocketClient();
             var sendWSMessage = Task.Run(async () =>
             {
                 return await WebsocketMessageHelper(wsClient, url, "hello", timeOutMs);
             });
-            Assert.True(sendWSMessage.Result== "olleh");
+            Assert.True(sendWSMessage.Result == "olleh");
         }
 
 
@@ -215,15 +211,14 @@ namespace MobiledgeX
         [TestCase("MobiledgeX-Samples", "sdktest", "9.0", 30000)]
         public void UDPTest(string orgName, string appName, string appVers, int timeOutMs)
         {
-            MobiledgeXIntegration mix = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
-            mix.appName = appName;
-            mix.appVers = appVers;
-            mix.orgName = orgName;
+            MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
+            mxi.appName = appName;
+            mxi.appVers = appVers;
+            mxi.orgName = orgName;
             var task = Task.Run(async () =>
             {
-                string hostName= await GetHostHelper(mix, "udp");
-                Debug.Log("hosdasdsa" + hostName);
-                MobiledgeXUDPClient udpClient = new MobiledgeXUDPClient(hostName, mix.GetAppPort(LProto.L_PROTO_UDP).public_port);
+                string hostName = await GetHostHelper(mxi, "udp");
+                MobiledgeXUDPClient udpClient = new MobiledgeXUDPClient(hostName, mxi.GetAppPort(LProto.L_PROTO_UDP).public_port);
                 return UDPMessageHelper(udpClient, "ping", 20000);
             });
             Assert.True(task.Result == "pong");
@@ -233,31 +228,31 @@ namespace MobiledgeX
 
         #region HelperFunctions
 
-        public async Task<bool> RegisterHelper(MobiledgeXIntegration mix)
+        public async Task<bool> RegisterHelper(MobiledgeXIntegration mxi)
         {
-            bool check = await mix.Register();
+            bool check = await mxi.Register();
             await Task.Delay(TimeSpan.FromMilliseconds(1000));
             return check;
         }
 
-        public async Task<bool> FindCloudletHelper(MobiledgeXIntegration mix)
+        public async Task<bool> FindCloudletHelper(MobiledgeXIntegration mxi)
         {
-            bool foundCloudlet = await mix.FindCloudlet();
+            bool foundCloudlet = await mxi.FindCloudlet();
             await Task.Delay(TimeSpan.FromMilliseconds(1000));
             return foundCloudlet;
         }
 
-        public async Task<string> GetUrlHelper(MobiledgeXIntegration mix, string proto , int port = 0)
+        public async Task<string> GetUrlHelper(MobiledgeXIntegration mxi, string proto, int port = 0)
         {
 
-            bool registerCheck = await RegisterHelper(mix);
+            bool registerCheck = await RegisterHelper(mxi);
             await Task.Delay(TimeSpan.FromMilliseconds(1000));
             if (!registerCheck)
             {
                 throw new RegisterClientException("RegisterClient Failed");
             }
 
-            bool findCloudletCheck = await FindCloudletHelper(mix);
+            bool findCloudletCheck = await FindCloudletHelper(mxi);
             await Task.Delay(TimeSpan.FromMilliseconds(1000));
             if (!findCloudletCheck)
             {
@@ -266,8 +261,8 @@ namespace MobiledgeX
 
             AppPort appPort = proto switch
             {
-                "udp" => mix.GetAppPort(LProto.L_PROTO_UDP, port),
-                _ => mix.GetAppPort(LProto.L_PROTO_TCP, port),
+                "udp" => mxi.GetAppPort(LProto.L_PROTO_UDP, port),
+                _ => mxi.GetAppPort(LProto.L_PROTO_TCP, port),
             };
 
             if (appPort == null)
@@ -275,20 +270,20 @@ namespace MobiledgeX
                 throw new AppPortException("AppPort Not Found");
             }
 
-            string url = mix.GetUrl(proto, appPort);
+            string url = mxi.GetUrl(proto, appPort);
             return url;
         }
 
-        public async Task<string> GetHostHelper(MobiledgeXIntegration mix, string proto, int port = 0)
+        public async Task<string> GetHostHelper(MobiledgeXIntegration mxi, string proto, int port = 0)
         {
 
-            bool registerCheck = await RegisterHelper(mix);
+            bool registerCheck = await RegisterHelper(mxi);
             await Task.Delay(TimeSpan.FromMilliseconds(1000));
             if (!registerCheck)
             {
                 throw new RegisterClientException("RegisterClient Failed");
             }
-            bool findCloudletCheck = await FindCloudletHelper(mix);
+            bool findCloudletCheck = await FindCloudletHelper(mxi);
             await Task.Delay(TimeSpan.FromMilliseconds(1000));
             if (!findCloudletCheck)
             {
@@ -297,41 +292,41 @@ namespace MobiledgeX
 
             AppPort appPort = proto switch
             {
-                "udp" => mix.GetAppPort(LProto.L_PROTO_UDP, port),
-                 _ => mix.GetAppPort(LProto.L_PROTO_TCP, port),
+                "udp" => mxi.GetAppPort(LProto.L_PROTO_UDP, port),
+                _ => mxi.GetAppPort(LProto.L_PROTO_TCP, port),
             };
-            return mix.GetHost(appPort);
+            return mxi.GetHost(appPort);
         }
 
-        public async Task<string> WebsocketMessageHelper(MobiledgeXWebSocketClient mixWS, string url, string message, int timeOutMs)
+        public async Task<string> WebsocketMessageHelper(MobiledgeXWebSocketClient mxiWS, string url, string message, int timeOutMs)
         {
-            await mixWS.Connect(new Uri(url));
+            await mxiWS.Connect(new Uri(url));
             await Task.Delay(TimeSpan.FromMilliseconds(1000));
-            mixWS.Send(message);
+            mxiWS.Send(message);
             string output;
             System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();
-            while (mixWS.receiveQueue.Count == 0 && stopWatch.ElapsedMilliseconds < timeOutMs)
+            while (mxiWS.receiveQueue.Count == 0 && stopWatch.ElapsedMilliseconds < timeOutMs)
             {
                 Debug.Log("Waiting for WebSocket Received messgae");
             }
             stopWatch = null;
-            mixWS.receiveQueue.TryDequeue(out output);
+            mxiWS.receiveQueue.TryDequeue(out output);
             return output;
         }
 
-        public string UDPMessageHelper(MobiledgeXUDPClient mixUDP, string message, int timeOutMs)
+        public string UDPMessageHelper(MobiledgeXUDPClient mxiUDP, string message, int timeOutMs)
         {
-            mixUDP.Send(message);
+            mxiUDP.Send(message);
             System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();
-            while (mixUDP.receiveQueue.Count == 0 && stopWatch.ElapsedMilliseconds < timeOutMs)
+            while (mxiUDP.receiveQueue.Count == 0 && stopWatch.ElapsedMilliseconds < timeOutMs)
             {
                 Debug.Log("Waiting for UDP Received messgae");
             }
             stopWatch = null;
             byte[] receivedBytes;
-            mixUDP.receiveQueue.TryDequeue(out receivedBytes);
+            mxiUDP.receiveQueue.TryDequeue(out receivedBytes);
             return Encoding.ASCII.GetString(receivedBytes);
         }
 
