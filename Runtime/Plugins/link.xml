@@ -1,0 +1,11 @@
+<linker>
+    <assembly fullname="MobiledgeX.MatchingEngineGrpc" preserve="all"/>
+
+    <!-- MobiledgeX.MatchingEngineGrpc Depedencies to preserve -->
+    <assembly fullname="Google.Protobuf" preserve="all"/>
+    <assembly fullname="Grpc.Core" preserve="all"/>
+    <assembly fullname="Grpc.Core.Api" preserve="all"/>
+    <assembly fullname="System.Buffers" preserve="all"/>
+    <assembly fullname="System.Memory" preserve="all"/>
+    <assembly fullname="System.Runtime.CompilerServices.Unsafe" preserve="all"/>
+</linker>

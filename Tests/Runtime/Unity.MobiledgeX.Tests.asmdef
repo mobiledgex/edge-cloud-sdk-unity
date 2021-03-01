@@ -12,7 +12,7 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "MatchingEngineGrpcLibrary.dll",
+        "MobiledgeX.MatchingEngineGrpc.dll",
         "Google.Protobuf.dll"
     ],
     "autoReferenced": false,
