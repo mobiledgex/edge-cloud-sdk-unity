@@ -33,7 +33,7 @@ using System.Collections.Generic;
                 mxi.UseWifiOnly(true);
                 await mxi.RegisterAndFindCloudlet();
             }
-            mxi.GetAppPort(LProto.L_PROTO_TCP);
+            mxi.GetAppPort(LProto.Tcp);
             string url = mxi.GetUrl("http");
             Debug.Log("Rest URL is : " + url); // Once you have your edge server url you can start communicating with your Edge server deployed on MobiledgeX Console
 

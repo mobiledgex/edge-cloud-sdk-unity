@@ -162,7 +162,7 @@ namespace MobiledgeX
             long sec = (long)(timeInSeconds); // Truncate.
             double remainder = timeInSeconds - (double)sec;
             nanos = (int)(remainder * 1e9);
-            ts = new Timestamp { seconds = sec.ToString(), nanos = nanos };
+            ts = new Timestamp { Seconds = sec, Nanos = nanos };
             return ts;
         }
 
@@ -172,14 +172,14 @@ namespace MobiledgeX
 
             Loc loc = new Loc
             {
-                latitude = info.latitude,
-                longitude = info.longitude,
-                horizontal_accuracy = info.horizontalAccuracy,
-                vertical_accuracy = info.verticalAccuracy,
-                altitude = info.altitude,
-                course = 0f,
-                speed = 0f,
-                timestamp = ts
+                Latitude = info.latitude,
+                Longitude = info.longitude,
+                HorizontalAccuracy = info.horizontalAccuracy,
+                VerticalAccuracy = info.verticalAccuracy,
+                Altitude = info.altitude,
+                Course = 0f,
+                Speed = 0f,
+                Timestamp = ts
             };
 
             return loc;

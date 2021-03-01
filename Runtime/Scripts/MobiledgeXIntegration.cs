@@ -77,7 +77,7 @@ namespace MobiledgeX
         bool latestVerifyLocationStatus = false; // Whether the most recent verifyLocation call was successful
         FindCloudletMode mode = FindCloudletMode.PROXIMITY; // FindCloudlet mode
         AppPort latestAppPort = null;
-        AppPort[] latestAppPortList = null;
+        AppPort [] latestAppPortList = null;
         Location fallbackLocation = new Location(0,0);
         CarrierInfoClass carrierInfoClass = new CarrierInfoClass(); // used for IsRoaming check
         MelMessaging melMessaging;
@@ -109,7 +109,7 @@ namespace MobiledgeX
         /// <summary>
         /// Constructor for MobiledgeXIntegration. This class has functions that wrap DistributedMatchEngine functions for ease of use
         /// </summary>
-        public MobiledgeXIntegration(CarrierInfo carrierInfo = null, NetInterface netInterface = null, UniqueID uniqueId = null, DeviceInfo deviceInfo = null)
+        public MobiledgeXIntegration(CarrierInfo carrierInfo = null, NetInterface netInterface = null, UniqueID uniqueId = null, DeviceInfoApp deviceInfo = null)
         {
             ConfigureMobiledgeXSettings();
             // Set the platform specific way to get SIM carrier information.
@@ -180,30 +180,30 @@ namespace MobiledgeX
             // on pass or failing the location check. Not being verified or the country
             // not matching at all is on such policy decision:
             // GPS and Tower Status:
-            switch (reply.gps_location_status)
+            switch (reply.GpsLocationStatus)
             {
-                case VerifyLocationReply.GPSLocationStatus.LOC_ROAMING_COUNTRY_MISMATCH:
-                case VerifyLocationReply.GPSLocationStatus.LOC_ERROR_UNAUTHORIZED:
-                case VerifyLocationReply.GPSLocationStatus.LOC_ERROR_OTHER:
-                case VerifyLocationReply.GPSLocationStatus.LOC_UNKNOWN:
+                case VerifyLocationReply.Types.GPSLocationStatus.LocRoamingCountryMismatch:
+                case VerifyLocationReply.Types.GPSLocationStatus.LocErrorUnauthorized:
+                case VerifyLocationReply.Types.GPSLocationStatus.LocErrorOther:
+                case VerifyLocationReply.Types.GPSLocationStatus.LocUnknown:
                     return false;
             }
 
-            switch (reply.tower_status)
+            switch (reply.TowerStatus)
             {
-                case VerifyLocationReply.TowerStatus.NOT_CONNECTED_TO_SPECIFIED_TOWER:
-                case VerifyLocationReply.TowerStatus.TOWER_UNKNOWN:
+                case VerifyLocationReply.Types.TowerStatus.NotConnectedToSpecifiedTower:
+                case VerifyLocationReply.Types.TowerStatus.TowerUnknown:
                     return false;
             }
 
             // Distance? A negative value means no verification was done.
-            if (reply.gps_location_accuracy_km < 0f)
+            if (reply.GpsLocationAccuracyKm < 0f)
             {
                 return false;
             }
 
             // A per app policy decision might be 0.5 km, or 25km, or 100km:
-            if (reply.gps_location_accuracy_km < 100f)
+            if (reply.GpsLocationAccuracyKm < 100f)
             {
                 return true;
             }
@@ -230,10 +230,10 @@ namespace MobiledgeX
 
             switch (proto)
             {
-                case LProto.L_PROTO_TCP:
+                case LProto.Tcp:
                     appPortsDict = matchingEngine.GetTCPAppPorts(latestFindCloudletReply);
                     break;
-                case LProto.L_PROTO_UDP:
+                case LProto.Udp:
                     appPortsDict = matchingEngine.GetUDPAppPorts(latestFindCloudletReply);
                     break;
                 default:

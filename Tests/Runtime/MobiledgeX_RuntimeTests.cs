@@ -1,16 +1,14 @@
-using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.TestTools;
 using System.IO;
 using System.Threading.Tasks;
 using System;
 using System.Net.WebSockets;
 using DistributedMatchEngine;
 using System.Threading;
-using System.Collections.Concurrent;
 using System.Text;
+
 namespace MobiledgeX
 {
     public class MobiledgeX_RuntimeTests
@@ -37,8 +35,8 @@ namespace MobiledgeX
                 integration = new MobiledgeXIntegration();
                 testLocation = new Loc
                 {
-                    longitude = -121.8863286,
-                    latitude = 37.3382082
+                    Longitude = -121.8863286,
+                    Latitude = 37.3382082
                 };
             }
         }
@@ -216,7 +214,7 @@ namespace MobiledgeX
             await Task.Delay(TimeSpan.FromMilliseconds(200));
             AppPort appPort;
 
-            appPort = integration.GetAppPort(LProto.L_PROTO_TCP);
+            appPort = integration.GetAppPort(LProto.Tcp);
 
             string url = integration.GetUrl(proto, appPort);
             return url;
@@ -227,7 +225,7 @@ namespace MobiledgeX
             FindCloudletReply reply = await integration.matchingEngine.RegisterAndFindCloudlet(orgName, appName, appVers, testLocation);
             await Task.Delay(TimeSpan.FromMilliseconds(200));
 	    Dictionary<int, AppPort> appPortsDict = integration.matchingEngine.GetTCPAppPorts(reply);
-	    int public_port = reply.ports[0].public_port;
+	    int public_port = reply.Ports[0].PublicPort;
 	    AppPort appPort = appPortsDict[public_port];
 	    ClientWebSocket ws = await integration.matchingEngine.GetWebsocketConnection(reply, appPort, public_port, 5000, "?roomid=testing");
 	    await Task.Delay(TimeSpan.FromMilliseconds(200));
