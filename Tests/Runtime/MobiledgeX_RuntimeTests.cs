@@ -300,7 +300,6 @@ namespace MobiledgeX
             }
 
             AppPort appPort;
-
             switch (proto)
             {
                 case "udp":
@@ -313,7 +312,7 @@ namespace MobiledgeX
                 case "https":
                     appPort = mxi.GetAppPort(LProto.L_PROTO_TCP, port);
                     break;
-            };
+            }
             return mxi.GetHost(appPort);
         }
 
