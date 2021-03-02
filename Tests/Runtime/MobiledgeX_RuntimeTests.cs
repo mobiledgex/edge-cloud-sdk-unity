@@ -265,11 +265,11 @@ namespace MobiledgeX
                 case "udp":
                     appPort = mxi.GetAppPort(LProto.L_PROTO_UDP, port);
                     break;
-                default:
                 case "ws":
                 case "wss":
                 case "http":
                 case "https":
+                default:
                     appPort = mxi.GetAppPort(LProto.L_PROTO_TCP, port);
                     break;
             }
@@ -305,11 +305,11 @@ namespace MobiledgeX
                 case "udp":
                     appPort = mxi.GetAppPort(LProto.L_PROTO_UDP, port);
                     break;
-                default:
                 case "ws":
                 case "wss":
                 case "http":
                 case "https":
+                default:
                     appPort = mxi.GetAppPort(LProto.L_PROTO_TCP, port);
                     break;
             }
