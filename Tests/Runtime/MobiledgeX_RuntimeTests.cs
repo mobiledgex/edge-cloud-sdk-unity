@@ -272,7 +272,7 @@ namespace MobiledgeX
                 case "https":
                     appPort = mxi.GetAppPort(LProto.L_PROTO_TCP, port);
                     break;
-            };
+            }
 
             if (appPort == null)
             {
