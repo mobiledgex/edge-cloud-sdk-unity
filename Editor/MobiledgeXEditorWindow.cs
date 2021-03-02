@@ -501,7 +501,6 @@ namespace MobiledgeX
             {
                 wc.DownloadProgressChanged += wc_DownloadProgressChanged;
                 wc.DownloadFileAsync(new Uri(fileUrl), filePath);
-                wc.DownloadDataCompleted += DownloadDataCompleted;
             }
         }
 
@@ -510,12 +509,13 @@ namespace MobiledgeX
             if (e.ProgressPercentage < 100)
                 EditorUtility.DisplayProgressBar("Downloading", "Download in progress ...", e.ProgressPercentage);
             else
-                EditorUtility.ClearProgressBar();
-        }
-
-        static void DownloadDataCompleted (object sender, DownloadDataCompletedEventArgs e)
-        {
-            AssetDatabase.ImportPackage(Application.dataPath + "/EdgeMultiplay.unitypackage", true);
+            {
+                if (e.ProgressPercentage == 100)
+                {
+                    EditorUtility.ClearProgressBar();
+                    AssetDatabase.ImportPackage(Application.dataPath + "/EdgeMultiplay.unitypackage", true);
+                }
+            }  
         }
 
         #endregion

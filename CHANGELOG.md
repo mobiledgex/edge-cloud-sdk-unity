@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this package will be documented in this file.
 
+## [2.4.1] - 2021-03-02
+
+### Fix & Improvements.
+- Location Exception added, Location Exception is thrown if the user rejected location permission.
+- Added support for Oculus Devices.
+- New MobiledgeXIntegration Constructor added using your MobiledgeX App Definitions, you can connect to multiple apps from a single Unity project.
+- Local Network permission on iOS is removed by default, this might degrade some edge features, to fix this set matchingEngine.EnableEnhancedLocationServices to true.
+### MobiledgeX Settings
+- log type is added to MobiledgeX Settings to switch between development and production.
+
 ## [2.4.0] - 2020-12-10
 
 ### Fix & Improvements.
