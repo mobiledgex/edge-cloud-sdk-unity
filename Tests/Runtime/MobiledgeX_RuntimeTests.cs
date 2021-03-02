@@ -259,11 +259,20 @@ namespace MobiledgeX
                 throw new FindCloudletException("FindCloudlet Failed");
             }
 
-            AppPort appPort = proto switch
+            AppPort appPort;
+            switch(proto)
             {
-                "udp" => mxi.GetAppPort(LProto.L_PROTO_UDP, port),
-                _ => mxi.GetAppPort(LProto.L_PROTO_TCP, port),
-            };
+                case "udp":
+                    appPort = mxi.GetAppPort(LProto.L_PROTO_UDP, port);
+                    break;
+                case "ws":
+                case "wss":
+                case "http":
+                case "https":
+                default:
+                    appPort = mxi.GetAppPort(LProto.L_PROTO_TCP, port);
+                    break;
+            }
 
             if (appPort == null)
             {
@@ -290,11 +299,20 @@ namespace MobiledgeX
                 throw new FindCloudletException("FindCloudlet Failed");
             }
 
-            AppPort appPort = proto switch
+            AppPort appPort;
+            switch (proto)
             {
-                "udp" => mxi.GetAppPort(LProto.L_PROTO_UDP, port),
-                _ => mxi.GetAppPort(LProto.L_PROTO_TCP, port),
-            };
+                case "udp":
+                    appPort = mxi.GetAppPort(LProto.L_PROTO_UDP, port);
+                    break;
+                case "ws":
+                case "wss":
+                case "http":
+                case "https":
+                default:
+                    appPort = mxi.GetAppPort(LProto.L_PROTO_TCP, port);
+                    break;
+            }
             return mxi.GetHost(appPort);
         }
 
