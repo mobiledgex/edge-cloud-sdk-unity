@@ -44,11 +44,17 @@ public class ExampleRest : MonoBehaviour
         {
             await mxi.RegisterAndFindCloudlet();
         }
-        catch (DmeDnsException dde)
+        //RegisterClientException is thrown if your app is not found or if you carrier is not registered on MobiledgeX yet
+        catch (RegisterClientException rce)
         {
-            Debug.Log("Dme dns Exception: " + dde.Message);
-            mxi.UseWifiOnly(true);
+            Debug.Log("RegisterClientException: " + rce.Message);
+            mxi.UseWifiOnly(true); // use location only to find the app instance
             await mxi.RegisterAndFindCloudlet();
+        }
+        //FindCloudletException is thrown if there is no app instance in the user region
+        catch (FindCloudletException fce)
+        {
+            // your fallback logic here
         }
         // LocationException is thrown if the app user rejected location permission
         catch (LocationException locException)
@@ -58,9 +64,10 @@ public class ExampleRest : MonoBehaviour
             mxi.SetFallbackLocation(-122.4194, 37.7749); //Example only (SF location),In Production you can optionally use:  MobiledgeXIntegration.LocationFromIPAddress location = await MobiledgeXIntegration.GetLocationFromIP();
             await mxi.RegisterAndFindCloudlet();
         }
-        mxi.GetAppPort(LProto.L_PROTO_TCP);
-        string url = mxi.GetUrl("http");
-        Debug.Log("Rest URL is : " + url); // Once you have your edge server url you can start communicating with your Edge server deployed on MobiledgeX Console
+        mxi.GetAppPort(LProto.L_PROTO_TCP); // or LProto.L_PROTO_UDP
+        string url = mxi.GetUrl("http"); // or another L7 proto such as https, ws, wss, udp
+
+        Debug.Log("url : " + url); // Once you have your edge server url you can start communicating with your Edge server deployed on MobiledgeX Console
         StartCoroutine(RestExample(url)); //using UnityWebRequest
         //await RestExampleHttpClient(url); // You can instead use HttpClient
     }
