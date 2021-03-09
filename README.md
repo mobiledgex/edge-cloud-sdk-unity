@@ -118,13 +118,14 @@ public class YourClassName : MonoBehaviour
         }
         catch (RegisterClientException rce)
         {
-            Debug.Log("RegisterClientException: " + rce.Message);
+            Debug.Log("RegisterClientException: " + rce.Message + "Inner Exception: " + rce.InnerException);
             mxi.UseWifiOnly(true); // use location only to find the app instance
             await mxi.RegisterAndFindCloudlet();
         }
         //FindCloudletException is thrown if there is no app instance in the user region
         catch (FindCloudletException fce)
         {
+            Debug.Log("FindCloudletException: " + fce.Message + "Inner Exception: " + fce.InnerException);
             // your fallback logic here
         }
         // LocationException is thrown if the app user rejected location permission
