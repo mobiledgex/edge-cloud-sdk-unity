@@ -138,7 +138,7 @@ public class YourClassName : MonoBehaviour
             await mxi.RegisterAndFindCloudlet();
         }
         
-        mxi.GetAppPort(LProto.L_PROTO_HTTP); // Get the port of the desired protocol
+        mxi.GetAppPort(LProto.L_PROTO_TCP); // Get the port of the desired protocol
         string url = mxi.GetUrl("http"); // Get the url of the desired protocol
     }
     
@@ -183,7 +183,7 @@ For full example code, Please check [RunTime/Scripts/ExampleRest.cs](https://git
         MobiledgeXIntegration mxi = new MobiledgeXIntegration();
         await mxi.RegisterAndFindCloudlet();
         
-        mxi.GetAppPort(LProto.L_PROTO_HTTP); // Get the port of the desired protocol
+        mxi.GetAppPort(LProto.L_PROTO_TCP); // Get the port of the desired protocol
         string url = mxi.GetUrl("http"); // Get the url of the desired protocol
         StartCoroutine(RestExample(url)); // using UnityWebRequest
         RestExampleHttpClient(url); // using HttpClient
@@ -337,7 +337,9 @@ The SDK comes with an easy to integrate Location Service Solution (LocationServi
 You can find LocationService in the Unity Editor Inspector.
 Select AddComponent then select (MobiledgeX/LocationService)
 ![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-unity-location-service.png)
+
 If the user rejects Location permission, Location Exception will be thrown. Check ExampleRest.cs for handling location exception example.
+
 Different way to get the device's location :
 
 ```csharp
