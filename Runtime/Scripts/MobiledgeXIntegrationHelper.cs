@@ -350,7 +350,7 @@ namespace MobiledgeX
 
             if (!MatchingEngine.EnableEnhancedLocationServices)
             {
-                Debug.LogWarning("MatchingEngine EnableEnhancedLocationServices is set to false.");
+                Logger.LogWarning("MatchingEngine EnableEnhancedLocationServices is set to false.");
                 return false;
             }
 
@@ -388,7 +388,7 @@ namespace MobiledgeX
 
             if (!MatchingEngine.EnableEnhancedLocationServices)
             {
-                Debug.LogWarning("MatchingEngine EnableEnhancedLocationServices is set to false.");
+                Logger.LogWarning("MatchingEngine EnableEnhancedLocationServices is set to false.");
                 return false;
             }
 
