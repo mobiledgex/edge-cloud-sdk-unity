@@ -108,7 +108,8 @@ public class YourClassName : MonoBehaviour
         yield return StartCoroutine(MobiledgeX.LocationService.EnsureLocation()); // Location is needed to connect you to the closet edge
         GetEdgeConnection();
     }
-     async void GetEdgeConnection()
+    
+    async void GetEdgeConnection()
     {
         MobiledgeXIntegration mxi = new MobiledgeXIntegration();
         // you can use new MobiledgeXIntegration("orgName","appName","appVers");
@@ -116,12 +117,27 @@ public class YourClassName : MonoBehaviour
         {
             await mxi.RegisterAndFindCloudlet();
         }
-        catch(DmeDnsException)
+        catch (RegisterClientException rce)
         {
-            mxi.UseWifiOnly(true); // if you carrier is not supported yet, WifiOnly will connect you to wifi.dme 
+            Debug.Log("RegisterClientException: " + rce.Message + "Inner Exception: " + rce.InnerException);
+            mxi.UseWifiOnly(true); // use location only to find the app instance
             await mxi.RegisterAndFindCloudlet();
         }
-
+        //FindCloudletException is thrown if there is no app instance in the user region
+        catch (FindCloudletException fce)
+        {
+            Debug.Log("FindCloudletException: " + fce.Message + "Inner Exception: " + fce.InnerException);
+            // your fallback logic here
+        }
+        // LocationException is thrown if the app user rejected location permission
+        catch (LocationException locException)
+        {
+            print("Location Exception: " + locException.Message);
+            mxi.useFallbackLocation = true;
+            mxi.SetFallbackLocation(-122.4194, 37.7749); //Example only (SF location),In Production you can optionally use:  MobiledgeXIntegration.LocationFromIPAddress location = await MobiledgeXIntegration.GetLocationFromIP();
+            await mxi.RegisterAndFindCloudlet();
+        }
+        
         mxi.GetAppPort(LProto.L_PROTO_HTTP); // Get the port of the desired protocol
         string url = mxi.GetUrl("http"); // Get the url of the desired protocol
     }

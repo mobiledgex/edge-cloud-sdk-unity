@@ -130,8 +130,7 @@ namespace MobiledgeX
             }
             catch (Exception e)
             {
-                Debug.LogError("MobiledgeX: RegisterClient Exception Type: " + e.GetType() + ", Message: " + e.Message);
-                throw e;
+                throw new RegisterClientException("MobiledgeX: RegisterClient Exception Type: " + e.GetType() + ", Message: " + e.Message + ", InnerException : " + e.InnerException + "\nStack: " + e.StackTrace);
             }
             finally
             {
@@ -219,7 +218,7 @@ namespace MobiledgeX
             }
             catch (Exception e)
             {
-                throw new FindCloudletException(e.Message);
+                throw new FindCloudletException("FindCloudletException Type: " + e.GetType() + ", Message: " + e.Message + ", InnerException : " + e.InnerException + "\nStack: " + e.StackTrace);
             }
             finally
             {
