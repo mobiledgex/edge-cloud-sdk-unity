@@ -321,7 +321,7 @@ The SDK comes with an easy to integrate Location Service Solution (LocationServi
 You can find LocationService in the Unity Editor Inspector.
 Select AddComponent then select (MobiledgeX/LocationService)
 ![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-unity-location-service.png)
-If the user rejects Location permission, Location Exception will be thrown.Check ExampleRest.cs for handling location exception example.
+If the user rejects Location permission, Location Exception will be thrown. Check ExampleRest.cs for handling location exception example.
 Different way to get the device's location :
 
 ```csharp
