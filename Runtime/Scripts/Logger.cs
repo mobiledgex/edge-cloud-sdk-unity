@@ -19,15 +19,24 @@ using UnityEngine;
 
 namespace MobiledgeX
 {
-    public class MobiledgeXSettings: ScriptableObject
+    public class Logger
     {
-        [HideInInspector]
-        public string sdkVersion;
-        public string orgName;
-        public string appName;
-        public string appVers;
-        public string authPublicKey;
-        public string region;
-        public Logger.LogType logType = Logger.LogType.ErrorsAndWarnings;
+        public enum LogType { All, ErrorsAndWarnings, ErrorsOnly};
+        static MobiledgeXSettings settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
+        public static void LogWarning(string message)
+        {
+            if (settings.logType == LogType.All || settings.logType == LogType.ErrorsAndWarnings)
+            {
+                Debug.LogWarning("MobiledgeX: "+message);
+            }
+        }
+
+        public static void Log(string message)
+        {
+            if(settings.logType == LogType.All)
+            {
+                Debug.Log("MobiledgeX: "+message);
+            }
+        }
     }
 }
