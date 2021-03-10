@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2020 MobiledgeX, Inc. All rights and licenses reserved.
+ * Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
  * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -83,14 +83,14 @@ namespace MobiledgeX
 
         public async Task Connect(Uri uri)
         {
-            Debug.Log("Connecting to: " + uri);
+            Logger.Log("WebSocket Connecting to: " + uri);
             await ws.ConnectAsync(uri, tokenSource.Token);
             while (ws.State == WebSocketState.Connecting)
             {
-                Debug.Log("Waiting to connect...");
+                Logger.Log("WebSocket Waiting to connect...");
                 Task.Delay(50).Wait();
             }
-            Debug.Log("Connect status: " + ws.State);
+            Logger.Log("WebSocket Connect status: " + ws.State);
             run = true;
         }
 
@@ -101,7 +101,7 @@ namespace MobiledgeX
         public void Send(string message)
         {
             byte[] buffer = encoder.GetBytes(message);
-            //Debug.Log("Message to queue for send: " + buffer.Length + ", message: " + message);
+            Logger.Log("WebSocket Message to queue for send: " + buffer.Length + ", message: " + message);
             var sendBuf = new ArraySegment<byte>(buffer);
             sendQueue.Add(sendBuf);
         }
@@ -122,15 +122,15 @@ namespace MobiledgeX
         public async void RunSend()
         {
             ArraySegment<byte> msg;
-            Debug.Log("RunSend entered.");
+            Logger.Log("WebSocket RunSend entered.");
             while (run)
             {
                 while (!sendQueue.IsCompleted)
                 {
                     msg = sendQueue.Take();
                     long count = sendQueue.Count;
-                    //Debug.Log("Dequeued this message to send: " + msg + ", queueSize: " + count);
-                    await ws.SendAsync(msg, WebSocketMessageType.Text, true , tokenSource.Token);
+                    Logger.Log("WebSocket Client Dequeued this message to send: " + msg + ", queueSize: " + count);
+                    await ws.SendAsync(msg, WebSocketMessageType.Text, true, tokenSource.Token);
                 }
             }
         }
@@ -141,15 +141,15 @@ namespace MobiledgeX
         public async void RunSendBinary()
         {
             ArraySegment<byte> msg;
-            Debug.Log("RunSend entered.");
+            Logger.Log("WebSocket RunSend entered.");
             while (run)
             {
                 while (!sendQueueBinary.IsCompleted)
                 {
                     msg = sendQueueBinary.Take();
                     long count = sendQueueBinary.Count;
-                    //Debug.Log("Dequeued this message to send: " + msg + ", queueSize: " + count);
-                    await ws.SendAsync(msg, WebSocketMessageType.Binary, true ,tokenSource.Token);
+                    Logger.Log("WebSocket Client Dequeued this message to send: " + msg + ", queueSize: " + count);
+                    await ws.SendAsync(msg, WebSocketMessageType.Binary, true, tokenSource.Token);
                 }
             }
         }
@@ -168,10 +168,10 @@ namespace MobiledgeX
                 {
                     chunkResult = await ws.ReceiveAsync(arrayBuf, tokenSource.Token);
                     ms.Write(arrayBuf.Array, arrayBuf.Offset, chunkResult.Count);
-                    //Debug.Log("Size of Chunk message: " + chunkResult.Count);
+                    Logger.Log("Size of WebSocket Chunk message: " + chunkResult.Count);
                     if ((UInt64)(chunkResult.Count) > MAXREADSIZE)
                     {
-                        Console.Error.WriteLine("Warning: Message is bigger than expected!");
+                        Debug.LogError("MobiledgeX: WebSocket Message is bigger than expected!");
                     }
                 } while (!chunkResult.EndOfMessage);
                 
@@ -189,21 +189,20 @@ namespace MobiledgeX
         /// </summary>
         public async void RunReceive()
         {
-            Debug.Log("WebSocket Message Receiver looping.");
+            Logger.Log("WebSocket Message Receiver looping.");
             Dictionary<WebSocketMessageType, MemoryStream> response = new Dictionary<WebSocketMessageType, MemoryStream>(1);
             while (run)
             {
-                //Debug.Log("Awaiting Receive...");
+                Logger.Log("WebSocket Awaiting Receive...");
                 response = await Receive();
                 if (response != null && response.Keys.Count > 0)
                 {
-                    //Debug.Log("Received: " + result);
                     if (response.Keys.First() == WebSocketMessageType.Text)
                     {
                         string result = StreamToString(response.Values.First(), Encoding.UTF8);
                         if (result != null && result.Length > 0)
                         {
-                            Debug.Log("Received: " + result);
+                            Logger.Log("WebSocket Message Received: " + result);
                             receiveQueue.Enqueue(result);
                         }
                     }
@@ -212,7 +211,7 @@ namespace MobiledgeX
                         byte[] result = response.Values.First().GetBuffer();
                         if (result != null && result.Length > 0)
                         {
-                            //Debug.Log("Received: " + result);
+                            Logger.Log("WebSocket Message Received: " + result);
                             receiveQueueBinary.Enqueue(result);
                         }
                     }

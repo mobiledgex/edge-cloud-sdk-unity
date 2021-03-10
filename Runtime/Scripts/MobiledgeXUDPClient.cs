@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2018-2020 MobiledgeX, Inc. All rights and licenses reserved.
+ * Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
  * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -79,7 +79,7 @@ namespace MobiledgeX
             byte[] buffer = encoder.GetBytes(message);
             if (buffer.Length > MAXPAYLOADSIZE)
             {
-                Debug.LogError("Max UDP payload size is "+ MAXPAYLOADSIZE + " bytes, try slicing your message to suit the max payload size");
+                Debug.LogError("MobiledgeX: Max UDP payload size is "+ MAXPAYLOADSIZE + " bytes, try slicing your message to suit the max payload size");
                 return;
             }
             var sendBuf = new ArraySegment<byte>(buffer);
@@ -90,7 +90,7 @@ namespace MobiledgeX
         {
             if (buffer.Length > MAXPAYLOADSIZE)
             {
-                Debug.LogError("Max UDP payload size is " + MAXPAYLOADSIZE + " bytes, try slicing your buffer to suit the max payload size");
+                Debug.LogError("MobiledgeX: Max UDP payload size is " + MAXPAYLOADSIZE + " bytes, try slicing your buffer to suit the max payload size");
                 return;
             }
             var sendBuf = new ArraySegment<byte>(buffer);
@@ -100,14 +100,14 @@ namespace MobiledgeX
         public async void RunSend()
         {
             ArraySegment<byte> msg;
-            Debug.Log("RunSend entered.");
+            Logger.Log("UDP Client RunSend entered.");
             while (run)
             {
                 while (!sendQueue.IsCompleted)
                 {
                     msg = sendQueue.Take();
-                    //long count = sendQueue.Count;
-                    //Debug.Log("Dequeued this message to send: " + msg + ", queueSize: " + count);
+                    long count = sendQueue.Count;
+                    Logger.Log("UDP Client Dequeued this message to send: " + msg + ", queueSize: " + count);
                     await udpClient.SendAsync(msg.Array, msg.Count, serverEndpoint);
                 }
             }
@@ -117,7 +117,7 @@ namespace MobiledgeX
         {
             while (run)
             {
-                //Debug.Log("Awaiting Receive...");
+                Logger.Log("UDP Awaiting Receive...");
                 UdpReceiveResult result = await udpClient.ReceiveAsync();
                 if (result != null && result.Buffer.Length > 0)
                 {
