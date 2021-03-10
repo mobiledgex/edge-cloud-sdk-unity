@@ -90,9 +90,9 @@ Once that setup has been completed, you can very easily call all the necessary A
 
 **Getting Edge Connection Url**
 
-MobiledgeX SDK uses the device Location and [the device's MCC-MNC ID (if avaliable)](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine) to connect you to the closest Edge cloudlet where you application instance is deployed.
+MobiledgeX SDK uses the device Location and [the device's MCC-MNC ID (if avaliable)](https://developers.mobiledgex.com/product-overview/connecting-client-app#distributed-matching-engine) to connect you to the closest Edge cloudlet where you application instance is deployed.
 
-If your carrier is not supported yet by MobiledgeX the SDK will throw a RegisterClient Exception. You can catch this exception and instead use WifiOnly(true) to connect to [the wifi dme](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine) which will connect you to the closest [regional DME](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine).
+If your carrier is not supported yet by MobiledgeX the SDK will throw a RegisterClient Exception. You can catch this exception and instead use WifiOnly(true) to connect to [the wifi dme](https://developers.mobiledgex.com/product-overview/connecting-client-app#distributed-matching-engine) which will connect you to the closest [regional DME](https://developers.mobiledgex.com/product-overview/connecting-client-app#distributed-matching-engine).
 
 ```csharp
 using MobiledgeX;
@@ -365,8 +365,8 @@ If you recieve the following error and cannot compile your Unity project, restar
 
 
 ### Where to Go from Here  
-* Click [here](https://api.mobiledgex.net/#section/Edge-SDK-Unity) to view and familiarize with the Unity C# SDK APIs to start your MobiledgeX integration.
+* Click [here](https://mobiledgex.github.io/unity-samples/) to view and familiarize with the Unity C# SDK APIs to start your MobiledgeX integration.
 
 * To learn how to use Docker to upload your application server, see this [tutorial](https://developers.mobiledgex.com/guides-and-tutorials/hello-world).
 
-* For sample Unity code, please refer to our [Ping Pong tutorial](https://developers.mobiledgex.com/guides-and-tutorials/how-to-workshop-adding-mobiledgex-matchingengine-sdk-to-unity-ping-pong-demo-app).
+* For sample Unity code, please refer to our [Ping Pong tutorial](https://developers.mobiledgex.com/guides-and-tutorials/sample-app-guides/how-to-workshop-adding-mobiledgex-matchingengine-sdk-to-unity-ping-pong-demo-app).
