@@ -186,7 +186,7 @@ namespace MobiledgeX
                 {
                     throw new FindCloudletException("Location must not be null!");
                 }
-                Logger.Log("FindCloudlet Location: " + location.longitude + ", lat: " + location.latitude);
+                Logger.Log("FindCloudlet Location: " + location.Longitude + ", lat: " + location.Latitude);
                 FindCloudletRequest req = matchingEngine.CreateFindCloudletRequest(location, "");
                 if (dmeHost != null && dmePort != 0)
                 {
@@ -233,7 +233,7 @@ namespace MobiledgeX
                 }
             }
 
-            Logger.Log("FindCloudlet with DME result: " + reply.status);
+            Logger.Log("FindCloudlet with DME result: " + reply.Status);
             latestFindCloudletReply = reply;
             int porti = 0;
             latestAppPortList = new AppPort[reply.Ports.Count];
@@ -271,7 +271,7 @@ namespace MobiledgeX
             // technically valid, though less likely real, as of writing.
 
 #if UNITY_EDITOR
-            Logger.Log("MobiledgeX: Cannot Get location in Unity Editor. Returning fallback location. Developer can configure fallback location with SetFallbackLocation");
+            Logger.Log("Cannot Get location in Unity Editor. Returning fallback location. Developer can configure fallback location with SetFallbackLocation");
             location.Longitude = fallbackLocation.Longitude;
             location.Latitude = fallbackLocation.Latitude;
 #else
