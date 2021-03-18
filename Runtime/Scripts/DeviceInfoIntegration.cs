@@ -187,7 +187,7 @@ namespace MobiledgeX
   }
 
   // Used for DeviceInfo in UnityEditor (any target platform)
-  public class TestDeviceInfo : DeviceInfo
+  public class TestDeviceInfo : DeviceInfoApp
   {
       public Dictionary<string, string> GetDeviceInfo()
       {

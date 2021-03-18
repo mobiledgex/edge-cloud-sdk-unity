@@ -42,6 +42,11 @@ namespace MobiledgeX
             }
         }
 
+        [OneTimeTearDown]
+        public void Clean()
+        {
+        }
+
         #endregion
 
         #region Run Time Tests
@@ -217,7 +222,7 @@ namespace MobiledgeX
             var task = Task.Run(async () =>
             {
                 string hostName = await GetHostHelper(mxi, "udp");
-                MobiledgeXUDPClient udpClient = new MobiledgeXUDPClient(hostName, mxi.GetAppPort(LProto.L_PROTO_UDP).public_port);
+                MobiledgeXUDPClient udpClient = new MobiledgeXUDPClient(hostName, mxi.GetAppPort(LProto.Udp).PublicPort);
                 return UDPMessageHelper(udpClient, "ping", 20000);
             });
             Assert.True(task.Result == "pong");
