@@ -90,9 +90,9 @@ Once that setup has been completed, you can very easily call all the necessary A
 
 **Getting Edge Connection Url**
 
-MobiledgeX SDK uses the device Location and [the device's MCC-MNC ID (if avaliable)](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine) to connect you to the closest Edge cloudlet where you application instance is deployed.
+MobiledgeX SDK uses the device Location and [the device's MCC-MNC ID (if avaliable)](https://developers.mobiledgex.com/sdks/overview#distributed-matching-engine) to connect you to the closest Edge cloudlet where you application instance is deployed.
 
-If your carrier is not supported yet by MobiledgeX the SDK will throw a DmeDnsException. You can catch this exception and instead use WifiOnly(true) to connect to [the wifi dme](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine) which will connect you to the closest [regional DME](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine).
+If your carrier is not supported yet by MobiledgeX the SDK will throw a RegisterClient Exception. You can catch this exception and instead use WifiOnly(true) to connect to [the wifi dme](https://developers.mobiledgex.com/sdks/overview#distributed-matching-engine) which will connect you to the closest [regional DME](https://developers.mobiledgex.com/sdks/overview#distributed-matching-engine).
 
 ```csharp
 using MobiledgeX;
@@ -108,20 +108,37 @@ public class YourClassName : MonoBehaviour
         yield return StartCoroutine(MobiledgeX.LocationService.EnsureLocation()); // Location is needed to connect you to the closet edge
         GetEdgeConnection();
     }
-     async void GetEdgeConnection()
+    
+    async void GetEdgeConnection()
     {
         MobiledgeXIntegration mxi = new MobiledgeXIntegration();
+        // you can use new MobiledgeXIntegration("orgName","appName","appVers");
         try
         {
             await mxi.RegisterAndFindCloudlet();
         }
-        catch(DmeDnsException)
+        catch (RegisterClientException rce)
         {
-            mxi.UseWifiOnly(true); // if you carrier is not supported yet, WifiOnly will connect you to wifi.dme 
+            Debug.Log("RegisterClientException: " + rce.Message + "Inner Exception: " + rce.InnerException);
+            mxi.UseWifiOnly(true); // use location only to find the app instance
             await mxi.RegisterAndFindCloudlet();
         }
-
-        mxi.GetAppPort(LProto.L_PROTO_HTTP); // Get the port of the desired protocol
+        //FindCloudletException is thrown if there is no app instance in the user region
+        catch (FindCloudletException fce)
+        {
+            Debug.Log("FindCloudletException: " + fce.Message + "Inner Exception: " + fce.InnerException);
+            // your fallback logic here
+        }
+        // LocationException is thrown if the app user rejected location permission
+        catch (LocationException locException)
+        {
+            print("Location Exception: " + locException.Message);
+            mxi.useFallbackLocation = true;
+            mxi.SetFallbackLocation(-122.4194, 37.7749); //Example only (SF location),In Production you can optionally use:  MobiledgeXIntegration.LocationFromIPAddress location = await MobiledgeXIntegration.GetLocationFromIP();
+            await mxi.RegisterAndFindCloudlet();
+        }
+        
+        mxi.GetAppPort(LProto.L_PROTO_TCP); // Get the port of the desired protocol
         string url = mxi.GetUrl("http"); // Get the url of the desired protocol
     }
     
@@ -166,7 +183,7 @@ For full example code, Please check [RunTime/Scripts/ExampleRest.cs](https://git
         MobiledgeXIntegration mxi = new MobiledgeXIntegration();
         await mxi.RegisterAndFindCloudlet();
         
-        mxi.GetAppPort(LProto.L_PROTO_HTTP); // Get the port of the desired protocol
+        mxi.GetAppPort(LProto.L_PROTO_TCP); // Get the port of the desired protocol
         string url = mxi.GetUrl("http"); // Get the url of the desired protocol
         StartCoroutine(RestExample(url)); // using UnityWebRequest
         RestExampleHttpClient(url); // using HttpClient
@@ -320,6 +337,9 @@ The SDK comes with an easy to integrate Location Service Solution (LocationServi
 You can find LocationService in the Unity Editor Inspector.
 Select AddComponent then select (MobiledgeX/LocationService)
 ![](https://developers.mobiledgex.com/assets/unity-sdk/mobiledgex-unity-location-service.png)
+
+If the user rejects Location permission, Location Exception will be thrown. Check ExampleRest.cs for handling location exception example.
+
 Different way to get the device's location :
 
 ```csharp
@@ -345,8 +365,8 @@ If you recieve the following error and cannot compile your Unity project, restar
 
 
 ### Where to Go from Here  
-* Click [here](https://api.mobiledgex.net/#section/Edge-SDK-Unity) to view and familiarize with the Unity C# SDK APIs to start your MobiledgeX integration.
+* Click [here](https://mobiledgex.github.io/unity-samples/) to view and familiarize with the Unity C# SDK APIs to start your MobiledgeX integration.
 
-* To learn how to use Docker to upload your application server, see this [tutorial](https://developers.mobiledgex.com/guides-and-tutorials/hello-world).
+* To learn how to use Docker to upload your application server, see this [tutorial](https://developers.mobiledgex.com/deployments/application-deployment-guides/hello-world).
 
-* For sample Unity code, please refer to our [Ping Pong tutorial](https://developers.mobiledgex.com/guides-and-tutorials/how-to-workshop-adding-mobiledgex-matchingengine-sdk-to-unity-ping-pong-demo-app).
+* For sample Unity code, please refer to our [Ping Pong tutorial](https://developers.mobiledgex.com/sdks/unity-sdk/unity-sdk-sample).
