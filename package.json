@@ -1,6 +1,6 @@
 {
   "name": "com.mobiledgex.sdk",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "displayName": "MobiledgeX",
   "description": "The MobiledgeX Unity SDK enables an application to register and then locate the nearest edge cloudlet backend server for use. The SDK also allows verification of a device's location for all location-specific tasks. Because these APIs involve networking, most functions will run asynchronously, and in a background thread.",
   "unity": "2019.1",
