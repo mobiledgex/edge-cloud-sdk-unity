@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2018-2020 MobiledgeX, Inc. All rights and licenses reserved.
+ * Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
  * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,7 +36,7 @@ namespace MobiledgeX
       }
       catch (Exception e)
       {
-        Debug.Log("Could not get AndroidJavaClass " + pkg + ". Exception is: " + e.Message);
+        Logger.Log("Could not get AndroidJavaClass " + pkg + ". Exception is: " + e.Message);
         return null;
       }
     }
@@ -49,7 +49,7 @@ namespace MobiledgeX
       }
       catch (Exception e)
       {
-        Debug.Log("Could not get AndroidJavaObject " + pkg + ". Exception is: " + e.Message);
+        Logger.Log("Could not get AndroidJavaObject " + pkg + ". Exception is: " + e.Message);
         return null;
       }
     }
@@ -62,7 +62,7 @@ namespace MobiledgeX
       }
       catch (Exception e)
       {
-        Debug.Log("Could not getSimpleName. Exception is " + e.Message);
+        Logger.Log("Could not getSimpleName. Exception is " + e.Message);
         return "";
       }
     }
@@ -77,7 +77,7 @@ namespace MobiledgeX
       }
       catch (Exception e)
       {
-        Debug.Log("Could not GetStatic " + typeof(T) + ". Exception: " + e.Message);
+        Logger.Log("Could not GetStatic " + typeof(T) + ". Exception: " + e.Message);
         return default(T);
       }
     }
@@ -95,7 +95,7 @@ namespace MobiledgeX
       }
       catch (Exception e)
       {
-        Debug.Log("Could not CallStatic " + typeof(T) + ". Exception: " + e.Message);
+        Logger.Log("Could not CallStatic " + typeof(T) + ". Exception: " + e.Message);
         return default(T);
       }
     }
@@ -113,7 +113,7 @@ namespace MobiledgeX
       }
       catch (Exception e)
       {
-        Debug.Log("Could not Call " + typeof(T) + " method " + method + ". Exception: " + e.Message);
+        Logger.Log("Could not Call " + typeof(T) + " method " + method + ". Exception: " + e.Message);
         return default(T);
       }
     }

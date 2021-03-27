@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2020 MobiledgeX, Inc. All rights and licenses reserved.
+ * Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
  * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,7 @@
 
 using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -101,8 +102,8 @@ namespace MobiledgeX
         [MenuItem("MobiledgeX/Examples/EdgeMultiplay", false, 20)]
         public static void ImportEdgeMultiplayExample()
         {
-            string sdkPath = Path.GetFullPath("Packages/com.mobiledgex.sdk");
-            AssetDatabase.ImportPackage(Path.Combine(sdkPath, "Resources/Examples/EdgeMultiplay.unitypackage"), true);
+            DownloadFile("https://github.com/mobiledgex/edge-multiplay-unity-client/raw/main/EdgeMultiplay.unitypackage",
+                Path.Combine(Application.dataPath,"EdgeMultiplay.unitypackage"));
             Enhancement.EdgeMultiplayImported(getId());
         }
 
@@ -200,6 +201,12 @@ namespace MobiledgeX
             }
             GUILayout.Label(sdkVersion, sdkVersionStyle);
         }
+
+        void OnInspectorUpdate()
+        {
+            Repaint();
+        }
+
         #endregion 
 
 
@@ -283,10 +290,6 @@ namespace MobiledgeX
             EditorGUILayout.EndVertical();
             if (GUILayout.Button("Setup"))
             {
-                MobiledgeXIntegration.orgName = settings.orgName;
-                MobiledgeXIntegration.appName = settings.appName;
-                MobiledgeXIntegration.appVers = settings.appVers;
-                MobiledgeXIntegration.developerAuthToken = settings.authPublicKey;
                 progressText = "";
                 if (await CheckCredentials())
                 {
@@ -309,7 +312,7 @@ namespace MobiledgeX
         private void LicenseWindow()
         {
             EditorGUILayout.BeginHorizontal();
-            string licenseText = "Copyright 2020 MobiledgeX, Inc.All rights and licenses reserved.\n MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105" +
+            string licenseText = "Copyright 2018-2021 MobiledgeX, Inc.All rights and licenses reserved.\n MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105" +
             "Licensed under the Apache License, Version 2.0 (the \"License\") \n you may not use this file except in compliance with the License.\n You may obtain a copy of the License at" +
             "\n \n  http://www.apache.org/licenses/LICENSE-2.0  \n  \n Unless required by applicable law or agreed to in writing, software \n distributed under the License is distributed on an \"AS IS- BASIS\" \n" +
             "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. \n See the License for the specific language governing permissions and\n limitations under the License.";
@@ -490,6 +493,29 @@ namespace MobiledgeX
             string id = EditorPrefs.GetString("mobiledgex-user", Guid.NewGuid().ToString());
             EditorPrefs.SetString("mobiledgex-user", id);
             return id;
+        }
+
+        static void DownloadFile(string fileUrl, string filePath)
+        {
+            using (WebClient wc = new WebClient())
+            {
+                wc.DownloadProgressChanged += wc_DownloadProgressChanged;
+                wc.DownloadFileAsync(new Uri(fileUrl), filePath);
+            }
+        }
+
+       static void wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        {
+            if (e.ProgressPercentage < 100)
+                EditorUtility.DisplayProgressBar("Downloading", "Download in progress ...", e.ProgressPercentage);
+            else
+            {
+                if (e.ProgressPercentage == 100)
+                {
+                    EditorUtility.ClearProgressBar();
+                    AssetDatabase.ImportPackage(Application.dataPath + "/EdgeMultiplay.unitypackage", true);
+                }
+            }  
         }
 
         #endregion

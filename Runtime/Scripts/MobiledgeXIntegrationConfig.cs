@@ -1,5 +1,5 @@
 /**
-* Copyright 2018-2020 MobiledgeX, Inc. All rights and licenses reserved.
+* Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
 * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,7 +57,7 @@ namespace MobiledgeX
         public void UseWifiOnly(bool useWifi)
         {
             matchingEngine.useOnlyWifi = useWifi;
-            Debug.Log("Setting useWifiOnly to " + useWifi);
+            Logger.Log("Setting useWifiOnly to " + useWifi);
         }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace MobiledgeX
         public void UseFindCloudletPerformanceMode(bool performanceMode)
         {
             mode = performanceMode ? FindCloudletMode.PERFORMANCE : FindCloudletMode.PROXIMITY;
-            Debug.Log("Setting FindCloudlet mode to " + mode);
+            Logger.Log("Setting FindCloudlet mode to " + mode);
         }
 
         /// <summary>
