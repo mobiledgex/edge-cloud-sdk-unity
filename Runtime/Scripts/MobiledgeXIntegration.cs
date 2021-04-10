@@ -16,6 +16,7 @@
 */
 
 using UnityEngine;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Net.WebSockets;
@@ -31,7 +32,7 @@ using DistributedMatchEngine; //MobiledgeX MatchingEngine
 */
 namespace MobiledgeX
 {
-    public partial class MobiledgeXIntegration
+    public partial class MobiledgeXIntegration : IDisposable
     {
         public static string sdkVersion { get; set; }
         
@@ -388,6 +389,14 @@ namespace MobiledgeX
             }
 
             return await matchingEngine.GetWebsocketConnection(latestFindCloudletReply, appPort, port, 5000, path);
+        }
+
+        public void Dispose() {
+            if (matchingEngine != null)
+            {
+                matchingEngine.Dispose();
+                matchingEngine = null;
+            }
         }
     }
 }
