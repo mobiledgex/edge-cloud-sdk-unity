@@ -27,14 +27,22 @@ namespace MobiledgeX
     [AddComponentMenu("MobiledgeX/LocationService")]
     public class LocationService : MonoBehaviour
     {
+        /// <summary>
+        /// Maximum waiting time for location services to start (in seconds)
+        /// if the value selected is zero or less, the default value will be used which is 20 seconds
+        /// </summary>
+        [Tooltip("Maximum waiting time for location services to start in seconds," +
+			" if the value selected is zero or less the default value will be used which is 20 seconds")]
+        public int maxWaitingTime = 20;
         public static bool locationPermissionRejected;
         void Awake()
         {
             StartCoroutine(LocationServiceFlow());
         }
 
-        public static IEnumerator InitalizeLocationService(int maxWait = 20, bool continuousLocationService = false)
+        public IEnumerator InitalizeLocationService(bool continuousLocationService = false)
         {
+            int  maxWait = maxWaitingTime > 0 ? maxWaitingTime : 20;
             // First, check if user has location service enabled
             if (!Input.location.isEnabledByUser)
             {
