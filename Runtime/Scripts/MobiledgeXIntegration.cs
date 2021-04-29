@@ -39,7 +39,7 @@ namespace MobiledgeX
         /// <summary>
         /// Scriptable Object Holding MobiledgeX Settings (OrgName, AppName, AppVers)
         /// </summary>
-        static MobiledgeXSettings settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
+        public static MobiledgeXSettings settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
 
         /// <summary>
         /// MatchingEngine objects
@@ -217,13 +217,13 @@ namespace MobiledgeX
             }
 
             // Distance? A negative value means no verification was done.
-            if (reply.gps_location_accuracy_km < 0f)
+            if (reply.gps_location_accuracy_km < 0)
             {
                 return false;
             }
 
             // A per app policy decision might be 0.5 km, or 25km, or 100km:
-            if (reply.gps_location_accuracy_km < 100f)
+            if (reply.gps_location_accuracy_km < 100)
             {
                 return true;
             }
