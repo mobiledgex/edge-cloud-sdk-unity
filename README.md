@@ -1,6 +1,6 @@
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/mobiledgex/edge-cloud-sdk-unity?style=plastic)
 <a href="https://twitter.com/intent/follow?screen_name=mobiledgex">
-<img src="https://img.shields.io/twitter/follow/mobiledgex?style=social" alt="follow on Twitter">
+<img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/mobiledgex?style=social">
 </a>
  <a href="https://discord.gg/k22WcfMFZ3">
 <img src="https://img.shields.io/discord/779074183551385620?logo=discord" alt="chat on Discord">
