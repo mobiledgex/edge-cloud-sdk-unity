@@ -28,10 +28,10 @@ namespace MobiledgeX
     public class LocationService : MonoBehaviour
     {
         /// <summary>
-        /// Maximum waiting time for location services from initializing to acquiring location info in seconds (After accepting Location Permissions)
+        /// After initializing location services, this is the maximum wait time (in seconds) to acquire location info
         /// if the value selected is zero or less the default value (20 seconds) will be used.
         /// </summary>
-        [Tooltip("Maximum waiting time for location services from initializing to acquiring location info in seconds (After accepting Location Permissions)," +
+        [Tooltip("After initializing location services, this is the maximum wait time (in seconds) to acquire location info" +
             "if the value selected is zero or less the default value (20 seconds) will be used.")]
         public int timeOut = 20;
 
@@ -41,7 +41,7 @@ namespace MobiledgeX
         /// </summary>
         public static IEnumerator EnsureLocation()
         {
-            if(!SystemInfo.supportsLocationService)
+            if (!SystemInfo.supportsLocationService)
             {
                 Logger.Log("Your Device doesn't support LocationService");
                 yield break;
@@ -80,12 +80,11 @@ namespace MobiledgeX
                     }
                     yield break;
                 }
-
             }
 
             if (Application.platform == RuntimePlatform.Android)
             {
-                if(Input.location.isEnabledByUser)
+                if (Input.location.isEnabledByUser)
                 {
                     Input.location.Start();
                     while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
