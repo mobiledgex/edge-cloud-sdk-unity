@@ -39,6 +39,7 @@ namespace MobiledgeX
         Vector2 scrollPos;
         GUIStyle headerStyle;
         GUIStyle labelStyle;
+        GUIStyle titleStyle;
         GUIStyle sdkVersionStyle;
         static MobiledgeXSettings settings;
         static bool editorPopUp;
@@ -46,12 +47,12 @@ namespace MobiledgeX
         /// <summary>
         /// The titles of the tabs in Mobiledgex window.
         /// </summary>
-        private readonly string[] tabTitles = { "Setup", "Documentation", "License" };
+        private readonly string[] tabTitles = { "Setup", "Events Config", "Documentation" };
 
         /// <summary>
         /// The currently selected tab in the Mobiledgex window.
         /// </summary>
-        private int currentTab;
+        private static int currentTab;
 
         /// <summary>
         /// Changing the background color
@@ -83,6 +84,15 @@ namespace MobiledgeX
         {
             MobiledgeXEditorWindow window = (MobiledgeXEditorWindow)EditorWindow.GetWindow(typeof(MobiledgeXEditorWindow), false, "MobiledgeX");
             window.Show();
+            currentTab = 0;
+        }
+        [MenuItem("MobiledgeX/Edge Events Config", false, 0)]
+        public static void ShowEdgeEventsConfig()
+        {
+            MobiledgeXEditorWindow window = (MobiledgeXEditorWindow)EditorWindow.GetWindow(typeof(MobiledgeXEditorWindow), false, "MobiledgeX");
+            window.Show();
+            currentTab = 1;
+
         }
 
         [MenuItem("MobiledgeX/Settings", false, 0)]
@@ -103,7 +113,7 @@ namespace MobiledgeX
         public static void ImportEdgeMultiplayExample()
         {
             DownloadFile("https://github.com/mobiledgex/edge-multiplay-unity-client/raw/main/EdgeMultiplay.unitypackage",
-                Path.Combine(Application.dataPath,"EdgeMultiplay.unitypackage"));
+                Path.Combine(Application.dataPath, "EdgeMultiplay.unitypackage"));
             Enhancement.EdgeMultiplayImported(getId());
         }
 
@@ -193,10 +203,10 @@ namespace MobiledgeX
                     SetupWindow();
                     break;
                 case 1:
-                    DocumentationWindow();
+                    EdgeEventsConfig();
                     break;
                 case 2:
-                    LicenseWindow();
+                    DocumentationWindow();
                     break;
             }
             GUILayout.Label(sdkVersion, sdkVersionStyle);
@@ -232,6 +242,11 @@ namespace MobiledgeX
             labelStyle.normal.textColor = Color.white;
             sdkVersionStyle = new GUIStyle(GUI.skin.label);
             sdkVersionStyle.alignment = TextAnchor.UpperRight;
+            titleStyle = new GUIStyle();
+            titleStyle.alignment = TextAnchor.MiddleCenter;
+            titleStyle.normal.textColor = Color.white;
+            titleStyle.fontStyle = FontStyle.Bold;
+
         }
         /// <summary>
         /// Draws MobiledgeX Logo.
@@ -307,18 +322,69 @@ namespace MobiledgeX
         }
 
         /// <summary>
-        /// Draw the License Window
+        /// EdgeEventsConfig Tab.
         /// </summary>
-        private void LicenseWindow()
+        private void EdgeEventsConfig()
         {
-            EditorGUILayout.BeginHorizontal();
-            string licenseText = "Copyright 2018-2021 MobiledgeX, Inc.All rights and licenses reserved.\n MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105" +
-            "Licensed under the Apache License, Version 2.0 (the \"License\") \n you may not use this file except in compliance with the License.\n You may obtain a copy of the License at" +
-            "\n \n  http://www.apache.org/licenses/LICENSE-2.0  \n  \n Unless required by applicable law or agreed to in writing, software \n distributed under the License is distributed on an \"AS IS- BASIS\" \n" +
-            "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. \n See the License for the specific language governing permissions and\n limitations under the License.";
-            GUILayout.TextArea(licenseText);
-            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.LabelField(new GUIContent("Edge Events Configuration"), titleStyle);
+
+            EditorGUILayout.Space();
+            EditorGUILayout.Space();
+
+            EditorGUILayout.LabelField(new GUIContent("Location Events Settings"), titleStyle);
+
+            settings.edgeEventsConfig.locationConfig.updatePattern =
+                (UpdatePattern)EditorGUILayout.EnumPopup(
+                    new GUIContent("Update Pattern", "UpdatePattern for sending client events " +
+                "\nOnStart will send one update when startEdgeEvents is called " +
+                "\nOnInterval will send updates at the specified interval " +
+                "\nOnTrigger the application is responsible for sending the events ")
+              , settings.edgeEventsConfig.locationConfig.updatePattern);
+
+            if (settings.edgeEventsConfig.locationConfig.updatePattern == UpdatePattern.OnInterval)
+            {
+                settings.edgeEventsConfig.locationConfig.updateIntervalSeconds =
+                    EditorGUILayout.IntField
+                    (new GUIContent("Update Interval(s)", "Update interval in seconds")
+                    , settings.edgeEventsConfig.locationConfig.updateIntervalSeconds);
+                settings.edgeEventsConfig.locationConfig.maxNumberOfUpdates =
+                    EditorGUILayout.IntField(
+                        new GUIContent("Max. Number of Updates",
+                    "Maximum number of updates through out the App lifetime." +
+                    " Set to -1 for updates to run till the EdgeEvents connection is closed")
+                    , settings.edgeEventsConfig.locationConfig.maxNumberOfUpdates);
+            }
+
+            EditorGUILayout.Space();
+            EditorGUILayout.Space();
+
+            EditorGUILayout.LabelField(new GUIContent("Latency Events Settings"), titleStyle);
+
+            settings.edgeEventsConfig.latencyConfig.updatePattern =
+                (UpdatePattern)EditorGUILayout.EnumPopup(
+                    new GUIContent("Update Pattern","UpdatePattern for sending client events " +
+                "\nOnStart will send one update when startEdgeEvents is called " +
+                "\nOnInterval will send updates at the specified interval " +
+                "\nOnTrigger the application is responsible for sending the events ")
+              , settings.edgeEventsConfig.latencyConfig.updatePattern);
+            if (settings.edgeEventsConfig.latencyConfig.updatePattern == UpdatePattern.OnInterval)
+            {
+                settings.edgeEventsConfig.latencyConfig.updateIntervalSeconds =
+                    EditorGUILayout.IntField(
+                        new GUIContent("Update Interval (s)", "Update interval in seconds")
+                        , settings.edgeEventsConfig.latencyConfig.updateIntervalSeconds);
+                settings.edgeEventsConfig.latencyConfig.maxNumberOfUpdates =
+                  EditorGUILayout.IntField(
+                      new GUIContent("Max. Number of Updates",
+                  "Maximum number of updates through out the App lifetime." +
+                  " Set to -1 for updates to run till the EdgeEvents connection is closed")
+                  , settings.edgeEventsConfig.latencyConfig.maxNumberOfUpdates);
+            }
+
+            settings.edgeEventsConfig.latencyTestPort = EditorGUILayout.IntField(new GUIContent("Latency Test Port", "Port information for latency testing, use 0 if you don't care which port is used."), settings.edgeEventsConfig.latencyTestPort);
+            settings.edgeEventsConfig.latencyThresholdTriggerMs = EditorGUILayout.DoubleField(new GUIContent("Latency Threshold (ms)", "Latency threshold in ms when new FindCloudlet is triggered if eventLatencyProcessed is in newFindCloudletEvents"), settings.edgeEventsConfig.latencyThresholdTriggerMs);
         }
+
         /// <summary>
         /// Draw the Documentation Window
         /// </summary>
@@ -341,7 +407,7 @@ namespace MobiledgeX
             GUILayout.Label("Reporting Issues and Bugs", labelStyle);
             if (GUILayout.Button("Report a Bug"))
             {
-                Application.OpenURL("https://github.com/mobiledgex/edge-cloud-sdk-unity/issues/new?body=Reported%20on%20Unity"+Application.unityVersion+"%0DSDK%20"+sdkVersion);
+                Application.OpenURL("https://github.com/mobiledgex/edge-cloud-sdk-unity/issues/new?body=Reported%20on%20Unity" + Application.unityVersion + "%0DSDK%20" + sdkVersion);
             }
             EditorGUILayout.Space();
             GUILayout.Label("Terms of Use", labelStyle);
@@ -354,6 +420,12 @@ namespace MobiledgeX
             if (GUILayout.Button("MobiledgeX Privacy Policy"))
             {
                 Application.OpenURL("https://www.mobiledgex.com/privacy-policy");
+            }
+            EditorGUILayout.Space();
+            GUILayout.Label("License", labelStyle);
+            if (GUILayout.Button("MobiledgeX SDK License"))
+            {
+                Application.OpenURL("https://github.com/mobiledgex/edge-cloud-sdk-unity/blob/master/LICENSE.md");
             }
             EditorGUILayout.EndVertical();
         }
@@ -504,7 +576,7 @@ namespace MobiledgeX
             }
         }
 
-       static void wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        static void wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
             if (e.ProgressPercentage < 100)
                 EditorUtility.DisplayProgressBar("Downloading", "Download in progress ...", e.ProgressPercentage);
@@ -515,7 +587,7 @@ namespace MobiledgeX
                     EditorUtility.ClearProgressBar();
                     AssetDatabase.ImportPackage(Application.dataPath + "/EdgeMultiplay.unitypackage", true);
                 }
-            }  
+            }
         }
 
         #endregion
