@@ -125,6 +125,9 @@ namespace MobiledgeX
 
             melMessaging = new MelMessaging(appName);
             matchingEngine.SetMelMessaging(melMessaging);
+#if UNITY_EDITOR
+            matchingEngine.EnableEdgeEvents = false;
+#endif
         }
         
         /// <summary>
@@ -144,6 +147,9 @@ namespace MobiledgeX
 
             melMessaging = new MelMessaging(appName);
             matchingEngine.SetMelMessaging(melMessaging);
+#if UNITY_EDITOR
+            matchingEngine.EnableEdgeEvents = false;
+#endif
         }
 
         /// <summary>

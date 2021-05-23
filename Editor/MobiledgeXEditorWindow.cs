@@ -428,7 +428,7 @@ namespace MobiledgeX
             string unityPluginsFolderPath = Path.Combine(@Application.dataPath, @"Plugins");
             string resourcesFolderPath = Path.Combine(@Application.dataPath, @"Resources");
             string mobiledgeXFolderPath = Path.Combine(@unityPluginsFolderPath, @"MobiledgeX");
-            string sdkPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Runtime/Plugins/MatchingEngineSDKRestLibrary.dll");
+            string sdkPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Runtime/Plugins/MobiledgeX.MatchingEngineGrpc.dll");
             string iosPluginPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Runtime/Plugins/iOS/PlatformIntegration.m");
             string linkXMLPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/link.xml");
             string settingPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Resources/MobiledgeXSettings.asset");
@@ -449,7 +449,7 @@ namespace MobiledgeX
                     AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "Resources");
                 }
                 MoveFile(@settingPath, Path.Combine(@mobiledgeXFolderPath, @"Resources/MobiledgeXSettings.asset"), true);
-                MoveFile(@sdkPath, Path.Combine(@mobiledgeXFolderPath, @"MatchingEngineSDKRestLibrary.dll"), true);
+                MoveFile(@sdkPath, Path.Combine(@mobiledgeXFolderPath, @"MobiledgeX.MatchingEngineGrpc.dll"), true);
                 if (!Directory.Exists(Path.Combine(@mobiledgeXFolderPath, @"iOS")))
                 {
                     AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "iOS");
