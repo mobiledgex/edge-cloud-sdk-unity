@@ -72,5 +72,9 @@ using DistributedMatchEngine;
             }
         }
 
+        private void OnDestroy()
+        {
+            mxi.Dispose();
+        }
     }
 

@@ -55,4 +55,9 @@ public class ExampleUDP : MonoBehaviour
             print("Received UDP Message : " + udpReceivedMsg);
         }
     }
+
+    private void OnDestroy()
+    {
+        mxi.Dispose();
+    }
 }
