@@ -44,7 +44,7 @@ public class ExampleRest : MonoBehaviour
         {
             await mxi.RegisterAndFindCloudlet();
         }
-        //RegisterClientException is thrown if your app is not found or if you carrier is not registered on MobiledgeX yet
+        //RegisterClientException is thrown if your app is not found or if your carrier is not registered on MobiledgeX yet
         catch (RegisterClientException rce)
         {
             Debug.Log("RegisterClientException: " + rce.Message + "Inner Exception: " + rce.InnerException);

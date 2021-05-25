@@ -40,7 +40,7 @@ namespace MobiledgeX
 
   public class CarrierInfoClass : CarrierInfo
   {
-
+#pragma warning disable 0649
 #if UNITY_ANDROID // PC android target builds to through here as well.
 
     int sdkVersion;
