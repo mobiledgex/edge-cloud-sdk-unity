@@ -117,7 +117,6 @@ namespace MobiledgeX
         {
             while (run)
             {
-                Logger.Log("UDP Awaiting Receive...");
                 UdpReceiveResult result = await udpClient.ReceiveAsync();
                 if (result != null && result.Buffer.Length > 0)
                 {
