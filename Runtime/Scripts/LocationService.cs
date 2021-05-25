@@ -27,6 +27,8 @@ namespace MobiledgeX
     [AddComponentMenu("MobiledgeX/LocationService")]
     public class LocationService : MonoBehaviour
     {
+        private static Exception initLocationServiceException;
+
         /// <summary>
         /// After initializing location services, this is the maximum wait time (in seconds) to acquire location info
         /// if the value selected is zero or less the default value (20 seconds) will be used.
@@ -51,7 +53,6 @@ namespace MobiledgeX
             Logger.Log("LocationService is not supported in UNITY_EDITOR");
             yield break;
 #else
-
             int timeOutValue = FindObjectOfType<LocationService>().timeOut;
             int maxWait = timeOutValue > 0 ? timeOutValue : 20;
             if (Application.platform == RuntimePlatform.IPhonePlayer)
@@ -69,6 +70,7 @@ namespace MobiledgeX
                 if (maxWait < 1)
                 {
                     Logger.Log("Initializing Location Service Timed Out");
+                    initLocationServiceException = new LocationException("Initializing Location Service Timed Out");
                     yield break;//Exception will be thrown from RetrieveLocation()
                 }
                 else
@@ -99,6 +101,7 @@ namespace MobiledgeX
                     {
                         Logger.Log("Initializing Location Service Timed Out");
                         Input.location.Stop();
+                        initLocationServiceException = new LocationException("Initializing Location Service Timed Out");
                         yield break;//Exception will be thrown from RetrieveLocation()
                     }
                     if (Input.location.status == LocationServiceStatus.Running)
@@ -116,6 +119,7 @@ namespace MobiledgeX
                     if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
                     {
                         Logger.Log("User rejected location permission.");
+                        initLocationServiceException = new LocationException("User rejected location permission");
                         yield break;//Exception will be thrown from RetrieveLocation()
                     }
                     else
@@ -133,6 +137,7 @@ namespace MobiledgeX
                         {
                             Logger.Log("Initializing Location Service Timed Out");
                             Input.location.Stop();
+                            initLocationServiceException = new LocationException("Initializing Location Service Timed Out");
                             yield break;//Exception will be thrown from RetrieveLocation()
                         }
                         else
@@ -156,7 +161,14 @@ namespace MobiledgeX
             LocationInfo locationInfo = Input.location.lastData;
             if (locationInfo.Equals(default(LocationInfo)) || !Input.location.isEnabledByUser || Input.location.status == LocationServiceStatus.Failed)
             {
-                throw new LocationException("MobiledgeX: Location Service disabled by user.");
+                if(initLocationServiceException != null)
+                {
+                    throw initLocationServiceException;
+                }
+                else
+                {
+                    throw new LocationException("MobiledgeX: Location Service disabled by user.");
+                }
             }
             Logger.Log("Location Info: [" + locationInfo.longitude + "," + locationInfo.latitude + "]");
             return ConvertUnityLocationToDMELoc(locationInfo);
