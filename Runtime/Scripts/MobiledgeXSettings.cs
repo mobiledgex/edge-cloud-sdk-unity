@@ -29,5 +29,6 @@ namespace MobiledgeX
         public string authPublicKey;
         public string region;
         public Logger.LogType logType = Logger.LogType.ErrorsAndWarnings;
+        public EdgeEventsConfig edgeEventsConfig;
     }
 }
