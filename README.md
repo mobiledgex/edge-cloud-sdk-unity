@@ -5,7 +5,6 @@
  <a href="https://discord.gg/k22WcfMFZ3">
 <img src="https://img.shields.io/discord/779074183551385620?logo=discord" alt="chat on Discord">
 </a>
-
 # Unity SDK (gRPC)
 
 This document explains how to download the Matching Engine Unity SDK and integrate it into your applications
