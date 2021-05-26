@@ -15,7 +15,18 @@ MonoBehaviour:
   sdkVersion:
   orgName: 
   appName:
-  appVers:
+  appVers: 
   authPublicKey: 
-  region:
-  logType:
+  region: Nearest
+  logType: 1
+  edgeEventsConfig:
+    latencyThresholdTriggerMs: 120
+    latencyTestPort: 0
+    latencyConfig:
+      updatePattern: 0
+      updateIntervalSeconds: 30
+      maxNumberOfUpdates: 0
+    locationConfig:
+      updatePattern: 0
+      updateIntervalSeconds: 30
+      maxNumberOfUpdates: 0
