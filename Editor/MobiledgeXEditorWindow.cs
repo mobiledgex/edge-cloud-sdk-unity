@@ -47,7 +47,7 @@ namespace MobiledgeX
         /// <summary>
         /// The titles of the tabs in Mobiledgex window.
         /// </summary>
-        private readonly string[] tabTitles = { "Setup", "Events Config", "Documentation" };
+        private readonly string[] tabTitles = { "Setup", " EdgeEvents Config", "Documentation" };
 
         /// <summary>
         /// The currently selected tab in the Mobiledgex window.
@@ -92,7 +92,6 @@ namespace MobiledgeX
             MobiledgeXEditorWindow window = (MobiledgeXEditorWindow)EditorWindow.GetWindow(typeof(MobiledgeXEditorWindow), false, "MobiledgeX");
             window.Show();
             currentTab = 1;
-
         }
 
         [MenuItem("MobiledgeX/Settings", false, 0)]
@@ -246,7 +245,6 @@ namespace MobiledgeX
             titleStyle.alignment = TextAnchor.MiddleCenter;
             titleStyle.normal.textColor = Color.white;
             titleStyle.fontStyle = FontStyle.Bold;
-
         }
         /// <summary>
         /// Draws MobiledgeX Logo.
@@ -327,12 +325,9 @@ namespace MobiledgeX
         private void EdgeEventsConfig()
         {
             EditorGUILayout.LabelField(new GUIContent("Edge Events Configuration"), titleStyle);
-
             EditorGUILayout.Space();
             EditorGUILayout.Space();
-
             EditorGUILayout.LabelField(new GUIContent("Location Events Settings"), titleStyle);
-
             settings.edgeEventsConfig.locationConfig.updatePattern =
                 (UpdatePattern)EditorGUILayout.EnumPopup(
                     new GUIContent("Update Pattern", "UpdatePattern for sending client events " +
@@ -351,15 +346,12 @@ namespace MobiledgeX
                     EditorGUILayout.IntField(
                         new GUIContent("Max. Number of Updates",
                     "Maximum number of updates through out the App lifetime." +
-                    " Set to -1 for updates to run till the EdgeEvents connection is closed")
+                    " Set to 0 for updates to run till the EdgeEvents connection is closed")
                     , settings.edgeEventsConfig.locationConfig.maxNumberOfUpdates);
             }
-
             EditorGUILayout.Space();
             EditorGUILayout.Space();
-
             EditorGUILayout.LabelField(new GUIContent("Latency Events Settings"), titleStyle);
-
             settings.edgeEventsConfig.latencyConfig.updatePattern =
                 (UpdatePattern)EditorGUILayout.EnumPopup(
                     new GUIContent("Update Pattern","UpdatePattern for sending client events " +
@@ -380,7 +372,6 @@ namespace MobiledgeX
                   " Set to -1 for updates to run till the EdgeEvents connection is closed")
                   , settings.edgeEventsConfig.latencyConfig.maxNumberOfUpdates);
             }
-
             settings.edgeEventsConfig.latencyTestPort = EditorGUILayout.IntField(new GUIContent("Latency Test Port", "Port information for latency testing, use 0 if you don't care which port is used."), settings.edgeEventsConfig.latencyTestPort);
             settings.edgeEventsConfig.latencyThresholdTriggerMs = EditorGUILayout.DoubleField(new GUIContent("Latency Threshold (ms)", "Latency threshold in ms when new FindCloudlet is triggered if eventLatencyProcessed is in newFindCloudletEvents"), settings.edgeEventsConfig.latencyThresholdTriggerMs);
         }
