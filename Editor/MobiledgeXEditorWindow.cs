@@ -26,6 +26,7 @@ using UnityEngine;
 using DistributedMatchEngine;
 using UnityEditor.PackageManager;
 using EnhancementManager;
+using UnityEditor.PackageManager.Requests;
 
 namespace MobiledgeX
 {
@@ -124,7 +125,7 @@ namespace MobiledgeX
         [MenuItem("MobiledgeX/Remove MobiledgeX", false, 40)]
         public static void RemoveMobiledgeX()
         {
-            if (EditorUtility.DisplayDialog("MobiledgeX", "Choosing Remove will delete MobiledgeX package and close Unity Editor", "Remove", "Cancel"))
+            if (EditorUtility.DisplayDialog("MobiledgeX", "Choosing Remove will delete MobiledgeX package and restart the Unity Editor", "Remove", "Cancel"))
             {
                 Enhancement.SDKRemoved(getId());
                 if (Directory.Exists(Path.Combine("Assets", "Plugins/MobiledgeX")))
@@ -132,10 +133,23 @@ namespace MobiledgeX
                     Directory.Delete(Path.Combine("Assets", "Plugins/MobiledgeX"), true);
                     File.Delete(Path.Combine("Assets", "Plugins/MobiledgeX") + ".meta");
                 }
+                if (File.Exists("Assets/Editor/GrpcPostBuild.cs"))
+                {
+                    File.Delete(Path.Combine("Assets", "Editor/GrpcPostBuild.cs"));
+                    File.Delete(Path.Combine("Assets", "Editor/GrpcPostBuild.cs") + ".meta");
+                }
                 EditorPrefs.DeleteKey("mobiledgex-user");
                 AssetDatabase.Refresh();
-                Client.Remove("com.mobiledgex.sdk");
-                EditorApplication.Exit(0);
+                RemoveRequest removeRequest = Client.Remove("com.mobiledgex.sdk");
+                while (removeRequest.Status != StatusCode.Success)
+                {
+                    if (removeRequest.Status == StatusCode.Failure)
+                    {
+                        Debug.LogError("Error Removing MobiledgeX Package, Please remove the package using the package manager.");
+                        break;
+                    }
+                }
+                EditorApplication.OpenProject(Directory.GetCurrentDirectory());
             }
         }
 
@@ -428,11 +442,12 @@ namespace MobiledgeX
             string unityPluginsFolderPath = Path.Combine(@Application.dataPath, @"Plugins");
             string resourcesFolderPath = Path.Combine(@Application.dataPath, @"Resources");
             string mobiledgeXFolderPath = Path.Combine(@unityPluginsFolderPath, @"MobiledgeX");
-            string sdkPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Runtime/Plugins/MatchingEngineSDKRestLibrary.dll");
+            string sdkPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Runtime/Plugins/MobiledgeX.MatchingEngineGrpc.dll");
             string iosPluginPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Runtime/Plugins/iOS/PlatformIntegration.m");
             string linkXMLPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/link.xml");
             string settingPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Resources/MobiledgeXSettings.asset");
             string melAARPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Runtime/Plugins/Android/mel.aar");
+            string postBuildiOSPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Runtime/Scripts/GrpcPostBuild.cs");
             try
             {
                 if (!Directory.Exists(@unityPluginsFolderPath))
@@ -449,7 +464,7 @@ namespace MobiledgeX
                     AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "Resources");
                 }
                 MoveFile(@settingPath, Path.Combine(@mobiledgeXFolderPath, @"Resources/MobiledgeXSettings.asset"), true);
-                MoveFile(@sdkPath, Path.Combine(@mobiledgeXFolderPath, @"MatchingEngineSDKRestLibrary.dll"), true);
+                MoveFile(@sdkPath, Path.Combine(@mobiledgeXFolderPath, @"MobiledgeX.MatchingEngineGrpc.dll"), true);
                 if (!Directory.Exists(Path.Combine(@mobiledgeXFolderPath, @"iOS")))
                 {
                     AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "iOS");
@@ -460,6 +475,12 @@ namespace MobiledgeX
                     AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "Android");
                 }
                 MoveFile(melAARPath, Path.Combine(@mobiledgeXFolderPath, @"Android/mel.aar"), true);
+
+                if (!Directory.Exists(Path.Combine(Application.dataPath, "Editor")))
+                {
+                    AssetDatabase.CreateFolder("Assets", "Editor");
+                }
+                MoveFile(postBuildiOSPath, "Assets/Editor/GrpcPostBuild.cs", true);
                 AssetDatabase.Refresh();
             }
             catch (Exception e)
