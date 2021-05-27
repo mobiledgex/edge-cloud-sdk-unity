@@ -32,9 +32,9 @@ namespace MobiledgeX
         public ClientEventsConfig locationConfig;
 
         /// <summary>
-        /// List of triggers that application that will trigger a new find cloudlet.
+        /// List of triggers that will trigger a new find cloudlet.
         /// </summary>
-        [Tooltip("List of triggers that application that will trigger a new find cloudlet.")]
+        [Tooltip("List of triggers that will trigger a new find cloudlet.")]
         public List<FindCloudletEventTrigger> newFindCloudletEventTriggers;
     }
 
@@ -66,7 +66,7 @@ namespace MobiledgeX
         /// </summary>
         [Tooltip("Maximum number of updates through out the App lifetime." +
             "\nWorks only if the UpdatePattern is set to OnInterval" +
-            "\nSet to -1 for updates to run till the EdgeEvents connection is closed")]
+            "\nSet to 0 for updates to run till the EdgeEvents connection is closed")]
         public int maxNumberOfUpdates;
     }
 
