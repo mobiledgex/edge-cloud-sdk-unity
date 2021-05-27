@@ -388,6 +388,10 @@ namespace MobiledgeX
             }
             settings.edgeEventsConfig.latencyTestPort = EditorGUILayout.IntField(new GUIContent("Latency Test Port", "Port information for latency testing, use 0 if you don't care which port is used."), settings.edgeEventsConfig.latencyTestPort);
             settings.edgeEventsConfig.latencyThresholdTriggerMs = EditorGUILayout.DoubleField(new GUIContent("Latency Threshold (ms)", "Latency threshold in ms when new FindCloudlet is triggered if eventLatencyProcessed is in newFindCloudletEvents"), settings.edgeEventsConfig.latencyThresholdTriggerMs);
+            if(GUILayout.Button("Setup FindCloudlet Triggers"))
+            {
+                ShowSettings();
+            }
         }
 
         /// <summary>

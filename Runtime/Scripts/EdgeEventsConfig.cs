@@ -34,6 +34,7 @@ namespace MobiledgeX
         /// <summary>
         /// List of triggers that application that will trigger a new find cloudlet.
         /// </summary>
+        [Tooltip("List of triggers that application that will trigger a new find cloudlet.")]
         public List<FindCloudletEventTrigger> newFindCloudletEventTriggers;
     }
 
