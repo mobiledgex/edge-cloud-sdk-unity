@@ -25,7 +25,9 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System;
 using System.Collections.Generic;
+using static DistributedMatchEngine.ServerEdgeEvent.Types;
 
+[RequireComponent(typeof(PersistentConnection))]
 [RequireComponent(typeof(MobiledgeX.LocationService))]
 public class ExampleRest : MonoBehaviour
 {
@@ -39,7 +41,8 @@ public class ExampleRest : MonoBehaviour
 
     async void GetEdgeConnection()
     {
-        mxi = new MobiledgeXIntegration();
+        mxi = new MobiledgeXIntegration(FindObjectOfType<PersistentConnection>());
+        mxi.HandleConnectionUpgrade += UpgradeConnection;
         try
         {
             await mxi.RegisterAndFindCloudlet();
@@ -102,5 +105,12 @@ public class ExampleRest : MonoBehaviour
     private void OnDestroy()
     {
         mxi.Dispose();
+    }
+    async void UpgradeConnection(FindCloudletEventTrigger trigger, ServerEventType eventType)
+    {
+        print("Connection upgrade is triggered by " + trigger + " , Event received " + eventType);
+        await mxi.FindCloudlet();
+        string url = mxi.GetUrl("ws");
+        print("New Url: " + url);
     }
 }

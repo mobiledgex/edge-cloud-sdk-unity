@@ -1,5 +1,8 @@
 ﻿using System;
 using UnityEngine;
+using DistributedMatchEngine;
+using System.Collections.Generic;
+
 namespace MobiledgeX
 {
     [Serializable]
@@ -27,7 +30,11 @@ namespace MobiledgeX
         /// </summary>
         [Tooltip("Config for location updates")]
         public ClientEventsConfig locationConfig;
-        //fixme newFindCloudletEventTriggers
+
+        /// <summary>
+        /// List of triggers that application that will trigger a new find cloudlet.
+        /// </summary>
+        public List<FindCloudletEventTrigger> newFindCloudletEventTriggers;
     }
 
     [Serializable]
@@ -70,5 +77,17 @@ namespace MobiledgeX
         OnInterval,
         OnTrigger,
         OnStart
+    }
+    /// <summary>
+    /// Triggers that will trigger a new find cloudlet.
+    /// </summary>
+    [Serializable]
+    public enum FindCloudletEventTrigger
+    {
+        AppInstHealthChanged,
+        CloudletStateChanged,
+        CloudletMaintenanceStateChanged,
+        LatencyTooHigh,
+        CloserCloudlet 
     }
 }
