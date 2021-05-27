@@ -241,6 +241,10 @@ namespace MobiledgeX
             {
                latestAppPortList[porti++] = aport;
             }
+            if (matchingEngine.EnableEdgeEvents)
+            {
+                persistentConnection.startStreamingEvents(this);
+            }
             return reply.Status == FindCloudletReply.Types.FindStatus.FindFound;
         }
 
