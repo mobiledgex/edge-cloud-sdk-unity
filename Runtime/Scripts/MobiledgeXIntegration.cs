@@ -16,6 +16,7 @@
 */
 
 using UnityEngine;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Net.WebSockets;
@@ -31,14 +32,14 @@ using DistributedMatchEngine; //MobiledgeX MatchingEngine
 */
 namespace MobiledgeX
 {
-    public partial class MobiledgeXIntegration
+    public partial class MobiledgeXIntegration : IDisposable
     {
         public static string sdkVersion { get; set; }
         
         /// <summary>
         /// Scriptable Object Holding MobiledgeX Settings (OrgName, AppName, AppVers)
         /// </summary>
-        static MobiledgeXSettings settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
+        public static MobiledgeXSettings settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
 
         /// <summary>
         /// MatchingEngine objects
@@ -216,13 +217,13 @@ namespace MobiledgeX
             }
 
             // Distance? A negative value means no verification was done.
-            if (reply.gps_location_accuracy_km < 0f)
+            if (reply.gps_location_accuracy_km < 0)
             {
                 return false;
             }
 
             // A per app policy decision might be 0.5 km, or 25km, or 100km:
-            if (reply.gps_location_accuracy_km < 100f)
+            if (reply.gps_location_accuracy_km < 100)
             {
                 return true;
             }
@@ -388,6 +389,14 @@ namespace MobiledgeX
             }
 
             return await matchingEngine.GetWebsocketConnection(latestFindCloudletReply, appPort, port, 5000, path);
+        }
+
+        public void Dispose() {
+            if (matchingEngine != null)
+            {
+                matchingEngine.Dispose();
+                matchingEngine = null;
+            }
         }
     }
 }

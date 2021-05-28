@@ -25,6 +25,7 @@ using UnityEditor;
 using UnityEngine;
 using DistributedMatchEngine;
 using UnityEditor.PackageManager;
+using UnityEditor.PackageManager.Requests;
 using EnhancementManager;
 
 namespace MobiledgeX
@@ -124,7 +125,7 @@ namespace MobiledgeX
         [MenuItem("MobiledgeX/Remove MobiledgeX", false, 40)]
         public static void RemoveMobiledgeX()
         {
-            if (EditorUtility.DisplayDialog("MobiledgeX", "Choosing Remove will delete MobiledgeX package and close Unity Editor", "Remove", "Cancel"))
+            if (EditorUtility.DisplayDialog("MobiledgeX", "Choosing Remove will delete MobiledgeX package and restart the Unity Editor", "Remove", "Cancel"))
             {
                 Enhancement.SDKRemoved(getId());
                 if (Directory.Exists(Path.Combine("Assets", "Plugins/MobiledgeX")))
@@ -134,8 +135,16 @@ namespace MobiledgeX
                 }
                 EditorPrefs.DeleteKey("mobiledgex-user");
                 AssetDatabase.Refresh();
-                Client.Remove("com.mobiledgex.sdk");
-                EditorApplication.Exit(0);
+                RemoveRequest removeRequest = Client.Remove("com.mobiledgex.sdk");
+                while (removeRequest.Status != StatusCode.Success)
+                {
+                    if (removeRequest.Status == StatusCode.Failure)
+                    {
+                        Debug.LogError("Error Removing MobiledgeX Package, Please remove the package using the package manager.");
+                        break;
+                    }
+                }
+                EditorApplication.OpenProject(Directory.GetCurrentDirectory());
             }
         }
 
