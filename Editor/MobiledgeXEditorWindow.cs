@@ -510,6 +510,7 @@ namespace MobiledgeX
             string linkXMLPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/link.xml");
             string settingPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Resources/MobiledgeXSettings.asset");
             string melAARPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Runtime/Plugins/Android/mel.aar");
+            string androidManifestPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Runtime/Plugins/Android/AndroidManifest.xml.DISABLED");
             string postBuildiOSPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Runtime/Scripts/GrpcPostBuild.cs");
             try
             {
@@ -538,6 +539,7 @@ namespace MobiledgeX
                     AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "Android");
                 }
                 MoveFile(melAARPath, Path.Combine(@mobiledgeXFolderPath, @"Android/mel.aar"), true);
+                MoveFile(androidManifestPath, Path.Combine(@mobiledgeXFolderPath, @"Android/AndroidManifest.xml.DISABLED"), true);
 
                 if (!Directory.Exists(Path.Combine(Application.dataPath, "Editor")))
                 {
