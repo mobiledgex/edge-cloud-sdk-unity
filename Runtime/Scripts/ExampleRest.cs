@@ -26,6 +26,7 @@ using System.Net.Http;
 using System;
 using System.Collections.Generic;
 
+[RequireComponent(typeof(PersistentConnection))]
 [RequireComponent(typeof(MobiledgeX.LocationService))]
 public class ExampleRest : MonoBehaviour
 {
@@ -34,12 +35,15 @@ public class ExampleRest : MonoBehaviour
     IEnumerator Start()
     {
         yield return StartCoroutine(MobiledgeX.LocationService.EnsureLocation());
+
         GetEdgeConnection();
     }
 
     async void GetEdgeConnection()
     {
-        mxi = new MobiledgeXIntegration();
+
+        mxi = new MobiledgeXIntegration(FindObjectOfType<PersistentConnection>());
+        mxi.NewFindCloudletHandler += HandleFindCloudlet;
         try
         {
             await mxi.RegisterAndFindCloudlet();
@@ -73,6 +77,11 @@ public class ExampleRest : MonoBehaviour
         //await RestExampleHttpClient(url); // You can instead use HttpClient
     }
 
+    private void HandleFindCloudlet(EdgeEventsStatus status, FindCloudletEvent fcEvent)
+    {
+        throw new NotImplementedException();
+    }
+
     IEnumerator RestExample(string url)
     {
         UnityWebRequest www = UnityWebRequest.Get(url);
@@ -101,6 +110,7 @@ public class ExampleRest : MonoBehaviour
 
     private void OnDestroy()
     {
-        mxi.Dispose();
+        mxi.NewFindCloudletHandler -= HandleFindCloudlet;
+        mxi.matchingEngine.Dispose();
     }
 }

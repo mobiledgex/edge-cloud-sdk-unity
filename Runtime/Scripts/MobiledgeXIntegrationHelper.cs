@@ -241,6 +241,10 @@ namespace MobiledgeX
             {
                latestAppPortList[porti++] = aport;
             }
+            if (matchingEngine.EnableEdgeEvents)
+            {
+                persistentConnection.startStreamingEvents(this);
+            }
             return reply.Status == FindCloudletReply.Types.FindStatus.FindFound;
         }
 
@@ -328,21 +332,6 @@ namespace MobiledgeX
             }
         }
 #endif
-
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        public async Task<Dictionary<string, string>> GetDeviceInfo()
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-        {
-            var deviceInfo = matchingEngine.deviceInfo.GetDeviceInfo();
-#if UNITY_IOS
-            if (deviceInfo == null || deviceInfo.Count == 0) {
-                return new Dictionary<string, string>();
-            }
-            UpdateLocationFromDevice();
-            deviceInfo["NetworkCountryIso"] = await carrierInfoClass.ConvertGPSToISOCountryCode(location.Longitude, location.Latitude);
-#endif
-            return deviceInfo;
-        }
 
         /// <summary>
         /// Checks whether the default netowrk data path Edge is Enabled on the device or not, Edge requires connections to run over cellular interface.

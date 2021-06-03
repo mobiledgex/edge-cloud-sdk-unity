@@ -55,7 +55,7 @@ namespace MobiledgeX
         [TestCase("MobiledgeX-Samples", "sdktest", "9.0")]
         public void RegisterClient(string orgName, string appName, string appVers)
         {
-            MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
+            MobiledgeXIntegration mxi = new MobiledgeXIntegration(null, new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
             mxi.appName = appName;
             mxi.appVers = appVers;
             mxi.orgName = orgName;
@@ -70,7 +70,7 @@ namespace MobiledgeX
         [TestCase("MobiledgeX-Samples", "sdktest", "9.0")]
         public void FindCloudlet(string orgName, string appName, string appVers)
         {
-            MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
+            MobiledgeXIntegration mxi = new MobiledgeXIntegration(null, new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
             mxi.appName = appName;
             mxi.appVers = appVers;
             mxi.orgName = orgName;
@@ -91,7 +91,7 @@ namespace MobiledgeX
         [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "udp", 2015)]
         public void GetUrl(string orgName, string appName, string appVers, string proto, int port)
         {
-            MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
+            MobiledgeXIntegration mxi = new MobiledgeXIntegration(null, new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
             mxi.appName = appName;
             mxi.appVers = appVers;
             mxi.orgName = orgName;
@@ -112,7 +112,7 @@ namespace MobiledgeX
         [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "udp", 2015)]
         public void GetHost(string orgName, string appName, string appVers, string proto, int port)
         {
-            MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
+            MobiledgeXIntegration mxi = new MobiledgeXIntegration(null, new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
             mxi.appName = appName;
             mxi.appVers = appVers;
             mxi.orgName = orgName;
@@ -128,7 +128,7 @@ namespace MobiledgeX
         [TestCase("WrongCredentials", "WrongAppName", "WrongAppVersion")]
         public void RegisterClientFaliure(string orgName, string appName, string appVers)
         {
-            MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
+            MobiledgeXIntegration mxi = new MobiledgeXIntegration(null, new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
             mxi.appName = appName;
             mxi.appVers = appVers;
             mxi.orgName = orgName;
@@ -159,7 +159,7 @@ namespace MobiledgeX
         [TestCase("MobiledgeX-Samples", "sdktest", "9.0", 104.1954, 35.8617)]
         public void FindCloudletFaliure(string orgName, string appName, string appVers, double latitude, double longitude)
         {
-            MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
+            MobiledgeXIntegration mxi = new MobiledgeXIntegration(null, new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
             mxi.appName = appName;
             mxi.appVers = appVers;
             mxi.orgName = orgName;
@@ -193,7 +193,7 @@ namespace MobiledgeX
         [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "ws", 3765, 20000)]
         public void WebSocketTest(string orgName, string appName, string appVers, string proto, int port, int timeOutMs)
         {
-            MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
+            MobiledgeXIntegration mxi = new MobiledgeXIntegration(null, new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
             mxi.appName = appName;
             mxi.appVers = appVers;
             mxi.orgName = orgName;
@@ -215,7 +215,7 @@ namespace MobiledgeX
         [TestCase("MobiledgeX-Samples", "sdktest", "9.0", 30000)]
         public void UDPTest(string orgName, string appName, string appVers, int timeOutMs)
         {
-            MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
+            MobiledgeXIntegration mxi = new MobiledgeXIntegration(null, new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
             mxi.appName = appName;
             mxi.appVers = appVers;
             mxi.orgName = orgName;
