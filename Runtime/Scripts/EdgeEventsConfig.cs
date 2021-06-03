@@ -24,12 +24,12 @@ namespace MobiledgeX
         /// Config for latency updates
         /// </summary>
         [Tooltip("Config for latency updates")]
-        public ClientEventsConfig latencyConfig;
+        public UpdateConfig latencyConfig;
         /// <summary>
         /// Config for location updates
         /// </summary>
         [Tooltip("Config for location updates")]
-        public ClientEventsConfig locationConfig;
+        public UpdateConfig locationConfig;
 
         /// <summary>
         /// List of triggers that will trigger a new find cloudlet.
@@ -39,17 +39,17 @@ namespace MobiledgeX
     }
 
     [Serializable]
-    public struct ClientEventsConfig
+    public struct UpdateConfig
     {
         /// <summary>
         /// UpdatePattern for sending client events
         /// <para><b>OnInterval</b> update every updateInterval seconds </para>
-        /// <para><b>OnStart</b> only update once the connections starts</para>
+        /// <para><b>OnStart</b> only update once the connection starts</para>
         /// <para><b>OnTrigger</b> the application is responsible for sending the events </para>
         /// </summary>
         [Tooltip(" UpdatePattern for sending client events" +
             "\nOnInterval: update every updateInterval seconds" +
-            "\nOnStart: only update once the connections starts" +
+            "\nOnStart: only update once the connection starts" +
             "\nOnTrigger: the application is responsible for sending the events ")]
         public UpdatePattern updatePattern;
         /// <summary>
@@ -70,14 +70,21 @@ namespace MobiledgeX
         public int maxNumberOfUpdates;
     }
 
+    //TODO add comments
+    public struct FindCloudletEvent
+    {
+        public FindCloudletReply newCloudlet;
+        public FindCloudletEventTrigger trigger;
+    }
+
     /// <summary>
     /// UpdatePattern for sending client events
     /// </summary>
     public enum UpdatePattern
     {
-        OnInterval,
-        OnTrigger,
-        OnStart
+        OnInterval=0,
+        OnStart=1,
+        OnTrigger=2,
     }
     /// <summary>
     /// Triggers that will trigger a new find cloudlet.
@@ -89,6 +96,28 @@ namespace MobiledgeX
         CloudletStateChanged,
         CloudletMaintenanceStateChanged,
         LatencyTooHigh,
-        CloserCloudlet 
+        CloserCloudlet,
+        Error
+    }
+
+    //TODO add comments
+    public enum EdgeEventsStatus
+    {
+        success,
+        error
+    }
+
+    //TODO add comments
+    public enum EdgeEventsError
+    {
+       MissingSessionCookie,
+       MissingEdgeEventsCookie,
+       MissingEdgeEventsConfig,
+       MissingFindCloudletTrigger,
+       MissingNewFindCloudletHandler,
+       PortDoesNotExist,
+       AppInstanceDownButNoNewCloudlet,
+       CloudletStateNotReadyButNoNewCloudlet,
+       MaintenanceStateNotNormalButNoNewCloudlet
     }
 }
