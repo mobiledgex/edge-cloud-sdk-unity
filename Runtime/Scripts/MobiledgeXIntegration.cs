@@ -85,9 +85,9 @@ namespace MobiledgeX
         MelMessaging melMessaging;
         PersistentConnection persistentConnection;
         /// <summary>
-        /// Use this action to get notified when you a connection upgrade is available
+        /// Use this action to get notified when a connection upgrade is available
         /// </summary>
-        public Action<FindCloudletEventTrigger, ServerEventType> HandleConnectionUpgrade;
+        public Action<EdgeEventsStatus, FindCloudletEvent> NewFindCloudletHandler;
         string region
         {
             get
@@ -260,7 +260,6 @@ namespace MobiledgeX
             }
 
             Dictionary<int, AppPort> appPortsDict = new Dictionary<int, AppPort>();
-
             switch (proto)
             {
                 case LProto.Tcp:
