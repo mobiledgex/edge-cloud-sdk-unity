@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e396521cb32fc4dc59768094dc265479, type: 3}
   m_Name: MobiledgeXSettings
   m_EditorClassIdentifier: 
-  sdkVersion:
+  sdkVersion: 
   orgName: 
-  appName:
+  appName: 
   appVers: 
   authPublicKey: 
   region: Nearest
@@ -30,3 +30,4 @@ MonoBehaviour:
       updatePattern: 0
       updateIntervalSeconds: 30
       maxNumberOfUpdates: 0
+    newFindCloudletEventTriggers: 0000000001000000020000000300000004000000

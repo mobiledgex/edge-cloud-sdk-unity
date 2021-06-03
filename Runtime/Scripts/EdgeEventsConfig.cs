@@ -1,5 +1,8 @@
 ﻿using System;
 using UnityEngine;
+using DistributedMatchEngine;
+using System.Collections.Generic;
+
 namespace MobiledgeX
 {
     [Serializable]
@@ -21,27 +24,32 @@ namespace MobiledgeX
         /// Config for latency updates
         /// </summary>
         [Tooltip("Config for latency updates")]
-        public ClientEventsConfig latencyConfig;
+        public UpdateConfig latencyConfig;
         /// <summary>
         /// Config for location updates
         /// </summary>
         [Tooltip("Config for location updates")]
-        public ClientEventsConfig locationConfig;
-        //fixme newFindCloudletEventTriggers
+        public UpdateConfig locationConfig;
+
+        /// <summary>
+        /// List of triggers that will trigger a new find cloudlet.
+        /// </summary>
+        [Tooltip("List of triggers that will trigger a new find cloudlet.")]
+        public List<FindCloudletEventTrigger> newFindCloudletEventTriggers;
     }
 
     [Serializable]
-    public struct ClientEventsConfig
+    public struct UpdateConfig
     {
         /// <summary>
         /// UpdatePattern for sending client events
         /// <para><b>OnInterval</b> update every updateInterval seconds </para>
-        /// <para><b>OnStart</b> only update once the connections starts</para>
+        /// <para><b>OnStart</b> only update once the connection starts</para>
         /// <para><b>OnTrigger</b> the application is responsible for sending the events </para>
         /// </summary>
         [Tooltip(" UpdatePattern for sending client events" +
             "\nOnInterval: update every updateInterval seconds" +
-            "\nOnStart: only update once the connections starts" +
+            "\nOnStart: only update once the connection starts" +
             "\nOnTrigger: the application is responsible for sending the events ")]
         public UpdatePattern updatePattern;
         /// <summary>
@@ -58,8 +66,15 @@ namespace MobiledgeX
         /// </summary>
         [Tooltip("Maximum number of updates through out the App lifetime." +
             "\nWorks only if the UpdatePattern is set to OnInterval" +
-            "\nSet to -1 for updates to run till the EdgeEvents connection is closed")]
+            "\nSet to 0 for updates to run till the EdgeEvents connection is closed")]
         public int maxNumberOfUpdates;
+    }
+
+    //TODO add comments
+    public struct FindCloudletEvent
+    {
+        public FindCloudletReply newCloudlet;
+        public FindCloudletEventTrigger trigger;
     }
 
     /// <summary>
@@ -67,8 +82,42 @@ namespace MobiledgeX
     /// </summary>
     public enum UpdatePattern
     {
-        OnInterval,
-        OnTrigger,
-        OnStart
+        OnInterval=0,
+        OnStart=1,
+        OnTrigger=2,
+    }
+    /// <summary>
+    /// Triggers that will trigger a new find cloudlet.
+    /// </summary>
+    [Serializable]
+    public enum FindCloudletEventTrigger
+    {
+        AppInstHealthChanged,
+        CloudletStateChanged,
+        CloudletMaintenanceStateChanged,
+        LatencyTooHigh,
+        CloserCloudlet,
+        Error
+    }
+
+    //TODO add comments
+    public enum EdgeEventsStatus
+    {
+        success,
+        error
+    }
+
+    //TODO add comments
+    public enum EdgeEventsError
+    {
+       MissingSessionCookie,
+       MissingEdgeEventsCookie,
+       MissingEdgeEventsConfig,
+       MissingFindCloudletTrigger,
+       MissingNewFindCloudletHandler,
+       PortDoesNotExist,
+       AppInstanceDownButNoNewCloudlet,
+       CloudletStateNotReadyButNoNewCloudlet,
+       MaintenanceStateNotNormalButNoNewCloudlet
     }
 }

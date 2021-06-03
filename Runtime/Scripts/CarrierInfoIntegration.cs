@@ -128,7 +128,6 @@ namespace MobiledgeX
         Logger.Log("Can't find an activity!");
         return null;
       }
-
       AndroidJavaObject context = PlatformIntegrationUtil.Call<AndroidJavaObject>(activity, "getApplicationContext");
       if (context == null)
       {
@@ -145,7 +144,6 @@ namespace MobiledgeX
       }
 
       AndroidJavaObject telManager = PlatformIntegrationUtil.Call<AndroidJavaObject>(context, "getSystemService", new object[] {CONTEXT_TELEPHONY_SERVICE});
-
       sdkVersion = getAndroidSDKVers();
 
       if (sdkVersion < 24)
@@ -155,22 +153,35 @@ namespace MobiledgeX
 
       // Call SubscriptionManager to get a specific telManager:
       AndroidJavaClass subscriptionManagerCls = PlatformIntegrationUtil.GetAndroidJavaClass("android.telephony.SubscriptionManager");
-      if (subscriptionManagerCls == null) {
+      if (subscriptionManagerCls == null)
+      {
         Logger.Log("Can't get Subscription Manager Class.");
         return null;
       }
       int subId = PlatformIntegrationUtil.CallStatic<int>(subscriptionManagerCls, "getDefaultDataSubscriptionId");
       int invalidSubId = PlatformIntegrationUtil.GetStatic<int>(subscriptionManagerCls, "INVALID_SUBSCRIPTION_ID");
-      if (subId == invalidSubId) {
+      if (subId == invalidSubId)
+      {
         Logger.Log("The Subscription ID is invalid: " + subId);
         return null;
       }
       object[] idParam = new object[1] { subId };
       telManager = PlatformIntegrationUtil.Call<AndroidJavaObject>(telManager, "createForSubscriptionId", idParam);
-
       return telManager;
     }
 
+    public int GetSignalStrength()
+    {
+      AndroidJavaObject telManager = GetTelephonyManager();
+      if(telManager == null)
+      {
+        return -1;
+      }
+      AndroidJavaObject signalStrength = telManager.Call<AndroidJavaObject>("getSignalStrength");
+      int signalStrengthLevel =  signalStrength.Call<int>("getLevel");
+      return signalStrengthLevel;
+    }
+    
     public string GetCurrentCarrierName()
     {
       string networkOperatorName = "";
@@ -180,21 +191,18 @@ namespace MobiledgeX
         Logger.Log("Not on android device.");
         return "";
       }
-
       AndroidJavaObject telManager = GetTelephonyManager();
       if (telManager == null)
       {
         Logger.Log("Can't get telephony manager!");
         return "";
       }
-
       networkOperatorName = PlatformIntegrationUtil.Call<string>(telManager, "getNetworkOperatorName");
       if (networkOperatorName == null)
       {
         Logger.Log("Network Operator Name is not found on the device");
         networkOperatorName = "";
       }
-
       return networkOperatorName;
     }
 
