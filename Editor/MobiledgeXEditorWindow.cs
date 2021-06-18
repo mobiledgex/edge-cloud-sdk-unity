@@ -388,6 +388,12 @@ namespace MobiledgeX
             }
             settings.edgeEventsConfig.latencyTestPort = EditorGUILayout.IntField(new GUIContent("Latency Test Port", "Port information for latency testing, use 0 if you don't care which port is used."), settings.edgeEventsConfig.latencyTestPort);
             settings.edgeEventsConfig.latencyThresholdTriggerMs = EditorGUILayout.DoubleField(new GUIContent("Latency Threshold (ms)", "Latency threshold in ms when new FindCloudlet is triggered if eventLatencyProcessed is in newFindCloudletEvents"), settings.edgeEventsConfig.latencyThresholdTriggerMs);
+            settings.edgeEventsConfig.autoMigration = EditorGUILayout.Toggle(new GUIContent("AutoMigration", "Allow MobiledgeX EdgeEvents to automatically connect to the new Cloudlet received from the DME server"), false);
+            settings.edgeEventsConfig.performanceSwitchMargin = EditorGUILayout.FloatField(
+              new GUIContent("Performance Margin Switch",
+              "Average performance must be by better by this latency margin (0 to 1.0f) before notifying of switch"),
+              settings.edgeEventsConfig.performanceSwitchMargin);
+            
             if(GUILayout.Button("Setup FindCloudlet Triggers"))
             {
                 ShowSettings();
