@@ -123,7 +123,6 @@ namespace MobiledgeX
         PropagateError(FindCloudletEventTrigger.Error, "Missing EdgeEvents Cookie");
         return false;
       }
-
       return true;
     }
 
@@ -263,9 +262,7 @@ namespace MobiledgeX
     async void HandleReceivedEvents(ServerEdgeEvent edgeEvent)
     {
       Logger.Log("Received event type: " + edgeEvent.EventType);
-      FindCloudletEvent findCloudletEvent = new FindCloudletEvent();
       FindCloudletEventTrigger trigger = event_trigger_dict[edgeEvent.EventType];
-      EdgeEventsStatus eventStatus;
       if (config.newFindCloudletEventTriggers.Contains(trigger))
       {
         switch (trigger)
@@ -279,18 +276,7 @@ namespace MobiledgeX
           default:
             if (edgeEvent.NewCloudlet != null)
             {
-              integration.latestFindCloudletReply = edgeEvent.NewCloudlet;
-              findCloudletEvent.trigger = trigger;
-              findCloudletEvent.newCloudlet = edgeEvent.NewCloudlet;
-              Logger.Log("Received NewCloudlet from the server triggered by" + event_trigger_dict[edgeEvent.EventType]);
-              eventStatus = new EdgeEventsStatus(Status.success);
-              integration.NewFindCloudletHandler(eventStatus, findCloudletEvent);
-              if (config.autoMigration)
-              {
-                await integration.matchingEngine.EdgeEventsConnection.SendTerminate();
-                CleanUp();
-                integration.persistentConnection.startStreamingEvents(integration);
-              }
+              PropagateSuccess(trigger, edgeEvent.NewCloudlet);
             }
             return;
         }
@@ -358,11 +344,7 @@ namespace MobiledgeX
       double normalizedLatency = receivedStats.Avg - (receivedStats.Avg * config.performanceSwitchMargin);
       if (site.average < normalizedLatency)
       {
-        FindCloudletEvent findCloudletEvent = new FindCloudletEvent();
-        findCloudletEvent.trigger = FindCloudletEventTrigger.LatencyTooHigh;
-        findCloudletEvent.newCloudlet = integration.latestFindCloudletReply;
-        EdgeEventsStatus eventStatus = new EdgeEventsStatus(Status.success);
-        integration.NewFindCloudletHandler(eventStatus, findCloudletEvent);
+        PropagateSuccess(FindCloudletEventTrigger.LatencyTooHigh, integration.latestFindCloudletReply);
       }
       else
       {
@@ -380,13 +362,47 @@ namespace MobiledgeX
       location = null;
     }
 
+    async void PropagateSuccess(FindCloudletEventTrigger trigger, FindCloudletReply newCloudlet)
+    {
+      Logger.Log("Received NewCloudlet from the server triggered by" + trigger);
+      FindCloudletEvent findCloudletEvent = new FindCloudletEvent();
+      findCloudletEvent.trigger = trigger;
+      findCloudletEvent.newCloudlet = newCloudlet;
+      EdgeEventsStatus eventStatus = new EdgeEventsStatus(Status.success);
+      try
+      {
+        integration.NewFindCloudletHandler(eventStatus, findCloudletEvent);
+      }
+      catch (NullReferenceException)
+      {
+        Debug.LogError("Missing NewCloudletHandler, " +
+          "Listen to EdgeEvents by using \"mobiledgexIntegration.NewCloudletHandler += HandleNewFindCloudlet;\"");
+      }
+      if (config.autoMigration)
+      {
+        await integration.matchingEngine.EdgeEventsConnection.SendTerminate();
+        CleanUp();
+        integration.persistentConnection.startStreamingEvents(integration);
+      }
+    }
+
     void PropagateError(FindCloudletEventTrigger trigger, string error_msg)
     {
+
       FindCloudletEvent findCloudletEvent = new FindCloudletEvent();
       findCloudletEvent.trigger = trigger;
       Logger.Log(error_msg);
       EdgeEventsStatus eventStatus = new EdgeEventsStatus(Status.error, error_msg);
-      integration.NewFindCloudletHandler(eventStatus, findCloudletEvent);
+      try
+      {
+        integration.NewFindCloudletHandler(eventStatus, findCloudletEvent);
+      }
+      catch (NullReferenceException)
+      {
+        Debug.LogError("Missing NewCloudletHandler, " +
+          "Listen to EdgeEventsHandler by using \"mobiledgexIntegration.NewCloudletHandler += HandleNewFindCloudlet;\"");
+        return;
+      }
     }
     #endregion
   }
