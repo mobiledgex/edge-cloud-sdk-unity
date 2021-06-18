@@ -75,7 +75,7 @@ namespace MobiledgeX
         /// MatchingEngine Reply/ State variables (for internal use)
         /// </summary>
         bool latestRegisterStatus = false; // Whether the most recent registerClient call was successful
-        FindCloudletReply latestFindCloudletReply = null; // Stored to be used in GetUrl, GetHost, GetPort, Get[]Connection
+        internal FindCloudletReply latestFindCloudletReply = null; // Stored to be used in GetUrl, GetHost, GetPort, Get[]Connection
         bool latestVerifyLocationStatus = false; // Whether the most recent verifyLocation call was successful
         FindCloudletMode mode = FindCloudletMode.PROXIMITY; // FindCloudlet mode
         AppPort latestAppPort = null;
@@ -83,7 +83,7 @@ namespace MobiledgeX
         Location fallbackLocation = new Location(0,0);
         CarrierInfoClass carrierInfoClass = new CarrierInfoClass(); // used for IsRoaming check
         MelMessaging melMessaging;
-        PersistentConnection persistentConnection;
+        internal PersistentConnection persistentConnection;
         /// <summary>
         /// Use this action to get notified when a connection upgrade is available
         /// </summary>
