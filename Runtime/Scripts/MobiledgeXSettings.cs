@@ -34,6 +34,7 @@ namespace MobiledgeX
 
         private void OnEnable()
         {
+            edgeEventsConfig.newFindCloudletEventTriggers.Add(FindCloudletEventTrigger.Error);
             //remove any duplicates once the scriptable object is loaded
             edgeEventsConfig.newFindCloudletEventTriggers = edgeEventsConfig.newFindCloudletEventTriggers.Distinct().ToList();
         }
