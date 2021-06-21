@@ -77,7 +77,7 @@ namespace MobiledgeX
         bool latestRegisterStatus = false; // Whether the most recent registerClient call was successful
         internal FindCloudletReply latestFindCloudletReply = null; // Stored to be used in GetUrl, GetHost, GetPort, Get[]Connection
         bool latestVerifyLocationStatus = false; // Whether the most recent verifyLocation call was successful
-        FindCloudletMode mode = FindCloudletMode.PROXIMITY; // FindCloudlet mode
+        internal FindCloudletMode mode = FindCloudletMode.PROXIMITY; // FindCloudlet mode
         AppPort latestAppPort = null;
         AppPort[] latestAppPortList = null;
         Location fallbackLocation = new Location(0,0);
