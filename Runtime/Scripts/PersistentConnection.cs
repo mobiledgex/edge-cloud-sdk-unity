@@ -148,8 +148,7 @@ namespace MobiledgeX
 
       integration.matchingEngine.EdgeEventsReceiver += HandleReceivedEvents;
       EdgeEventsConnection connection = integration.matchingEngine.EdgeEventsConnection;
-      bool valid = ValidateConfigs();
-      if (!valid)
+      if(!ValidateConfigs())
       {
         return;
       }
@@ -349,7 +348,7 @@ namespace MobiledgeX
       else
       {
         PropagateError(FindCloudletEventTrigger.LatencyTooHigh,
-          "Cloudlet obtained from FindCloudletPerformanceMode have higher latency than the previous cloudlet");
+          "Latency threshold exceeded, but no other cloudlets have a meaningful improvement in latency");
       }
     }
 

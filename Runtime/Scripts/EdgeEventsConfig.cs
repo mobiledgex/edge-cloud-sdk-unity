@@ -26,9 +26,9 @@ namespace MobiledgeX
   public class EdgeEventsConfig
   {
     /// <summary>
-    /// Latency threshold (In Milliseconds) as the limit to automatically migrate to a new cloudlet
+    /// Latency threshold (In Milliseconds) is the threshold at which MobiledgeX SDK will start to look for a cloudlet with better latency
     /// </summary>
-    [Tooltip("Latency threshold (In Milliseconds) as the limit to automatically migrate to a new cloudlet")]
+    [Tooltip("Latency threshold (In Milliseconds) is the threshold at which MobiledgeX SDK will start to look for a cloudlet with better latency")]
     public double latencyThresholdTriggerMs;
     /// <summary>
     /// Port information for latency testing
@@ -48,15 +48,15 @@ namespace MobiledgeX
     [Tooltip("Config for location updates")]
     public UpdateConfig locationConfig;
     /// <summary>
-    /// List of triggers that application that will trigger a new find cloudlet.
+    /// List of triggers that will trigger a new find cloudlet.
     /// </summary>
-    [Tooltip("List of triggers that application that will trigger a new find cloudlet.")]
+    [Tooltip("List of triggers that will trigger a new find cloudlet.")]
     public List<FindCloudletEventTrigger> newFindCloudletEventTriggers;
 
     /// <summary>
-    /// Allow MobiledgeX EdgeEvents to automatically connect to the new Cloudlet received from the DME server
+    /// Allow MobiledgeX EdgeEvents to automatically stop the current EdgeEvents connection and start a new EdgeEvents connection to receive events from the new cloudlet
     /// </summary>
-    [Tooltip("Allow MobiledgeX EdgeEvents to automatically connect to the new Cloudlet received from the DME server.")]
+    [Tooltip("Allow MobiledgeX EdgeEvents to automatically stop the current EdgeEvents connection and start a new EdgeEvents connection to receive events from the new cloudlet")]
     public bool autoMigration;
     /// <summary>
     /// Average performance must be by better by this latency margin (0 to 1.0f) before notifying of switch.
@@ -88,9 +88,9 @@ namespace MobiledgeX
          "\nWorks only if the UpdatePattern is set to OnInterval")]
     public int updateIntervalSeconds;
     /// <summary>
-    /// Maximum number of updates through out the App lifetime.
+    /// Maximum number of updates throughout the App lifetime.
     /// <para>Works only if the UpdatePattern is set to <b>OnInterval</b></para>
-    /// <para>Set to -1 for updates to run till the EdgeEvents connection is closed</para>
+    /// <para>Set to 0 for updates to run till the EdgeEvents connection is closed</para>
     /// </summary>
     [Tooltip("Maximum number of updates through out the App lifetime." +
         "\nWorks only if the UpdatePattern is set to OnInterval" +
