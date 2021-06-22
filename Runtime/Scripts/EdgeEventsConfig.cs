@@ -38,21 +38,10 @@ namespace MobiledgeX
         "\nUse 0 to select a random port")]
     public int latencyTestPort;
     /// <summary>
-    /// Config for latency updates
-    /// </summary>
-    [Tooltip("Config for latency updates")]
-    public UpdateConfig latencyConfig;
-    /// <summary>
-    /// Config for location updates
-    /// </summary>
-    [Tooltip("Config for location updates")]
-    public UpdateConfig locationConfig;
-    /// <summary>
     /// List of triggers that will trigger a new find cloudlet.
     /// </summary>
     [Tooltip("List of triggers that will trigger a new find cloudlet.")]
     public List<FindCloudletEventTrigger> newFindCloudletEventTriggers;
-
     /// <summary>
     /// Allow MobiledgeX EdgeEvents to automatically stop the current EdgeEvents connection and start a new EdgeEvents connection to receive events from the new cloudlet
     /// </summary>
@@ -63,6 +52,16 @@ namespace MobiledgeX
     /// </summary>
     [Tooltip("Average performance must be by better by this latency margin (0 to 1.0f) before notifying of switch.")]
     public float performanceSwitchMargin = 0.05f;
+    /// <summary>
+    /// Config for latency updates
+    /// </summary>
+    [Tooltip("Config for latency updates")]
+    public UpdateConfig latencyConfig;
+    /// <summary>
+    /// Config for location updates
+    /// </summary>
+    [Tooltip("Config for location updates")]
+    public UpdateConfig locationConfig;
   }
 
 
