@@ -79,7 +79,7 @@ public class ExampleRest : MonoBehaviour
 
     private void HandleFindCloudlet(EdgeEventsStatus status, FindCloudletEvent fcEvent)
     {
-        throw new NotImplementedException();
+        print("NewFindCloudlet triggered status is  " + status.status + ", Trigger" + fcEvent.trigger);
     }
 
     IEnumerator RestExample(string url)

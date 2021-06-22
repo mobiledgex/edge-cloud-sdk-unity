@@ -20,8 +20,11 @@ MonoBehaviour:
   region: Nearest
   logType: 1
   edgeEventsConfig:
-    latencyThresholdTriggerMs: 120
+    latencyThresholdTriggerMs: 50
     latencyTestPort: 0
+    newFindCloudletEventTriggers: 050000000000000001000000020000000300000004000000
+    autoMigration: 1
+    performanceSwitchMargin: 0.05
     latencyConfig:
       updatePattern: 0
       updateIntervalSeconds: 30
@@ -30,4 +33,3 @@ MonoBehaviour:
       updatePattern: 0
       updateIntervalSeconds: 30
       maxNumberOfUpdates: 0
-    newFindCloudletEventTriggers: 0000000001000000020000000300000004000000
