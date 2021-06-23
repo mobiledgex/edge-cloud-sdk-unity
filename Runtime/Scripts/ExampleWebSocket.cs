@@ -58,6 +58,10 @@ using DistributedMatchEngine;
         private void HandleFindCloudlet(EdgeEventsStatus status, FindCloudletEvent fcEvent)
         {
             print("NewFindCloudlet triggered status is  " + status.status + ", Trigger" + fcEvent.trigger);
+            if(fcEvent.newCloudlet != null)
+            {
+                print("New Cloudlet FQDN: "+fcEvent.newCloudlet.Fqdn);
+            }
         }
 
         // Dequeue WebSocket Messages every frame (if there is any)
