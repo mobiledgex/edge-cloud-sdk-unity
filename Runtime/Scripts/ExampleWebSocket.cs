@@ -22,7 +22,8 @@ using DistributedMatchEngine;
 
         async void GetEdgeConnection()
         {
-            mxi = new MobiledgeXIntegration();
+            mxi = new MobiledgeXIntegration(FindObjectOfType<PersistentConnection>());
+            mxi.NewFindCloudletHandler += HandleFindCloudlet;
             try
             {
                 await mxi.RegisterAndFindCloudlet();
@@ -54,7 +55,14 @@ using DistributedMatchEngine;
             await wsClient.Connect(uri);
         }
 
-
+        private void HandleFindCloudlet(EdgeEventsStatus status, FindCloudletEvent fcEvent)
+        {
+            print("NewFindCloudlet triggered status is " + status.status + ", Trigger" + fcEvent.trigger);
+            if(fcEvent.newCloudlet != null)
+            {
+                print("New Cloudlet FQDN: " + fcEvent.newCloudlet.Fqdn);
+            }
+        }
 
         // Dequeue WebSocket Messages every frame (if there is any)
         private void Update()

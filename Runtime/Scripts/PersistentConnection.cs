@@ -30,17 +30,19 @@ namespace MobiledgeX
   [AddComponentMenu("MobiledgeX/PersistentConnection")]
   public class PersistentConnection : MonoBehaviour
   {
-    public Action<MobiledgeXIntegration> startStreamingEvents;
+    internal Action<MobiledgeXIntegration> startStreamingEvents;
     MobiledgeXIntegration integration;
     bool locationUpdatesRunning;
     bool latencyUpdatesRunning;
     EdgeEventsConfig config;
-    Loc location;
     bool hasTCPPorts;
     int latencyUpdatesCounter;
     int locationUpdatesCounter;
     Dictionary<ServerEventType, FindCloudletEventTrigger> event_trigger_dict;
     FindCloudletReply currentFindCloudlet;
+    public Loc location;
+    public bool useMobiledgexLocationServices = true;
+
     #region MonoBehaviour Callbacks
 
     private void Awake()
@@ -150,6 +152,8 @@ namespace MobiledgeX
         }
       }
 
+      LocationUpdate();//Propagates Error if location is null
+
       if (integration.matchingEngine.sessionCookie == null)
       {
         PropagateError(FindCloudletEventTrigger.Error, "Missing SessionCookie");
@@ -164,7 +168,7 @@ namespace MobiledgeX
     }
 
 
-    void StartEdgeEvents(MobiledgeXIntegration mxi)
+    public void StartEdgeEvents(MobiledgeXIntegration mxi)
     {
       integration = mxi;
       config = MobiledgeXIntegration.settings.edgeEventsConfig;
@@ -190,7 +194,6 @@ namespace MobiledgeX
       {
         return;
       }
-      location = LocationService.RetrieveLocation();
       AppPort appPort = integration.GetAppPort(LProto.Tcp, config.latencyTestPort);
       if (appPort != null)
       {
@@ -261,7 +264,10 @@ namespace MobiledgeX
       }
       yield return new WaitForSecondsRealtime(config.locationConfig.updateIntervalSeconds);
       yield return StartCoroutine(LocationService.EnsureLocation());
-      Loc location = LocationService.RetrieveLocation();
+      if (!LocationUpdate())
+      {
+        yield break;
+      }
       Logger.Log("EdgeEvents Posting location update");
       connection.PostLocationUpdate(location);
       locationUpdatesCounter++;
@@ -326,7 +332,10 @@ namespace MobiledgeX
     async Task RespondToLatencyRequest()
     {
       string host = integration.GetHost();
-      Loc location = LocationService.RetrieveLocation();
+      if (!LocationUpdate())
+      {
+        return;
+      }
       if (hasTCPPorts)
       {
         Logger.Log("Sending Latency Samples (TCP) as a response to LatencyRequest from the server");
@@ -450,6 +459,24 @@ namespace MobiledgeX
         Debug.LogError("Missing NewCloudletHandler, " +
           "Listen to EdgeEventsHandler by using \"mobiledgexIntegration.NewCloudletHandler += HandleNewFindCloudlet;\"");
         return;
+      }
+    }
+
+    bool LocationUpdate()
+    {
+      if (!useMobiledgexLocationServices)
+      {
+        if (location == null)
+        {
+          PropagateError(FindCloudletEventTrigger.Error, "PersistentConnection.location is empty, Either use MobiledgeXLocationServices or Set PersistentConnection.location to a value. ");
+          return false;
+        }
+        return true;
+      }
+      else
+      {
+        location = LocationService.RetrieveLocation();//throws location exception
+        return true;
       }
     }
     #endregion
