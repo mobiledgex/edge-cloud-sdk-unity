@@ -79,10 +79,10 @@ public class ExampleRest : MonoBehaviour
 
     private void HandleFindCloudlet(EdgeEventsStatus status, FindCloudletEvent fcEvent)
     {
-        print("NewFindCloudlet triggered status is  " + status.status + ", Trigger" + fcEvent.trigger);
+        print("NewFindCloudlet triggered status is " + status.status + ", Trigger" + fcEvent.trigger);
         if(fcEvent.newCloudlet != null)
         {
-            print("New Cloudlet FQDN: "+fcEvent.newCloudlet.Fqdn);
+            print("New Cloudlet FQDN: " + fcEvent.newCloudlet.Fqdn);
         }
     }
 
