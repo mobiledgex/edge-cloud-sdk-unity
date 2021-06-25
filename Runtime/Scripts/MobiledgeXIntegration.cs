@@ -83,7 +83,7 @@ namespace MobiledgeX
         Location fallbackLocation = new Location(0,0);
         CarrierInfoClass carrierInfoClass = new CarrierInfoClass(); // used for IsRoaming check
         MelMessaging melMessaging;
-        internal PersistentConnection persistentConnection;
+        public PersistentConnection persistentConnection;
         /// <summary>
         /// Use this action to get notified when a connection upgrade is available
         /// </summary>
