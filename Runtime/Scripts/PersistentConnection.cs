@@ -60,7 +60,10 @@ namespace MobiledgeX
 
     IEnumerator Start()
     {
+#if !UNITY_EDITOR
       yield return StartCoroutine(UpdateLocation());
+#endif
+      yield break;
     }
 
     private void OnEnable()
@@ -272,7 +275,7 @@ namespace MobiledgeX
       }
       yield return new WaitForSecondsRealtime(config.locationConfig.updateIntervalSeconds);
       yield return StartCoroutine(UpdateLocation());
-      Logger.Log("EdgeEvents Posting location update, Location to send ["+location.Latitude+", "+ location.Longitude+"]");
+      Logger.Log("EdgeEvents Posting location update, Location to send [" + location.Latitude + ", " + location.Longitude + "]");
       connection.PostLocationUpdate(location);
       locationUpdatesCounter++;
       yield return StartCoroutine(OnIntervalEdgeEventsLocation(connection));
@@ -307,7 +310,7 @@ namespace MobiledgeX
 
     void HandleReceivedEvents(ServerEdgeEvent edgeEvent)
     {
-      Logger.Log("Received event type: " + edgeEvent.EventType);
+      Logger.Log("<color=green>Received event type: " + edgeEvent.EventType + "</color>");
       FindCloudletEventTrigger trigger = event_trigger_dict[edgeEvent.EventType];
       if (config.newFindCloudletEventTriggers.Contains(trigger))
       {
@@ -410,7 +413,10 @@ namespace MobiledgeX
     async Task StopEdgeEvents()
     {
       StopAllCoroutines();
-      await integration.matchingEngine.EdgeEventsConnection.SendTerminate();
+      if (integration != null)
+      {
+        await integration.matchingEngine.EdgeEventsConnection.SendTerminate();
+      }
       latencyUpdatesCounter = 0;
       latencyUpdatesRunning = false;
       locationUpdatesCounter = 0;
@@ -485,7 +491,7 @@ namespace MobiledgeX
         }
         catch(LocationException loc)
         {
-          PropagateError(FindCloudletEventTrigger.Error, "Error retrieving location, "+loc.Message+", InnerException: "+loc.InnerException.Message);
+          PropagateError(FindCloudletEventTrigger.Error, "Error retrieving location " + loc.Message);
         }
         yield break;
       }
