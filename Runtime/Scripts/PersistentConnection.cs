@@ -58,6 +58,11 @@ namespace MobiledgeX
       //EVENT_INIT_CONNECTION and EVENT_UNKNOWN will be logged
     }
 
+    IEnumerator Start()
+    {
+      yield return StartCoroutine(UpdateLocation());
+    }
+
     private void OnEnable()
     {
       startStreamingEvents += StartEdgeEvents;
@@ -152,8 +157,6 @@ namespace MobiledgeX
         }
       }
 
-      LocationUpdate();//Propagates Error if location is null
-
       if (integration.matchingEngine.sessionCookie == null)
       {
         PropagateError(FindCloudletEventTrigger.Error, "Missing SessionCookie");
@@ -174,19 +177,20 @@ namespace MobiledgeX
       config = MobiledgeXIntegration.settings.edgeEventsConfig;
       currentFindCloudlet = integration.latestFindCloudletReply;
       //Log summary of EdgeEvents
-      Logger.Log("EdgeEvents Config: LatencyTestPort: " + config.latencyTestPort);
-      Logger.Log("EdgeEvents Config: NewFindCloudletEventTriggers: ");
+      string configSummary = "EdgeEvents Config Summary:\n LatencyTestPort: " + config.latencyTestPort;
+      configSummary += "\n EdgeEvents Config: LatencyThresholdTriggerMs: " + config.latencyThresholdTriggerMs;
+      configSummary += "\n EdgeEvents Config: LatencyUpdatePattern: " + config.latencyConfig.updatePattern;
+      configSummary += "\n EdgeEvents Config: LatencyMaxNoUpdates: " + config.latencyConfig.maxNumberOfUpdates;
+      configSummary += "\n EdgeEvents Config: LatencyUpdateIntervalSeconds: " + config.latencyConfig.updateIntervalSeconds;
+      configSummary += "\n EdgeEvents Config: LocationUpdatePattern: " + config.locationConfig.updatePattern;
+      configSummary += "\n EdgeEvents Config: LocationMaxNoUpdates: " + config.locationConfig.maxNumberOfUpdates;
+      configSummary += "\n EdgeEvents Config: LocationUpdateIntervalSeconds: " + config.locationConfig.updateIntervalSeconds;
+      configSummary += "\n NewFindCloudletEventTriggers: ";
       foreach (FindCloudletEventTrigger trigger in config.newFindCloudletEventTriggers)
       {
-        Logger.Log("Trigger : " + trigger.ToString());
+        configSummary += "\n  Trigger : " + trigger.ToString();
       }
-      Logger.Log("EdgeEvents Config: LatencyThresholdTriggerMs: " + config.latencyThresholdTriggerMs);
-      Logger.Log("EdgeEvents Config: LatencyUpdatePattern: " + config.latencyConfig.updatePattern);
-      Logger.Log("EdgeEvents Config: LatencyMaxNoUpdates: " + config.latencyConfig.maxNumberOfUpdates);
-      Logger.Log("EdgeEvents Config: LatencyUpdateIntervalSeconds: " + config.latencyConfig.updateIntervalSeconds);
-      Logger.Log("EdgeEvents Config: LocationUpdatePattern: " + config.locationConfig.updatePattern);
-      Logger.Log("EdgeEvents Config: LocationMaxNoUpdates: " + config.locationConfig.maxNumberOfUpdates);
-      Logger.Log("EdgeEvents Config: LocationUpdateIntervalSeconds: " + config.locationConfig.updateIntervalSeconds);
+      Logger.Log(configSummary);
 
       integration.matchingEngine.EdgeEventsReceiver += HandleReceivedEvents;
       EdgeEventsConnection connection = integration.matchingEngine.EdgeEventsConnection;
@@ -198,6 +202,10 @@ namespace MobiledgeX
       if (appPort != null)
       {
         hasTCPPorts = true;
+        if (config.latencyTestPort == 0)
+        {
+          config.latencyTestPort = appPort.PublicPort;
+        }
       }
       else
       {
@@ -263,12 +271,8 @@ namespace MobiledgeX
         }
       }
       yield return new WaitForSecondsRealtime(config.locationConfig.updateIntervalSeconds);
-      yield return StartCoroutine(LocationService.EnsureLocation());
-      if (!LocationUpdate())
-      {
-        yield break;
-      }
-      Logger.Log("EdgeEvents Posting location update");
+      yield return StartCoroutine(UpdateLocation());
+      Logger.Log("EdgeEvents Posting location update, Location to send ["+location.Latitude+", "+ location.Longitude+"]");
       connection.PostLocationUpdate(location);
       locationUpdatesCounter++;
       yield return StartCoroutine(OnIntervalEdgeEventsLocation(connection));
@@ -287,7 +291,7 @@ namespace MobiledgeX
         }
       }
       yield return new WaitForSecondsRealtime(config.latencyConfig.updateIntervalSeconds);
-      yield return StartCoroutine(LocationService.EnsureLocation());
+      yield return StartCoroutine(UpdateLocation());
       if (hasTCPPorts)
       {
         connection.TestConnectAndPostLatencyUpdate(host, (uint)config.latencyTestPort, location).ConfigureAwait(false);
@@ -296,11 +300,12 @@ namespace MobiledgeX
       {
         connection.TestPingAndPostLatencyUpdate(host, location).ConfigureAwait(false);
       }
+      Logger.Log("EdgeEvents Posting latency update, Location to send [" + location.Latitude + ", " + location.Longitude + "]");
       latencyUpdatesCounter++;
       yield return StartCoroutine(OnIntervalEdgeEventsLatency(connection, host));
     }
 
-    async void HandleReceivedEvents(ServerEdgeEvent edgeEvent)
+    void HandleReceivedEvents(ServerEdgeEvent edgeEvent)
     {
       Logger.Log("Received event type: " + edgeEvent.EventType);
       FindCloudletEventTrigger trigger = event_trigger_dict[edgeEvent.EventType];
@@ -314,7 +319,7 @@ namespace MobiledgeX
           case FindCloudletEventTrigger.LatencyTooHigh:
             if (edgeEvent.EventType == ServerEventType.EventLatencyRequest)
             {
-              await RespondToLatencyRequest();
+              StartCoroutine(RespondToLatencyRequest());
               return;
             }
             ProcessLatency(edgeEvent.Statistics);
@@ -329,22 +334,19 @@ namespace MobiledgeX
       }
     }
 
-    async Task RespondToLatencyRequest()
+    IEnumerator RespondToLatencyRequest()
     {
       string host = integration.GetHost();
-      if (!LocationUpdate())
-      {
-        return;
-      }
+      yield return StartCoroutine(UpdateLocation());
       if (hasTCPPorts)
       {
         Logger.Log("Sending Latency Samples (TCP) as a response to LatencyRequest from the server");
-        await integration.matchingEngine.EdgeEventsConnection.TestConnectAndPostLatencyUpdate(host, (uint)config.latencyTestPort, location);
+        integration.matchingEngine.EdgeEventsConnection.TestConnectAndPostLatencyUpdate(host, (uint)config.latencyTestPort, location).ConfigureAwait(false);
       }
       else
       {
         Logger.Log("Sending Latency Samples (UDP) as a response to LatencyRequest from the server");
-        await integration.matchingEngine.EdgeEventsConnection.TestPingAndPostLatencyUpdate(host, location);
+        integration.matchingEngine.EdgeEventsConnection.TestPingAndPostLatencyUpdate(host, location).ConfigureAwait(false);
       }
     }
 
@@ -405,8 +407,10 @@ namespace MobiledgeX
       }
     }
 
-    void CleanUp()
+    async Task StopEdgeEvents()
     {
+      StopAllCoroutines();
+      await integration.matchingEngine.EdgeEventsConnection.SendTerminate();
       latencyUpdatesCounter = 0;
       latencyUpdatesRunning = false;
       locationUpdatesCounter = 0;
@@ -432,24 +436,24 @@ namespace MobiledgeX
       }
       if (config.autoMigration)
       {
-        await integration.matchingEngine.EdgeEventsConnection.SendTerminate();
-        CleanUp();
+        await StopEdgeEvents();
         integration.persistentConnection.startStreamingEvents(integration);
       }
       else
       {
         //Migration occurs and autoMigration is set to false
-        CleanUp();
+        await StopEdgeEvents();
       }
     }
 
-    void PropagateError(FindCloudletEventTrigger trigger, string error_msg)
+    async void PropagateError(FindCloudletEventTrigger trigger, string error_msg)
     {
 
       FindCloudletEvent findCloudletEvent = new FindCloudletEvent();
       findCloudletEvent.trigger = trigger;
       Logger.Log(error_msg);
       EdgeEventsStatus eventStatus = new EdgeEventsStatus(Status.error, error_msg);
+      await StopEdgeEvents();
       try
       {
         integration.NewFindCloudletHandler(eventStatus, findCloudletEvent);
@@ -462,21 +466,28 @@ namespace MobiledgeX
       }
     }
 
-    bool LocationUpdate()
+    IEnumerator UpdateLocation()
     {
       if (!useMobiledgexLocationServices)
       {
         if (location == null)
         {
           PropagateError(FindCloudletEventTrigger.Error, "PersistentConnection.location is empty, Either use MobiledgeXLocationServices or Set PersistentConnection.location to a value. ");
-          return false;
         }
-        return true;
+        yield break;
       }
       else
       {
-        location = LocationService.RetrieveLocation();//throws location exception
-        return true;
+        yield return StartCoroutine(LocationService.EnsureLocation());
+        try
+        {
+          location = LocationService.RetrieveLocation();//throws location exception if location is not retrieved
+        }
+        catch(LocationException loc)
+        {
+          PropagateError(FindCloudletEventTrigger.Error, "Error retrieving location, "+loc.Message+", InnerException: "+loc.InnerException.Message);
+        }
+        yield break;
       }
     }
     #endregion
