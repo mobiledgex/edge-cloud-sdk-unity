@@ -243,7 +243,7 @@ namespace MobiledgeX
             }
             if (matchingEngine.EnableEdgeEvents)
             {
-                if(persistentConnection!= null)
+                if (persistentConnection!= null)
                 {
                     persistentConnection.startStreamingEvents(this);
                 }
