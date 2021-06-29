@@ -245,7 +245,7 @@ namespace MobiledgeX
             {
                 if(persistentConnection!= null)
                 {
-                    persistentConnection.startStreamingEvents(this);//fixme add null check to your code stupid
+                    persistentConnection.startStreamingEvents(this);
                 }
             }
             return reply.Status == FindCloudletReply.Types.FindStatus.FindFound;
