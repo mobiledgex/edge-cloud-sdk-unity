@@ -243,7 +243,10 @@ namespace MobiledgeX
             }
             if (matchingEngine.EnableEdgeEvents)
             {
-                persistentConnection.startStreamingEvents(this);
+                if(persistentConnection!= null)
+                {
+                    persistentConnection.startStreamingEvents(this);//fixme add null check to your code stupid
+                }
             }
             return reply.Status == FindCloudletReply.Types.FindStatus.FindFound;
         }
