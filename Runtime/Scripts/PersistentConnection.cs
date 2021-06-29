@@ -38,25 +38,16 @@ namespace MobiledgeX
     bool hasTCPPorts;
     int latencyUpdatesCounter;
     int locationUpdatesCounter;
-    Dictionary<ServerEventType, FindCloudletEventTrigger> event_trigger_dict;
     FindCloudletReply currentFindCloudlet;
     public Loc location;
     public bool useMobiledgexLocationServices = true;
+    static bool stopEdgeEvents;
+    static bool startLatencyProcessing;
+    static bool latencyProcessingInProgress;
+    static Statistics latestServerStats;
+
 
     #region MonoBehaviour Callbacks
-
-    private void Awake()
-    {
-      event_trigger_dict = new Dictionary<ServerEventType, FindCloudletEventTrigger>();
-      event_trigger_dict.Add(ServerEventType.EventAppinstHealth, FindCloudletEventTrigger.AppInstHealthChanged);
-      event_trigger_dict.Add(ServerEventType.EventCloudletState, FindCloudletEventTrigger.CloudletStateChanged);
-      event_trigger_dict.Add(ServerEventType.EventCloudletUpdate, FindCloudletEventTrigger.CloserCloudlet);
-      event_trigger_dict.Add(ServerEventType.EventCloudletMaintenance, FindCloudletEventTrigger.CloudletMaintenanceStateChanged);
-      event_trigger_dict.Add(ServerEventType.EventLatencyProcessed, FindCloudletEventTrigger.LatencyTooHigh);
-      event_trigger_dict.Add(ServerEventType.EventLatencyRequest, FindCloudletEventTrigger.LatencyTooHigh);
-      event_trigger_dict.Add(ServerEventType.EventError, FindCloudletEventTrigger.Error);
-      //EVENT_INIT_CONNECTION and EVENT_UNKNOWN will be logged
-    }
 
     IEnumerator Start()
     {
@@ -100,6 +91,24 @@ namespace MobiledgeX
     private void OnDestroy()
     {
       StopAllCoroutines();// stop edge events streaming
+    }
+
+    private void Update()
+    {
+      if (stopEdgeEvents)
+      {
+        stopEdgeEvents = false;
+        StopAllCoroutines();
+      }
+
+      if (startLatencyProcessing)
+      {
+        startLatencyProcessing = false;
+        latencyProcessingInProgress = true;
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+        ProcessLatency(latestServerStats);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+      }
     }
     #endregion
 
@@ -165,7 +174,7 @@ namespace MobiledgeX
         PropagateError(FindCloudletEventTrigger.Error, "Missing SessionCookie");
         return false;
       }
-      if (integration.matchingEngine.EdgeEventsConnection.edgeEventsCookie == null)
+      if (integration.matchingEngine.edgeEventsCookie == null)
       {
         PropagateError(FindCloudletEventTrigger.Error, "Missing EdgeEvents Cookie");
         return false;
@@ -177,6 +186,15 @@ namespace MobiledgeX
     public void StartEdgeEvents(MobiledgeXIntegration mxi)
     {
       integration = mxi;
+      if(integration.matchingEngine.EdgeEventsConnection == null)
+      {
+        Debug.Log("EdgeEventsConnection is null");
+        return;
+      }
+      DeviceInfoIntegration deviceInfo = new DeviceInfoIntegration();
+      DeviceStaticInfo deviceStaticInfo = deviceInfo.GetDeviceStaticInfo();
+      DeviceDynamicInfo deviceDynamicInfo = deviceInfo.GetDeviceDynamicInfo();
+      integration.matchingEngine.EdgeEventsConnection.Open(deviceStaticInfo, deviceDynamicInfo);
       config = MobiledgeXIntegration.settings.edgeEventsConfig;
       currentFindCloudlet = integration.latestFindCloudletReply;
       //Log summary of EdgeEvents
@@ -196,6 +214,7 @@ namespace MobiledgeX
       Logger.Log(configSummary);
 
       integration.matchingEngine.EdgeEventsReceiver += HandleReceivedEvents;
+
       EdgeEventsConnection connection = integration.matchingEngine.EdgeEventsConnection;
       if (!ValidateConfigs())
       {
@@ -241,14 +260,19 @@ namespace MobiledgeX
 
     void StartEdgeEventsLatency(EdgeEventsConnection connection, string host)
     {
+      Logger.Log("EdgeEvents Posting latency update, Location to send [" + location.Latitude + ", " + location.Longitude + "]");
+      bool requestSent;
       if (hasTCPPorts)
       {
-        connection.TestConnectAndPostLatencyUpdate(host, (uint)config.latencyTestPort, location).ConfigureAwait(false);
+        requestSent = connection.TestConnectAndPostLatencyUpdate(host, (uint)config.latencyTestPort, location).ConfigureAwait(false).GetAwaiter().GetResult();
+        print("TestConnectAndPostLatencyUpdate : " + requestSent);
       }
       else
       {
-        connection.TestPingAndPostLatencyUpdate(host, location).ConfigureAwait(false);
+        requestSent = connection.TestPingAndPostLatencyUpdate(host, location).ConfigureAwait(false).GetAwaiter().GetResult();
+        print("TestPingAndPostLatencyUpdate : " + requestSent);
       }
+
       switch (config.latencyConfig.updatePattern)
       {
         case UpdatePattern.OnStart:
@@ -275,7 +299,7 @@ namespace MobiledgeX
       }
       yield return new WaitForSecondsRealtime(config.locationConfig.updateIntervalSeconds);
       yield return StartCoroutine(UpdateLocation());
-      Logger.Log("EdgeEvents Posting location update, Location to send [" + location.Latitude + ", " + location.Longitude + "]");
+      Logger.Log("EdgeEvents Posting location update, Location to send ["+location.Latitude+", "+ location.Longitude+"]");
       connection.PostLocationUpdate(location);
       locationUpdatesCounter++;
       yield return StartCoroutine(OnIntervalEdgeEventsLocation(connection));
@@ -310,30 +334,81 @@ namespace MobiledgeX
 
     void HandleReceivedEvents(ServerEdgeEvent edgeEvent)
     {
-      Logger.Log("<color=green>Received event type: " + edgeEvent.EventType + "</color>");
-      FindCloudletEventTrigger trigger = event_trigger_dict[edgeEvent.EventType];
-      if (config.newFindCloudletEventTriggers.Contains(trigger))
+      Logger.Log("Received event type: " + edgeEvent.EventType);
+      List<FindCloudletEventTrigger> fcTriggers = config.newFindCloudletEventTriggers;
+      switch (edgeEvent.EventType)
       {
-        switch (trigger)
-        {
-          case FindCloudletEventTrigger.Error:
-            PropagateError(FindCloudletEventTrigger.Error, edgeEvent.ErrorMsg);
-            return;
-          case FindCloudletEventTrigger.LatencyTooHigh:
-            if (edgeEvent.EventType == ServerEventType.EventLatencyRequest)
+        case ServerEventType.EventInitConnection:
+          Logger.Log("Successfully initiated persistent edge event connection");
+          return;
+        case ServerEventType.EventLatencyRequest:
+          if (fcTriggers.Contains(FindCloudletEventTrigger.LatencyTooHigh))
+          {
+            StartCoroutine(RespondToLatencyRequest());
+          }
+          return;
+        case ServerEventType.EventLatencyProcessed:
+          if (fcTriggers.Contains(FindCloudletEventTrigger.LatencyTooHigh))
+          {
+            latestServerStats = edgeEvent.Statistics;
+            if(!latencyProcessingInProgress)
             {
-              StartCoroutine(RespondToLatencyRequest());
+              startLatencyProcessing = true;
+            }
+          }
+          return;
+        case ServerEventType.EventAppinstHealth:
+          if (fcTriggers.Contains(FindCloudletEventTrigger.AppInstHealthChanged))
+          {
+            if (edgeEvent.NewCloudlet == null)
+            {
+              PropagateError(FindCloudletEventTrigger.AppInstHealthChanged, "Received EventAppinstHealth Event but NewCloudlet is null");
               return;
             }
-            ProcessLatency(edgeEvent.Statistics);
-            return;
-          default:
-            if (edgeEvent.NewCloudlet != null)
+            PropagateSuccess(FindCloudletEventTrigger.AppInstHealthChanged, edgeEvent.NewCloudlet);
+          }
+          return;
+        case ServerEventType.EventCloudletMaintenance:
+          if (fcTriggers.Contains(FindCloudletEventTrigger.CloudletMaintenanceStateChanged))
+          {
+            if (edgeEvent.NewCloudlet == null)
             {
-              PropagateSuccess(trigger, edgeEvent.NewCloudlet);
+              PropagateError(FindCloudletEventTrigger.CloudletMaintenanceStateChanged, "Received CloudletStateChanged Event but NewCloudlet is null");
+              return;
             }
-            return;
-        }
+            PropagateSuccess(FindCloudletEventTrigger.CloudletStateChanged, edgeEvent.NewCloudlet);
+          }
+          return;
+        case ServerEventType.EventCloudletState:
+          if (fcTriggers.Contains(FindCloudletEventTrigger.CloudletStateChanged))
+          {
+            if (edgeEvent.NewCloudlet == null)
+            {
+              PropagateError(FindCloudletEventTrigger.CloudletStateChanged, "Received CloudletStateChanged Event but NewCloudlet is null");
+              return;
+            }
+            PropagateSuccess(FindCloudletEventTrigger.CloudletStateChanged, edgeEvent.NewCloudlet);
+          }
+          return;
+        case ServerEventType.EventCloudletUpdate:
+          if (fcTriggers.Contains(FindCloudletEventTrigger.CloserCloudlet))
+          {
+            if (edgeEvent.NewCloudlet == null)
+            {
+              PropagateError(FindCloudletEventTrigger.CloserCloudlet, "Received CloserCloudlet Event but NewCloudlet is null");
+              return;
+            }
+            PropagateSuccess(FindCloudletEventTrigger.CloserCloudlet, edgeEvent.NewCloudlet);
+          }
+          return;
+        case ServerEventType.EventError:
+          Logger.Log("Received EventError from server, " + edgeEvent.ToString());
+          PropagateError(FindCloudletEventTrigger.Error, edgeEvent.ErrorMsg);
+          return;
+        default:
+        case ServerEventType.EventUnknown:
+          Logger.Log("Received Unknown event, "+edgeEvent.ToString());
+          return;
       }
     }
 
@@ -353,52 +428,75 @@ namespace MobiledgeX
       }
     }
 
-    async void ProcessLatency(Statistics stats)
+    async Task ProcessLatency(Statistics stats)
     {
-      if (stats.Avg < config.latencyThresholdTriggerMs)
+      Logger.Log("Processing Latency Received from Server");
+      if (stats.Avg > config.latencyThresholdTriggerMs)
       {
-        FindCloudletMode previousMode = integration.Mode;
-        integration.UseFindCloudletPerformanceMode(true);
-        bool fcResult = await integration.FindCloudlet();
-        if (fcResult)
+        Logger.Log("Current Latency (" + stats.Avg + ") > LatencyThreshold (" + config.latencyThresholdTriggerMs + ")");
+        Logger.Log("Performing FindCloudlet PerformanceMode");
+        MobiledgeXIntegration tempMxi = new MobiledgeXIntegration();
+        bool regResult = await tempMxi.Register("eu-qa.dme.mobiledgex.net", 50051);
+        if (regResult)
         {
-          if (!integration.latestFindCloudletReply.Equals(currentFindCloudlet))
+          tempMxi.UseFindCloudletPerformanceMode(true);
+          bool fcSuccess = await tempMxi.FindCloudlet("eu-qa.dme.mobiledgex.net", 50051);
+          if (fcSuccess)
           {
-            CompareLatencies(stats);
-            integration.mode = previousMode;
+            currentFindCloudlet = tempMxi.latestFindCloudletReply;
+            tempMxi.Dispose();
+            if (!integration.latestFindCloudletReply.Equals(currentFindCloudlet))
+            {
+              PropagateError(FindCloudletEventTrigger.LatencyTooHigh,
+                "New Cloudlet obtained from FindCloudletPerformanceMode is the same as old cloudlet");
+            }
+            else
+            {
+             await CompareLatencies(stats);
+            }
           }
           else
           {
-            PropagateError(FindCloudletEventTrigger.LatencyTooHigh,
-              "New Cloudlet obtained from FindCloudletPerformanceMode is the same as old cloudlet");
+            PropagateError(FindCloudletEventTrigger.LatencyTooHigh, "FindCloudletPerformanceMode failed");
           }
         }
         else
         {
-          PropagateError(FindCloudletEventTrigger.LatencyTooHigh, "FindCloudletPerformanceMode failed");
+          PropagateError(FindCloudletEventTrigger.LatencyTooHigh, "FindCloudletPerformanceMode failed (RegisterClient failed)");
         }
       }
+      else
+      {
+        Logger.Log("Current Latency (" + stats.Avg + ") < LatencyThreshold (" + config.latencyThresholdTriggerMs + ")");
+      }
+      latencyProcessingInProgress = false;
+      Logger.Log("Finished processing Latency");
+      return;
     }
 
-    async void CompareLatencies(Statistics receivedStats)
+    async Task CompareLatencies(Statistics receivedStats)
     {
+      Logger.Log("Comparing Latencies");
       AppPort appPort;
       Site site;
       var netTest = new NetTest(integration.matchingEngine);
       if (hasTCPPorts)
       {
         appPort = integration.GetAppPort(LProto.Tcp, config.latencyTestPort);
+        Logger.Log("Performing Connect Test");
         site = new Site { host = appPort.FqdnPrefix + currentFindCloudlet.Fqdn, port = appPort.PublicPort, testType = TestType.CONNECT };
       }
       else
       {
         appPort = integration.GetAppPort(LProto.Udp);
+        Logger.Log("Performing Ping Test");
         site = new Site { host = appPort.FqdnPrefix + currentFindCloudlet.Fqdn, port = appPort.PublicPort, testType = TestType.PING };
       }
       await netTest.TestSite(site);
       double normalizedLatency = receivedStats.Avg - (receivedStats.Avg * config.performanceSwitchMargin);
       if (site.average < normalizedLatency)
       {
+        Logger.Log("NewCloudlet Obtained from LatencyTest have better Latency, Connecting to NewCloudlet");
         PropagateSuccess(FindCloudletEventTrigger.LatencyTooHigh, currentFindCloudlet);
       }
       else
@@ -408,14 +506,16 @@ namespace MobiledgeX
         PropagateError(FindCloudletEventTrigger.LatencyTooHigh,
           "Latency threshold exceeded, but no other cloudlets have a meaningful improvement in latency");
       }
+      return;
     }
 
-    async Task StopEdgeEvents()
+    void StopEdgeEvents()
     {
-      StopAllCoroutines();
+      Logger.Log("Stopping EdgeEvents");
+      stopEdgeEvents = true;
       if (integration != null)
       {
-        await integration.matchingEngine.EdgeEventsConnection.SendTerminate();
+        integration.matchingEngine.EdgeEventsConnection.Close();
       }
       latencyUpdatesCounter = 0;
       latencyUpdatesRunning = false;
@@ -424,7 +524,7 @@ namespace MobiledgeX
       location = null;
     }
 
-    async void PropagateSuccess(FindCloudletEventTrigger trigger, FindCloudletReply newCloudlet)
+    void PropagateSuccess(FindCloudletEventTrigger trigger, FindCloudletReply newCloudlet)
     {
       Logger.Log("Received NewCloudlet from the server triggered by" + trigger);
       FindCloudletEvent findCloudletEvent = new FindCloudletEvent();
@@ -442,24 +542,23 @@ namespace MobiledgeX
       }
       if (config.autoMigration)
       {
-        await StopEdgeEvents();
+        StopEdgeEvents();
         integration.persistentConnection.startStreamingEvents(integration);
       }
       else
       {
         //Migration occurs and autoMigration is set to false
-        await StopEdgeEvents();
+        StopEdgeEvents();
       }
     }
 
-    async void PropagateError(FindCloudletEventTrigger trigger, string error_msg)
+    void PropagateError(FindCloudletEventTrigger trigger, string error_msg)
     {
-
       FindCloudletEvent findCloudletEvent = new FindCloudletEvent();
       findCloudletEvent.trigger = trigger;
-      Logger.Log(error_msg);
+      Debug.LogError(error_msg);
       EdgeEventsStatus eventStatus = new EdgeEventsStatus(Status.error, error_msg);
-      await StopEdgeEvents();
+      StopEdgeEvents();
       try
       {
         integration.NewFindCloudletHandler(eventStatus, findCloudletEvent);
@@ -496,6 +595,6 @@ namespace MobiledgeX
         yield break;
       }
     }
-    #endregion
+#endregion
   }
 }
