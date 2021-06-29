@@ -207,7 +207,7 @@ namespace MobiledgeX
     }
 
 
-    public void StartEdgeEvents(MobiledgeXIntegration mxi)
+    public async void StartEdgeEvents(MobiledgeXIntegration mxi)
     {
       stopEdgeEventsRequested = false;
       processingStatus = LatencyProcessingStatus.Ready;
@@ -265,13 +265,13 @@ namespace MobiledgeX
         hasTCPPorts = false;
       }
       string host = integration.GetHost();
-      StartEdgeEventsLatency(connection, host);
-      StartEdgeEventsLocation(connection);
+      await StartEdgeEventsLatency(connection, host);
+      await StartEdgeEventsLocation(connection);
     }
 
-    void StartEdgeEventsLocation(EdgeEventsConnection connection)
+    async Task StartEdgeEventsLocation(EdgeEventsConnection connection)
     {
-      connection.PostLocationUpdate(location);
+      await connection.PostLocationUpdate(location).ConfigureAwait(false);
       switch (config.locationConfig.updatePattern)
       {
         case UpdatePattern.OnStart:
@@ -284,7 +284,7 @@ namespace MobiledgeX
       }
     }
 
-    void StartEdgeEventsLatency(EdgeEventsConnection connection, string host)
+    async Task StartEdgeEventsLatency(EdgeEventsConnection connection, string host)
     {
       Logger.Log("EdgeEvents Posting latency update," +
         "Host : " + host +
@@ -292,12 +292,12 @@ namespace MobiledgeX
       bool requestSent;
       if (hasTCPPorts)
       {
-        requestSent = connection.TestConnectAndPostLatencyUpdate(host, (uint)config.latencyTestPort, location).ConfigureAwait(false).GetAwaiter().GetResult();
+        requestSent = await connection.TestConnectAndPostLatencyUpdate(host, (uint)config.latencyTestPort, location).ConfigureAwait(false);
         Logger.Log("TestConnectAndPostLatencyUpdate : " + requestSent);
       }
       else
       {
-        requestSent = connection.TestPingAndPostLatencyUpdate(host, location).ConfigureAwait(false).GetAwaiter().GetResult();
+        requestSent = await connection.TestPingAndPostLatencyUpdate(host, location).ConfigureAwait(false);
         Logger.Log("TestPingAndPostLatencyUpdate : " + requestSent);
       }
 
