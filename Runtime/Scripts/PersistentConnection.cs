@@ -199,7 +199,7 @@ namespace MobiledgeX
     }
 
 
-    public async void StartEdgeEvents(MobiledgeXIntegration mxi)
+    public void StartEdgeEvents(MobiledgeXIntegration mxi)
     {
       stopEdgeEventsRequested = false;
       processingStatus = LatencyProcessingStatus.Ready;
@@ -212,7 +212,7 @@ namespace MobiledgeX
       DeviceInfoIntegration deviceInfo = new DeviceInfoIntegration();
       DeviceStaticInfo deviceStaticInfo = deviceInfo.GetDeviceStaticInfo();
       DeviceDynamicInfo deviceDynamicInfo = deviceInfo.GetDeviceDynamicInfo();
-      integration.matchingEngine.EdgeEventsConnection.Open(deviceStaticInfo, deviceDynamicInfo);
+      integration.matchingEngine.EdgeEventsConnection.Open();
       config = MobiledgeXIntegration.settings.edgeEventsConfig;
       currentFindCloudlet = integration.latestFindCloudletReply;
       //Log summary of EdgeEvents
@@ -257,13 +257,13 @@ namespace MobiledgeX
         hasTCPPorts = false;
       }
       string host = integration.GetHost();
-      await StartEdgeEventsLatency(connection, host);
-      await StartEdgeEventsLocation(connection);
+      StartEdgeEventsLatency(connection, host);
+      StartEdgeEventsLocation(connection);
     }
 
-    async Task StartEdgeEventsLocation(EdgeEventsConnection connection)
+    void StartEdgeEventsLocation(EdgeEventsConnection connection)
     {
-      await connection.PostLocationUpdate(location).ConfigureAwait(false);
+      connection.PostLocationUpdate(location).ConfigureAwait(false).GetAwaiter().GetResult();
       switch (config.locationConfig.updatePattern)
       {
         case UpdatePattern.OnStart:
@@ -276,7 +276,7 @@ namespace MobiledgeX
       }
     }
 
-    async Task StartEdgeEventsLatency(EdgeEventsConnection connection, string host)
+    void StartEdgeEventsLatency(EdgeEventsConnection connection, string host)
     {
       Logger.Log("EdgeEvents Posting latency update," +
         "Host : " + host +
@@ -284,12 +284,12 @@ namespace MobiledgeX
       bool requestSent;
       if (hasTCPPorts)
       {
-        requestSent = await connection.TestConnectAndPostLatencyUpdate(host, (uint)config.latencyTestPort, location).ConfigureAwait(false);
+        requestSent = connection.TestConnectAndPostLatencyUpdate(host, (uint)config.latencyTestPort, location).ConfigureAwait(false).GetAwaiter().GetResult();
         Logger.Log("TestConnectAndPostLatencyUpdate : " + requestSent);
       }
       else
       {
-        requestSent = await connection.TestPingAndPostLatencyUpdate(host, location).ConfigureAwait(false);
+        requestSent = connection.TestPingAndPostLatencyUpdate(host, location).ConfigureAwait(false).GetAwaiter().GetResult();
         Logger.Log("TestPingAndPostLatencyUpdate : " + requestSent);
       }
 
@@ -319,7 +319,7 @@ namespace MobiledgeX
       }
       yield return new WaitForSecondsRealtime(config.locationConfig.updateIntervalSeconds);
       yield return StartCoroutine(UpdateLocation());
-      Logger.Log("EdgeEvents Posting location update, Location to send [" + location.Latitude + ", " + location.Longitude+"]");
+      Logger.Log("EdgeEvents Posting location update, Location to send [" + location.Latitude + ", " + location.Longitude + "]");
       connection.PostLocationUpdate(location);
       locationUpdatesCounter++;
       yield return StartCoroutine(OnIntervalEdgeEventsLocation(connection));
@@ -432,7 +432,7 @@ namespace MobiledgeX
           PropagateError(FindCloudletEventTrigger.Error, edgeEvent.ErrorMsg);
           return;
         default:
-          Logger.Log("Received Unknown event, "+edgeEvent.ToString());
+          Logger.Log("Received Unknown event, " + edgeEvent.ToString());
           return;
       }
     }
@@ -484,7 +484,7 @@ namespace MobiledgeX
         }
         else
         {
-         await CompareLatencies(stats);
+          await CompareLatencies(stats);
         }
       }
       else
@@ -613,13 +613,13 @@ namespace MobiledgeX
         {
           location = LocationService.RetrieveLocation();//throws location exception if location is not retrieved
         }
-        catch(LocationException loc)
+        catch (LocationException loc)
         {
           PropagateError(FindCloudletEventTrigger.Error, "Error retrieving location " + loc.Message);
         }
         yield break;
       }
     }
-#endregion
+    #endregion
   }
 }
