@@ -245,6 +245,8 @@ namespace MobiledgeX
             {
                 if (persistentConnection!= null)
                 {
+                    persistentConnection.hostOverride = dmeHost;
+                    persistentConnection.portOverride = dmePort;
                     persistentConnection.startStreamingEvents(this);
                 }
             }
