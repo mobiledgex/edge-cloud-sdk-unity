@@ -60,16 +60,8 @@ namespace MobiledgeX
     [Tooltip("Set to false if you have your own Location handler.If useMobiledgexLocationServices = false, you must set persistentConnection.location to a value.")]
     public bool useMobiledgexLocationServices = true;
 
-    /// <summary>
-    /// (For Testing Only) Set DME Host override here, to be used in processing latency (FindCloudlet PerformanceMode)
-    /// </summary>
-    [Tooltip("(For Testing Only)Set DME Host override here, to be used in processing latency(FindCloudlet PerformanceMode)")]
-    public string hostOverride;
-    /// <summary>
-    /// (For Testing Only) Set DME Port override here, to be used in processing latency (FindCloudlet PerformanceMode)
-    /// </summary>
-    [Tooltip("(For Testing Only) Set DME Port override here, to be used in processing latency(FindCloudlet PerformanceMode)")]
-    public uint portOverride;
+    internal string hostOverride;
+    internal uint portOverride;
 
 
     #region MonoBehaviour Callbacks
@@ -380,7 +372,7 @@ namespace MobiledgeX
         case ServerEventType.EventLatencyProcessed:
           if (fcTriggers.Contains(FindCloudletEventTrigger.LatencyTooHigh))
           {
-            if(processingStatus == LatencyProcessingStatus.Ready)
+            if (processingStatus == LatencyProcessingStatus.Ready)
             {
               latestServerStats = edgeEvent.Statistics;
               processingStatus = LatencyProcessingStatus.Start;
@@ -396,7 +388,7 @@ namespace MobiledgeX
           {
             if (edgeEvent.NewCloudlet == null || edgeEvent.ErrorMsg != "")
             {
-              PropagateError(FindCloudletEventTrigger.AppInstHealthChanged, "Received EventAppinstHealth Event but NewCloudlet is null" + edgeEvent.ErrorMsg);
+              PropagateError(FindCloudletEventTrigger.AppInstHealthChanged, "Received EventAppinstHealth Event but NewCloudlet is null, " + edgeEvent.ErrorMsg);
               return;
             }
             PropagateSuccess(FindCloudletEventTrigger.AppInstHealthChanged, edgeEvent.NewCloudlet);
@@ -407,7 +399,7 @@ namespace MobiledgeX
           {
             if (edgeEvent.NewCloudlet == null || edgeEvent.ErrorMsg != "")
             {
-              PropagateError(FindCloudletEventTrigger.CloudletMaintenanceStateChanged, "Received CloudletStateChanged Event but NewCloudlet is null" + edgeEvent.ErrorMsg);
+              PropagateError(FindCloudletEventTrigger.CloudletMaintenanceStateChanged, "Received CloudletStateChanged Event but NewCloudlet is null, " + edgeEvent.ErrorMsg);
               return;
             }
             PropagateSuccess(FindCloudletEventTrigger.CloudletMaintenanceStateChanged, edgeEvent.NewCloudlet);
@@ -418,7 +410,7 @@ namespace MobiledgeX
           {
             if (edgeEvent.NewCloudlet == null || edgeEvent.ErrorMsg != "")
             {
-              PropagateError(FindCloudletEventTrigger.CloudletStateChanged, "Received CloudletStateChanged Event but NewCloudlet is null" + edgeEvent.ErrorMsg);
+              PropagateError(FindCloudletEventTrigger.CloudletStateChanged, "Received CloudletStateChanged Event but NewCloudlet is null, " + edgeEvent.ErrorMsg);
               return;
             }
             PropagateSuccess(FindCloudletEventTrigger.CloudletStateChanged, edgeEvent.NewCloudlet);
@@ -429,7 +421,7 @@ namespace MobiledgeX
           {
             if (edgeEvent.NewCloudlet == null || edgeEvent.ErrorMsg != "")
             {
-              PropagateError(FindCloudletEventTrigger.CloserCloudlet, "Received CloserCloudlet Event but NewCloudlet is null" + edgeEvent.ErrorMsg);
+              PropagateError(FindCloudletEventTrigger.CloserCloudlet, "Received CloserCloudlet Event but NewCloudlet is null, " + edgeEvent.ErrorMsg);
               return;
             }
             PropagateSuccess(FindCloudletEventTrigger.CloserCloudlet, edgeEvent.NewCloudlet);
@@ -473,12 +465,14 @@ namespace MobiledgeX
         if (!regResult)
         {
           PropagateError(FindCloudletEventTrigger.LatencyTooHigh, "FindCloudletPerformanceMode failed (RegisterClient failed)");
+          return;
         }
         tempMxi.UseFindCloudletPerformanceMode(true);
         bool fcSuccess = await tempMxi.FindCloudlet(hostOverride, (uint)portOverride);
         if (!fcSuccess)
         {
           PropagateError(FindCloudletEventTrigger.LatencyTooHigh, "FindCloudletPerformanceMode failed");
+          return;
         }
         currentFindCloudlet = tempMxi.latestFindCloudletReply;
         tempMxi.Dispose();
@@ -486,6 +480,7 @@ namespace MobiledgeX
         {
           PropagateError(FindCloudletEventTrigger.LatencyTooHigh,
             "New Cloudlet obtained from FindCloudletPerformanceMode is the same as old cloudlet");
+          return;
         }
         else
         {
