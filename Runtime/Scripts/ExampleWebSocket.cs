@@ -58,11 +58,11 @@ using DistributedMatchEngine;
         private void HandleFindCloudlet(EdgeEventsStatus edgeEventstatus, FindCloudletEvent fcEvent)
         {
             print("NewFindCloudlet triggered status is " + edgeEventstatus.status + ", Trigger" + fcEvent.trigger);
-            if(fcEvent.newCloudlet != null)
+            if (fcEvent.newCloudlet != null)
             {
                 print("New Cloudlet FQDN: " + fcEvent.newCloudlet.Fqdn);
             }
-            if(edgeEventstatus.status == Status.error)
+            if (edgeEventstatus.status == Status.error)
             {
                 print("Error received: " + edgeEventstatus.error_msg);
             }
