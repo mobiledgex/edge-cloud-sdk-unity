@@ -22,7 +22,7 @@ using DistributedMatchEngine;
 
         async void GetEdgeConnection()
         {
-            mxi = new MobiledgeXIntegration(FindObjectOfType<PersistentConnection>());
+            mxi = new MobiledgeXIntegration(FindObjectOfType<EdgeEventsManager>());
             mxi.NewFindCloudletHandler += HandleFindCloudlet;
             try
             {
