@@ -243,11 +243,11 @@ namespace MobiledgeX
             }
             if (matchingEngine.EnableEdgeEvents)
             {
-                if (persistentConnection!= null)
+                if(edgeEventsManager!= null)
                 {
-                    persistentConnection.hostOverride = dmeHost;
-                    persistentConnection.portOverride = dmePort;
-                    persistentConnection.startStreamingEvents(this);
+                    edgeEventsManager.hostOverride = dmeHost;
+                    edgeEventsManager.portOverride = dmePort;
+                    edgeEventsManager.startStreamingEvents(this);
                 }
             }
             return reply.Status == FindCloudletReply.Types.FindStatus.FindFound;
