@@ -27,8 +27,8 @@ using DistributedMatchEngine.PerformanceMetrics;
 namespace MobiledgeX
 {
   [RequireComponent(typeof(LocationService))]
-  [AddComponentMenu("MobiledgeX/PersistentConnection")]
-  public class PersistentConnection : MonoBehaviour
+  [AddComponentMenu("MobiledgeX/EdgeEventsManager")]
+  public class EdgeEventsManager : MonoBehaviour
   {
     internal Action<MobiledgeXIntegration> startStreamingEvents;
     MobiledgeXIntegration integration;
@@ -50,14 +50,14 @@ namespace MobiledgeX
     Statistics latestServerStats;
 
     /// <summary>
-    /// Location sent to the DME Server, used only if persistentConnection.useMobiledgexLocationServices = false
+    /// Location sent to the DME Server, used only if edgeEventsManager.useMobiledgexLocationServices = false
     /// </summary>
     public Loc location;
 
     /// <summary>
-    /// Set to false if you have your own Location handler. If useMobiledgexLocationServices = false, you must set persistentConnection.location to a value.
+    /// Set to false if you have your own Location handler. If useMobiledgexLocationServices = false, you must set edgeEventsManager.location to a value.
     /// </summary>
-    [Tooltip("Set to false if you have your own Location handler.If useMobiledgexLocationServices = false, you must set persistentConnection.location to a value.")]
+    [Tooltip("Set to false if you have your own Location handler.If useMobiledgexLocationServices = false, you must set edgeEventsManager.location to a value.")]
     public bool useMobiledgexLocationServices = true;
 
     internal string hostOverride;
@@ -65,7 +65,7 @@ namespace MobiledgeX
 
 
     #region MonoBehaviour Callbacks
-
+  
     IEnumerator Start()
     {
 #if !UNITY_EDITOR
@@ -128,7 +128,7 @@ namespace MobiledgeX
     }
     #endregion
 
-    #region PersistentConnection Functions
+    #region EdgeEventsManager Functions
 
     bool ValidateConfigs()
     {
@@ -361,7 +361,7 @@ namespace MobiledgeX
       switch (edgeEvent.EventType)
       {
         case ServerEventType.EventInitConnection:
-          Logger.Log("Successfully initiated persistent edge event connection");
+          Logger.Log("Successfully initiated Edge Event Connection");
           return;
         case ServerEventType.EventLatencyRequest:
           if (fcTriggers.Contains(FindCloudletEventTrigger.LatencyTooHigh))
@@ -569,7 +569,7 @@ namespace MobiledgeX
       if (config.autoMigration)
       {
         StopEdgeEvents();
-        integration.persistentConnection.startStreamingEvents(integration);
+        integration.edgeEventsManager.startStreamingEvents(integration);
       }
       else
       {
@@ -602,7 +602,7 @@ namespace MobiledgeX
       {
         if (location == null)
         {
-          PropagateError(FindCloudletEventTrigger.Error, "PersistentConnection.location is empty, Either use MobiledgeXLocationServices or Set PersistentConnection.location to a value. ");
+          PropagateError(FindCloudletEventTrigger.Error, "EdgeEventsManager.location is empty, Either use MobiledgeXLocationServices or Set EdgeEventsManager.location to a value. ");
         }
         yield break;
       }
