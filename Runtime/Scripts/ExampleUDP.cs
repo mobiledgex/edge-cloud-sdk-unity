@@ -20,7 +20,8 @@ public class ExampleUDP : MonoBehaviour
 
     async void GetEdgeConnection()
     {
-        mxi = new MobiledgeXIntegration();
+        mxi = new MobiledgeXIntegration(FindObjectOfType<EdgeEventsManager>());
+        mxi.NewFindCloudletHandler += HandleFindCloudlet;
         await mxi.RegisterAndFindCloudlet();
         udpSendPort = mxi.GetAppPort(LProto.Udp).PublicPort;
         udpHost = mxi.GetHost();
@@ -38,7 +39,19 @@ public class ExampleUDP : MonoBehaviour
         //byte[] messageBinary = Encoding.ASCII.GetBytes(message);
         //udpClient.Send(messageBinary);
     }
-
+    
+    private void HandleFindCloudlet(EdgeEventsStatus edgeEventstatus, FindCloudletEvent fcEvent)
+    {
+       print("NewFindCloudlet triggered status is " + edgeEventstatus.status + ", Trigger" + fcEvent.trigger);
+        if (fcEvent.newCloudlet != null)
+        {
+            print("New Cloudlet FQDN: " + fcEvent.newCloudlet.Fqdn);
+        }
+        if (edgeEventstatus.status == Status.error)
+        {
+            print("Error received: " + edgeEventstatus.error_msg);
+        }
+    }
     void Update()
     {
         if (udpClient == null)
