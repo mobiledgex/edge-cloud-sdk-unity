@@ -26,7 +26,7 @@ using System.Net.Http;
 using System;
 using System.Collections.Generic;
 
-[RequireComponent(typeof(PersistentConnection))]
+[RequireComponent(typeof(EdgeEventsManager))]
 [RequireComponent(typeof(MobiledgeX.LocationService))]
 public class ExampleRest : MonoBehaviour
 {
@@ -42,7 +42,7 @@ public class ExampleRest : MonoBehaviour
     async void GetEdgeConnection()
     {
 
-        mxi = new MobiledgeXIntegration(FindObjectOfType<PersistentConnection>());
+        mxi = new MobiledgeXIntegration(FindObjectOfType<EdgeEventsManager>());
         mxi.NewFindCloudletHandler += HandleFindCloudlet;
         try
         {
