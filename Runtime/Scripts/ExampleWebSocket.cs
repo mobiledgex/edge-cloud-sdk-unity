@@ -55,12 +55,16 @@ using DistributedMatchEngine;
             await wsClient.Connect(uri);
         }
 
-        private void HandleFindCloudlet(EdgeEventsStatus status, FindCloudletEvent fcEvent)
+        private void HandleFindCloudlet(EdgeEventsStatus edgeEventstatus, FindCloudletEvent fcEvent)
         {
-            print("NewFindCloudlet triggered status is " + status.status + ", Trigger" + fcEvent.trigger);
+            print("NewFindCloudlet triggered status is " + edgeEventstatus.status + ", Trigger" + fcEvent.trigger);
             if(fcEvent.newCloudlet != null)
             {
                 print("New Cloudlet FQDN: " + fcEvent.newCloudlet.Fqdn);
+            }
+            if(edgeEventstatus.status == Status.error)
+            {
+                print("Error received: " + edgeEventstatus.error_msg);
             }
         }
 
