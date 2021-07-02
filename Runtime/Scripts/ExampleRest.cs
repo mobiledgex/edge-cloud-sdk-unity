@@ -26,7 +26,7 @@ using System.Net.Http;
 using System;
 using System.Collections.Generic;
 
-[RequireComponent(typeof(PersistentConnection))]
+[RequireComponent(typeof(EdgeEventsManager))]
 [RequireComponent(typeof(MobiledgeX.LocationService))]
 public class ExampleRest : MonoBehaviour
 {
@@ -42,7 +42,7 @@ public class ExampleRest : MonoBehaviour
     async void GetEdgeConnection()
     {
 
-        mxi = new MobiledgeXIntegration(FindObjectOfType<PersistentConnection>());
+        mxi = new MobiledgeXIntegration(FindObjectOfType<EdgeEventsManager>());
         mxi.NewFindCloudletHandler += HandleFindCloudlet;
         try
         {
@@ -77,9 +77,17 @@ public class ExampleRest : MonoBehaviour
         //await RestExampleHttpClient(url); // You can instead use HttpClient
     }
 
-    private void HandleFindCloudlet(EdgeEventsStatus status, FindCloudletEvent fcEvent)
+    private void HandleFindCloudlet(EdgeEventsStatus edgeEventstatus, FindCloudletEvent fcEvent)
     {
-        throw new NotImplementedException();
+       print("NewFindCloudlet triggered status is " + edgeEventstatus.status + ", Trigger" + fcEvent.trigger);
+        if (fcEvent.newCloudlet != null)
+        {
+            print("New Cloudlet FQDN: " + fcEvent.newCloudlet.Fqdn);
+        }
+        if (edgeEventstatus.status == Status.error)
+        {
+            print("Error received: " + edgeEventstatus.error_msg);
+        }
     }
 
     IEnumerator RestExample(string url)

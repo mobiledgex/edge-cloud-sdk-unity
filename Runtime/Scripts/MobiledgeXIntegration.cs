@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 using System.Net.WebSockets;
 using System.Linq;
 using DistributedMatchEngine; //MobiledgeX MatchingEngine
-using static DistributedMatchEngine.ServerEdgeEvent.Types;
+
 /*
 * MobiledgeX MatchingEngine SDK integration has an additional application side
 * "PlatformIntegration.cs/m" file for Android, IOS, or other platform integration
@@ -83,7 +83,12 @@ namespace MobiledgeX
         Location fallbackLocation = new Location(0,0);
         CarrierInfoClass carrierInfoClass = new CarrierInfoClass(); // used for IsRoaming check
         MelMessaging melMessaging;
-        internal PersistentConnection persistentConnection;
+        
+        /// <summary>
+        /// EdgeEvents Manager is responsible for Sending and Receiving EdgeEvents according to EdgeEvents Config
+        /// </summary>
+        public EdgeEventsManager edgeEventsManager;
+
         /// <summary>
         /// Use this action to get notified when a connection upgrade is available
         /// </summary>
@@ -115,7 +120,7 @@ namespace MobiledgeX
         /// <summary>
         /// Constructor for MobiledgeXIntegration. This class has functions that wrap DistributedMatchEngine functions for ease of use
         /// </summary>
-        public MobiledgeXIntegration(PersistentConnection eventsConnection = null, CarrierInfo carrierInfo = null, NetInterface netInterface = null, UniqueID uniqueId = null, DeviceInfoApp deviceInfo = null)
+        public MobiledgeXIntegration(EdgeEventsManager edgeEventsManager = null, CarrierInfo carrierInfo = null, NetInterface netInterface = null, UniqueID uniqueId = null, DeviceInfoApp deviceInfo = null)
         {
             ConfigureMobiledgeXSettings();
             // Set the platform specific way to get SIM carrier information.
@@ -130,7 +135,7 @@ namespace MobiledgeX
 
             melMessaging = new MelMessaging(appName);
             matchingEngine.SetMelMessaging(melMessaging);
-            persistentConnection = eventsConnection;
+            this.edgeEventsManager = edgeEventsManager;
 #if UNITY_EDITOR
             matchingEngine.EnableEdgeEvents = false;
 #endif
@@ -139,7 +144,7 @@ namespace MobiledgeX
         /// <summary>
         /// Constructor for MobiledgeXIntegration. This class has functions that wrap DistributedMatchEngine functions for ease of use
         /// </summary>
-        public MobiledgeXIntegration(string orgName, string appName , string appVers , string developerAuthToken = "", PersistentConnection eventsConnection = null)
+        public MobiledgeXIntegration(string orgName, string appName , string appVers , string developerAuthToken = "", EdgeEventsManager edgeEventsManager = null)
         {
             this.orgName = orgName;
             this.appVers = appVers;
@@ -153,7 +158,7 @@ namespace MobiledgeX
 
             melMessaging = new MelMessaging(appName);
             matchingEngine.SetMelMessaging(melMessaging);
-            persistentConnection = eventsConnection;
+            this.edgeEventsManager = edgeEventsManager;
 #if UNITY_EDITOR
             matchingEngine.EnableEdgeEvents = false;
 #endif
