@@ -309,3 +309,26 @@ char* _getOperatingSystem() {
     UIDevice* device = UIDevice.currentDevice;
     return convertToCStr([device.systemName UTF8String]);
 }
+
+char* _getNetworkType() {
+    CTTelephonyNetworkInfo *netinfo = [[CTTelephonyNetworkInfo alloc] init];
+    if (@available(iOS 12.0, *)) {
+        NSDictionary<NSString *, NSString *>* dataNetworkTypes = [netinfo serviceCurrentRadioAccessTechnology];
+        NSUInteger count = [dataNetworkTypes count];
+        if(count > 0)
+        {
+            id key = [[dataNetworkTypes allKeys] objectAtIndex:0];
+            id object = [dataNetworkTypes objectForKey:key];
+            return convertToCStr([object UTF8String]);
+        }
+        else
+        {
+            return convertToCStr("UNKNOWN");
+        }
+    }
+    else {
+        // Fallback on earlier versions
+        NSString* dataNetworkTypes = [netinfo currentRadioAccessTechnology];
+        return convertToCStr([dataNetworkTypes UTF8String]);
+    }
+}

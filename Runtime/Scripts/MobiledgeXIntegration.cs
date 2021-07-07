@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using System.Net.WebSockets;
 using System.Linq;
 using DistributedMatchEngine; //MobiledgeX MatchingEngine
+
 /*
 * MobiledgeX MatchingEngine SDK integration has an additional application side
 * "PlatformIntegration.cs/m" file for Android, IOS, or other platform integration
@@ -39,7 +40,7 @@ namespace MobiledgeX
         /// <summary>
         /// Scriptable Object Holding MobiledgeX Settings (OrgName, AppName, AppVers)
         /// </summary>
-        static MobiledgeXSettings settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
+        public static MobiledgeXSettings settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
 
         /// <summary>
         /// MatchingEngine objects
@@ -74,15 +75,24 @@ namespace MobiledgeX
         /// MatchingEngine Reply/ State variables (for internal use)
         /// </summary>
         bool latestRegisterStatus = false; // Whether the most recent registerClient call was successful
-        FindCloudletReply latestFindCloudletReply = null; // Stored to be used in GetUrl, GetHost, GetPort, Get[]Connection
+        internal FindCloudletReply latestFindCloudletReply = null; // Stored to be used in GetUrl, GetHost, GetPort, Get[]Connection
         bool latestVerifyLocationStatus = false; // Whether the most recent verifyLocation call was successful
-        FindCloudletMode mode = FindCloudletMode.PROXIMITY; // FindCloudlet mode
+        internal FindCloudletMode mode = FindCloudletMode.PROXIMITY; // FindCloudlet mode
         AppPort latestAppPort = null;
         AppPort[] latestAppPortList = null;
         Location fallbackLocation = new Location(0,0);
         CarrierInfoClass carrierInfoClass = new CarrierInfoClass(); // used for IsRoaming check
         MelMessaging melMessaging;
+        
+        /// <summary>
+        /// EdgeEvents Manager is responsible for Sending and Receiving EdgeEvents according to EdgeEvents Config
+        /// </summary>
+        public EdgeEventsManager edgeEventsManager;
 
+        /// <summary>
+        /// Use this action to get notified when a connection upgrade is available
+        /// </summary>
+        public Action<EdgeEventsStatus, FindCloudletEvent> NewFindCloudletHandler;
         string region
         {
             get
@@ -110,7 +120,7 @@ namespace MobiledgeX
         /// <summary>
         /// Constructor for MobiledgeXIntegration. This class has functions that wrap DistributedMatchEngine functions for ease of use
         /// </summary>
-        public MobiledgeXIntegration(CarrierInfo carrierInfo = null, NetInterface netInterface = null, UniqueID uniqueId = null, DeviceInfoApp deviceInfo = null)
+        public MobiledgeXIntegration(EdgeEventsManager edgeEventsManager = null, CarrierInfo carrierInfo = null, NetInterface netInterface = null, UniqueID uniqueId = null, DeviceInfoApp deviceInfo = null)
         {
             ConfigureMobiledgeXSettings();
             // Set the platform specific way to get SIM carrier information.
@@ -125,6 +135,7 @@ namespace MobiledgeX
 
             melMessaging = new MelMessaging(appName);
             matchingEngine.SetMelMessaging(melMessaging);
+            this.edgeEventsManager = edgeEventsManager;
 #if UNITY_EDITOR
             matchingEngine.EnableEdgeEvents = false;
 #endif
@@ -133,7 +144,7 @@ namespace MobiledgeX
         /// <summary>
         /// Constructor for MobiledgeXIntegration. This class has functions that wrap DistributedMatchEngine functions for ease of use
         /// </summary>
-        public MobiledgeXIntegration(string orgName, string appName , string appVers , string developerAuthToken = "")
+        public MobiledgeXIntegration(string orgName, string appName , string appVers , string developerAuthToken = "", EdgeEventsManager edgeEventsManager = null)
         {
             this.orgName = orgName;
             this.appVers = appVers;
@@ -147,6 +158,7 @@ namespace MobiledgeX
 
             melMessaging = new MelMessaging(appName);
             matchingEngine.SetMelMessaging(melMessaging);
+            this.edgeEventsManager = edgeEventsManager;
 #if UNITY_EDITOR
             matchingEngine.EnableEdgeEvents = false;
 #endif
@@ -253,7 +265,6 @@ namespace MobiledgeX
             }
 
             Dictionary<int, AppPort> appPortsDict = new Dictionary<int, AppPort>();
-
             switch (proto)
             {
                 case LProto.Tcp:

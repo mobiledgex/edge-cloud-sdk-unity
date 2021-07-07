@@ -22,10 +22,9 @@ namespace MobiledgeX
     public class Logger
     {
         public enum LogType { All, ErrorsAndWarnings, ErrorsOnly};
-        static MobiledgeXSettings settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
         public static void LogWarning(string message)
         {
-            if (settings.logType == LogType.All || settings.logType == LogType.ErrorsAndWarnings)
+            if (MobiledgeXIntegration.settings.logType == LogType.All || MobiledgeXIntegration.settings.logType == LogType.ErrorsAndWarnings)
             {
                 Debug.LogWarning("MobiledgeX: "+message);
             }
@@ -33,7 +32,7 @@ namespace MobiledgeX
 
         public static void Log(string message)
         {
-            if(settings.logType == LogType.All)
+            if(MobiledgeXIntegration.settings.logType == LogType.All)
             {
                 Debug.Log("MobiledgeX: "+message);
             }

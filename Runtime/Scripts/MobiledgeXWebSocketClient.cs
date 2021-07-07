@@ -193,7 +193,6 @@ namespace MobiledgeX
             Dictionary<WebSocketMessageType, MemoryStream> response = new Dictionary<WebSocketMessageType, MemoryStream>(1);
             while (run)
             {
-                Logger.Log("WebSocket Awaiting Receive...");
                 response = await Receive();
                 if (response != null && response.Keys.Count > 0)
                 {

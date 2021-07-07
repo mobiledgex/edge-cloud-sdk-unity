@@ -26,6 +26,7 @@ using System.Net.Http;
 using System;
 using System.Collections.Generic;
 
+[RequireComponent(typeof(EdgeEventsManager))]
 [RequireComponent(typeof(MobiledgeX.LocationService))]
 public class ExampleRest : MonoBehaviour
 {
@@ -34,17 +35,20 @@ public class ExampleRest : MonoBehaviour
     IEnumerator Start()
     {
         yield return StartCoroutine(MobiledgeX.LocationService.EnsureLocation());
+
         GetEdgeConnection();
     }
 
     async void GetEdgeConnection()
     {
-        mxi = new MobiledgeXIntegration();
+
+        mxi = new MobiledgeXIntegration(FindObjectOfType<EdgeEventsManager>());
+        mxi.NewFindCloudletHandler += HandleFindCloudlet;
         try
         {
             await mxi.RegisterAndFindCloudlet();
         }
-        //RegisterClientException is thrown if your app is not found or if you carrier is not registered on MobiledgeX yet
+        //RegisterClientException is thrown if your app is not found or if your carrier is not registered on MobiledgeX yet
         catch (RegisterClientException rce)
         {
             Debug.Log("RegisterClientException: " + rce.Message + "Inner Exception: " + rce.InnerException);
@@ -71,6 +75,19 @@ public class ExampleRest : MonoBehaviour
         Debug.Log("url : " + url); // Once you have your edge server url you can start communicating with your Edge server deployed on MobiledgeX Console
         StartCoroutine(RestExample(url)); //using UnityWebRequest
         //await RestExampleHttpClient(url); // You can instead use HttpClient
+    }
+
+    private void HandleFindCloudlet(EdgeEventsStatus edgeEventstatus, FindCloudletEvent fcEvent)
+    {
+       print("NewFindCloudlet triggered status is " + edgeEventstatus.status + ", Trigger" + fcEvent.trigger);
+        if (fcEvent.newCloudlet != null)
+        {
+            print("New Cloudlet FQDN: " + fcEvent.newCloudlet.Fqdn);
+        }
+        if (edgeEventstatus.status == Status.error)
+        {
+            print("Error received: " + edgeEventstatus.error_msg);
+        }
     }
 
     IEnumerator RestExample(string url)
@@ -101,6 +118,7 @@ public class ExampleRest : MonoBehaviour
 
     private void OnDestroy()
     {
-        mxi.Dispose();
+        mxi.NewFindCloudletHandler -= HandleFindCloudlet;
+        mxi.matchingEngine.Dispose();
     }
 }
