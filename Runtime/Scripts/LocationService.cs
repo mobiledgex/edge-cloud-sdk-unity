@@ -150,7 +150,7 @@ namespace MobiledgeX
           Logger.Log("Initializing Location Service Timed Out");
           Input.location.Stop();
           initLocationServiceException = new LocationException("Initializing Location Service Timed Out");
-          yield break;//Exception will be thrown from RetrieveLocation()
+          yield break; //Exception will be thrown from RetrieveLocation()
         }
         else
         {
