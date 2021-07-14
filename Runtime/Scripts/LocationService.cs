@@ -50,6 +50,7 @@ namespace MobiledgeX
       }
 
 #if UNITY_EDITOR
+      locationObtained = true;
       Logger.Log("LocationService is not supported in UNITY_EDITOR");
       yield break;
 #else
