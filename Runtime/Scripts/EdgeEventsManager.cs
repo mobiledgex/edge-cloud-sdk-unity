@@ -99,19 +99,13 @@ namespace MobiledgeX
 
     private void OnApplicationQuit()
     {
-      if (fcThread.FCPerformanceThread.IsAlive)
-      {
-        fcThread.FCPerformanceThread.Interrupt();
-      }
+      fcThread.Interrupt();
       StopAllCoroutines();// stop edge events streaming
     }
 
     private void OnDestroy()
     {
-      if (fcThread.FCPerformanceThread.IsAlive)
-      {
-        fcThread.FCPerformanceThread.Interrupt();
-      }
+      fcThread.Interrupt();
       StopAllCoroutines();// stop edge events streaming
     }
 
@@ -132,7 +126,7 @@ namespace MobiledgeX
       if (processingStatus == LatencyProcessingStatus.Processed)
       {
         processingStatus = LatencyProcessingStatus.Ready;
-        Logger.Log("<color=green>XXXXFindCloudletPerformance done, Find Status: " + FCPerformanceReply.Status + " </color>");
+        Logger.Log("<color=green>FindCloudletPerformance done, Find Status: " + FCPerformanceReply.Status + " </color>");
         CompareLatencies(FCPerformanceReply, latestServerStats);
       }
     }
@@ -474,8 +468,7 @@ namespace MobiledgeX
     {
       if (FCPerformanceReply == null)
       {
-        PropagateError(FindCloudletEventTrigger.LatencyTooHigh,
-        "Error In FindCloudlet Perfromance Mode, FindCloudlet Reply is null");
+        PropagateError(FindCloudletEventTrigger.LatencyTooHigh, "Error In FindCloudlet Perfromance Mode, FindCloudlet Reply is null");
         return;
       }
 
@@ -632,7 +625,7 @@ namespace MobiledgeX
     {
       processingStatus = LatencyProcessingStatus.Processed;
       FCPerformanceReply = findCloudletReply;
-      fcThread.FCPerformanceThread.Abort();
+      fcThread.Interrupt();
     }
   }
   #endregion
@@ -645,7 +638,8 @@ namespace MobiledgeX
     MatchingEngine matchingEngine;
     EdgeEventsManager.FCPerformanceCallback callback;
     Loc location;
-    public Thread FCPerformanceThread;
+    Thread FCPerformanceThread;
+
     internal FCPerformanceThreadClass(MatchingEngine matchingEngine, string sessionCookie, Loc location, string hostOverride, uint portOverride,
      EdgeEventsManager.FCPerformanceCallback callbackDelegate)
     {
@@ -677,6 +671,14 @@ namespace MobiledgeX
         return;
       }
     }
+    internal void Interrupt()
+    {
+      if(FCPerformanceThread != null && FCPerformanceThread.IsAlive)
+      {
+        FCPerformanceThread.Interrupt();
+      }
+    }
+
     internal async void RunFCPerformanceHelper()
     {
       FindCloudletReply fcReply = null;
