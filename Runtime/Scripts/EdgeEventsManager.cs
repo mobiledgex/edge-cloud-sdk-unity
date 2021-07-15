@@ -51,8 +51,8 @@ namespace MobiledgeX
     }
     static LatencyProcessingStatus processingStatus;
     public delegate void FCPerformanceCallback(FindCloudletReply findCloudletReply);
+    FCPerformanceThreadClass fcThread;
     Statistics latestServerStats;
-    Thread FCPerformanceThread;
 
     /// <summary>
     /// Location sent to the DME Server, used only if edgeEventsManager.useMobiledgexLocationServices = false
@@ -99,11 +99,19 @@ namespace MobiledgeX
 
     private void OnApplicationQuit()
     {
+      if (fcThread.FCPerformanceThread.IsAlive)
+      {
+        fcThread.FCPerformanceThread.Interrupt();
+      }
       StopAllCoroutines();// stop edge events streaming
     }
 
     private void OnDestroy()
     {
+      if (fcThread.FCPerformanceThread.IsAlive)
+      {
+        fcThread.FCPerformanceThread.Interrupt();
+      }
       StopAllCoroutines();// stop edge events streaming
     }
 
@@ -478,7 +486,7 @@ namespace MobiledgeX
         return;
       }
 
-      if (!integration.latestFindCloudletReply.Fqdn.Equals(FCPerformanceReply.Fqdn))
+      if (integration.latestFindCloudletReply.Fqdn.Equals(FCPerformanceReply.Fqdn))
       {
         PropagateError(FindCloudletEventTrigger.LatencyTooHigh,
           "New Cloudlet obtained from FindCloudletPerformanceMode is the same as old cloudlet");
@@ -608,25 +616,9 @@ namespace MobiledgeX
         Logger.Log("Performing FindCloudlet PerformanceMode");
         PlatformIntegration pIntegration = new PlatformIntegration();
         MatchingEngine matchingEngine = new MatchingEngine(pIntegration.CarrierInfo, pIntegration.NetInterface, pIntegration.UniqueID, pIntegration.DeviceInfo);
-        FCPerformanceThreadClass fcThread = new FCPerformanceThreadClass
+        FCPerformanceThreadClass fcThreadObj = new FCPerformanceThreadClass
           (matchingEngine: matchingEngine, sessionCookie: integration.matchingEngine.sessionCookie, location: location, hostOverride: hostOverride, portOverride: portOverride, callbackDelegate: FCCallback);
-        try
-        {
-          FCPerformanceThread = new Thread(new ThreadStart(fcThread.RunFCPerformance));
-          FCPerformanceThread.Name = "FCPerformanceThread";
-          FCPerformanceThread.IsBackground = true;
-          FCPerformanceThread.Priority = System.Threading.ThreadPriority.Lowest;
-          FCPerformanceThread.Start();
-          Debug.Log("Waiting for FindCloudlet Performance Mode");
-          FCPerformanceThread.Join();
-        }
-        catch (ThreadInterruptedException tie)
-        {
-          FCPerformanceThread.Abort();
-          Logger.Log("FCPerformance Thread interrupted " + tie.Message + ", InnerExcetion: " + tie.InnerException + ", Stack: " + tie.StackTrace);
-          PropagateError(FindCloudletEventTrigger.LatencyTooHigh, "Error In FindCloudlet Perfromance Mode, Thread Interrupted");
-          return;
-        }
+        fcThreadObj.RunFCPerformance();
       }
       else
       {
@@ -640,7 +632,7 @@ namespace MobiledgeX
     {
       processingStatus = LatencyProcessingStatus.Processed;
       FCPerformanceReply = findCloudletReply;
-      FCPerformanceThread.Abort();
+      fcThread.FCPerformanceThread.Abort();
     }
   }
   #endregion
@@ -653,7 +645,7 @@ namespace MobiledgeX
     MatchingEngine matchingEngine;
     EdgeEventsManager.FCPerformanceCallback callback;
     Loc location;
-
+    public Thread FCPerformanceThread;
     internal FCPerformanceThreadClass(MatchingEngine matchingEngine, string sessionCookie, Loc location, string hostOverride, uint portOverride,
      EdgeEventsManager.FCPerformanceCallback callbackDelegate)
     {
@@ -665,7 +657,27 @@ namespace MobiledgeX
       callback = callbackDelegate;
     }
 
-    internal async void RunFCPerformance()
+    internal void RunFCPerformance()
+    {
+      FCPerformanceThread = new Thread(new ThreadStart(RunFCPerformanceHelper));
+      try
+      {
+        FCPerformanceThread.Name = "FCPerformanceThread";
+        FCPerformanceThread.IsBackground = true;
+        FCPerformanceThread.Priority = System.Threading.ThreadPriority.Lowest;
+        FCPerformanceThread.Start();
+        Debug.Log("Waiting for FindCloudlet Performance Mode");
+        FCPerformanceThread.Join();
+      }
+      catch (ThreadInterruptedException tie)
+      {
+        callback(null);
+        FCPerformanceThread.Abort();
+        Logger.Log("FCPerformance Thread interrupted " + tie.Message + ", InnerExcetion: " + tie.InnerException + ", Stack: " + tie.StackTrace);
+        return;
+      }
+    }
+    internal async void RunFCPerformanceHelper()
     {
       FindCloudletReply fcReply = null;
       matchingEngine.EnableEdgeEvents = false;
@@ -674,7 +686,7 @@ namespace MobiledgeX
       Debug.Log("FindCloudletPerformanceMode Request: " + fcReq.ToString());
       try
       {
-        fcReply = await matchingEngine.FindCloudletPerformanceMode(hostOverride, portOverride, fcReq, 5);
+        fcReply = await matchingEngine.FindCloudletPerformanceMode(hostOverride, portOverride, fcReq);
       }
       catch (Exception fce)
       {
