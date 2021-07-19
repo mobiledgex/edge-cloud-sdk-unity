@@ -28,7 +28,14 @@ namespace MobiledgeX
   public class LocationService : MonoBehaviour
   {
     private static Exception initLocationServiceException;
-    static bool locationObtained;
+    public enum LocationStatus
+    {
+      LocationNotSupported,
+      LocationPermissionNotAcquired,
+      LocationPermissionRequested,
+      LocationPermissionAcquired,
+    }
+    public static LocationStatus locationStatus;
     /// <summary>
     /// After initializing location services, this is the maximum wait time (in seconds) to acquire location info
     /// if the value selected is zero or less the default value (20 seconds) will be used.
@@ -48,9 +55,8 @@ namespace MobiledgeX
         Logger.Log("Your Device doesn't support LocationService");
         yield break;
       }
-
 #if UNITY_EDITOR
-      locationObtained = true;
+      locationStatus = LocationStatus.LocationNotSupported;
       Logger.Log("LocationService is not supported in UNITY_EDITOR");
       yield break;
 #else
@@ -78,7 +84,6 @@ namespace MobiledgeX
         {
           if (Input.location.status == LocationServiceStatus.Running)
           {
-            locationObtained = true;
             Logger.Log("Location Service succeded, Stopping LocationService, data saved to Input.location.lastData");
             Input.location.Stop();
           }
@@ -90,6 +95,7 @@ namespace MobiledgeX
       {
         if (Input.location.isEnabledByUser)
         {
+          locationStatus = LocationStatus.LocationPermissionAcquired;
           Input.location.Start();
           while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
           {
@@ -108,7 +114,6 @@ namespace MobiledgeX
           }
           if (Input.location.status == LocationServiceStatus.Running)
           {
-            locationObtained = true;
             Logger.Log("Location Service succeded, Stopping LocationService, data saved to Input.location.lastData");
             Input.location.Stop();
           }
@@ -116,10 +121,10 @@ namespace MobiledgeX
         }
         else
         {
-          locationObtained = false;
+          locationStatus = LocationStatus.LocationPermissionNotAcquired;
           Logger.Log("Location permission is not allowed by user yet.");
           Permission.RequestUserPermission(Permission.FineLocation);
-          yield return new WaitForEndOfFrame(); // Application Out of focus , waiting for user decision on Location Permission
+          yield return new WaitForSeconds(1); // Application Out of focus , waiting for user decision on Location Permission
         }
       }
 #endif
@@ -136,6 +141,7 @@ namespace MobiledgeX
       }
       else
       {
+        locationStatus = LocationStatus.LocationPermissionAcquired;
         Logger.Log("User accepted location permission.");
         Input.location.Start();
         while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
@@ -156,7 +162,6 @@ namespace MobiledgeX
         {
           if (Input.location.status == LocationServiceStatus.Running)
           {
-            locationObtained = true;
             Logger.Log("Location Service succeded, Stopping LocationService, data saved to Input.location.lastData");
             Input.location.Stop();
           }
@@ -166,9 +171,16 @@ namespace MobiledgeX
     }
     private void OnApplicationFocus(bool focus)
     {
-      if (focus && !locationObtained)
+      if(focus && locationStatus == LocationStatus.LocationPermissionRequested)
       {
         StartCoroutine(EnsureLocationAndroid());
+      }
+      if(!focus && locationStatus == LocationStatus.LocationPermissionNotAcquired)
+      {
+        if (Application.platform == RuntimePlatform.Android)
+        {
+          locationStatus = LocationStatus.LocationPermissionRequested;
+        }
       }
     }
 
