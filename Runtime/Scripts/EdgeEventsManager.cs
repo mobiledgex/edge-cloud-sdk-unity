@@ -99,13 +99,19 @@ namespace MobiledgeX
 
     private void OnApplicationQuit()
     {
-      fcThread.Interrupt();
+      if(fcThread != null)
+      {
+        fcThread.Interrupt();
+      }
       StopAllCoroutines();// stop edge events streaming
     }
 
     private void OnDestroy()
     {
-      fcThread.Interrupt();
+      if(fcThread != null)
+      {
+        fcThread.Interrupt();
+      }
       StopAllCoroutines();// stop edge events streaming
     }
 
@@ -625,7 +631,10 @@ namespace MobiledgeX
     {
       processingStatus = LatencyProcessingStatus.Processed;
       FCPerformanceReply = findCloudletReply;
-      fcThread.Interrupt();
+      if(fcThread != null)
+      {
+        fcThread.Interrupt();
+      }
     }
   }
   #endregion
