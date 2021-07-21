@@ -51,7 +51,7 @@ namespace MobiledgeX
     }
     static LatencyProcessingStatus processingStatus;
     public delegate void FCPerformanceCallback(FindCloudletReply findCloudletReply);
-    FCPerformanceThreadClass fcThread;
+    FCPerformanceThreadManager fcThreadManager; //FindCloudletPerformanceMode Thread Manager
     Statistics latestServerStats;
 
     /// <summary>
@@ -99,18 +99,18 @@ namespace MobiledgeX
 
     private void OnApplicationQuit()
     {
-      if(fcThread != null)
+      if (fcThreadManager != null)
       {
-        fcThread.Interrupt();
+        fcThreadManager.Interrupt();
       }
       StopAllCoroutines();// stop edge events streaming
     }
 
     private void OnDestroy()
     {
-      if(fcThread != null)
+      if (fcThreadManager != null)
       {
-        fcThread.Interrupt();
+        fcThreadManager.Interrupt();
       }
       StopAllCoroutines();// stop edge events streaming
     }
@@ -179,7 +179,6 @@ namespace MobiledgeX
       //location config validation
       if (config.newFindCloudletEventTriggers.Contains(FindCloudletEventTrigger.CloserCloudlet))
       {
-
         if (config.locationConfig.updatePattern == UpdatePattern.OnInterval)
         {
           if (config.locationConfig.maxNumberOfUpdates < 0)
@@ -613,10 +612,8 @@ namespace MobiledgeX
       {
         Logger.Log("Current Latency (" + stats.Avg + ") > LatencyThreshold (" + config.latencyThresholdTriggerMs + ")");
         Logger.Log("Performing FindCloudlet PerformanceMode");
-        PlatformIntegration pIntegration = new PlatformIntegration();
-        MatchingEngine matchingEngine = new MatchingEngine(pIntegration.CarrierInfo, pIntegration.NetInterface, pIntegration.UniqueID, pIntegration.DeviceInfo);
-        FCPerformanceThreadClass fcThreadObj = new FCPerformanceThreadClass
-          (matchingEngine: matchingEngine, sessionCookie: integration.matchingEngine.sessionCookie, location: location, hostOverride: hostOverride, portOverride: portOverride, callbackDelegate: FCCallback);
+        FCPerformanceThreadManager fcThreadObj = new FCPerformanceThreadManager
+          (matchingEngine: integration.matchingEngine, location: location, hostOverride: hostOverride, portOverride: portOverride, callbackDelegate: FCCallback);
         fcThreadObj.RunFCPerformance();
       }
       else
@@ -631,30 +628,28 @@ namespace MobiledgeX
     {
       processingStatus = LatencyProcessingStatus.Processed;
       FCPerformanceReply = findCloudletReply;
-      if(fcThread != null)
+      if (fcThreadManager != null)
       {
-        fcThread.Interrupt();
+        fcThreadManager.Interrupt();
       }
     }
   }
   #endregion
 
-  class FCPerformanceThreadClass
+  class FCPerformanceThreadManager
   {
     string hostOverride;
     uint portOverride;
-    string sessionCookie;
     MatchingEngine matchingEngine;
     EdgeEventsManager.FCPerformanceCallback callback;
     Loc location;
     Thread FCPerformanceThread;
 
-    internal FCPerformanceThreadClass(MatchingEngine matchingEngine, string sessionCookie, Loc location, string hostOverride, uint portOverride,
+    internal FCPerformanceThreadManager(MatchingEngine matchingEngine, Loc location, string hostOverride, uint portOverride,
      EdgeEventsManager.FCPerformanceCallback callbackDelegate)
     {
       this.hostOverride = hostOverride;
       this.portOverride = portOverride;
-      this.sessionCookie = sessionCookie;
       this.matchingEngine = matchingEngine;
       this.location = location;
       callback = callbackDelegate;
@@ -680,19 +675,23 @@ namespace MobiledgeX
         return;
       }
     }
+    
     internal void Interrupt()
     {
       if(FCPerformanceThread != null && FCPerformanceThread.IsAlive)
       {
         FCPerformanceThread.Interrupt();
       }
+      FCPerformanceThread = null;
+      hostOverride = null;
+      portOverride = 0;
+      location = null;
+      callback = null;
     }
 
     internal async void RunFCPerformanceHelper()
     {
       FindCloudletReply fcReply = null;
-      matchingEngine.EnableEdgeEvents = false;
-      matchingEngine.sessionCookie = sessionCookie;
       FindCloudletRequest fcReq = matchingEngine.CreateFindCloudletRequest(location, "");
       Debug.Log("FindCloudletPerformanceMode Request: " + fcReq.ToString());
       try
