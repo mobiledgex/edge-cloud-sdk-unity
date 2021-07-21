@@ -106,7 +106,7 @@ namespace MobiledgeX
       return deviceInfoStatic;
     }
 
-    public bool IsUdpPingSupported()
+    public bool IsPingSupported()
     {
       return true;
     }
@@ -134,7 +134,7 @@ namespace MobiledgeX
       return deviceInfoStatic;
     }
 
-    public bool IsUdpPingSupported()
+    public bool IsPingSupported()
     {
       return false;
     }
@@ -155,7 +155,7 @@ namespace MobiledgeX
       };
       return deviceInfoStatic;
     }
-    public bool IsUdpPingSupported()
+    public bool IsPingSupported()
     {
       return true;
     }
@@ -177,7 +177,7 @@ namespace MobiledgeX
       return null;
     }
 
-    public bool IsUdpPingSupported()
+    public bool IsPingSupported()
     {
       return true;
     }
