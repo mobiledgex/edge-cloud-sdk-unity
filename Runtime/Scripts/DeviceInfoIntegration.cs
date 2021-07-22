@@ -106,6 +106,11 @@ namespace MobiledgeX
       return deviceInfoStatic;
     }
 
+    public bool IsPingSupported()
+    {
+      return true;
+    }
+
 #elif UNITY_IOS
     
     public DeviceDynamicInfo GetDeviceDynamicInfo()
@@ -129,6 +134,11 @@ namespace MobiledgeX
       return deviceInfoStatic;
     }
 
+    public bool IsPingSupported()
+    {
+      return false;
+    }
+
 #else // Unsupported platform.
     public DeviceDynamicInfo GetDeviceDynamicInfo()
     {
@@ -145,11 +155,15 @@ namespace MobiledgeX
       };
       return deviceInfoStatic;
     }
-#endif
+    public bool IsPingSupported()
+    {
+      return true;
     }
+#endif
+  }
 
-    // Used for DeviceInfo in UnityEditor (any target platform)
-    public class TestDeviceInfo : DeviceInfoApp
+  // Used for DeviceInfo in UnityEditor (any target platform)
+  public class TestDeviceInfo : DeviceInfoApp
   {
     public DeviceDynamicInfo GetDeviceDynamicInfo()
     {
@@ -161,6 +175,11 @@ namespace MobiledgeX
     {
       Logger.Log("DeviceStaticInfo not implemented!");
       return null;
+    }
+
+    public bool IsPingSupported()
+    {
+      return true;
     }
   }
 }
