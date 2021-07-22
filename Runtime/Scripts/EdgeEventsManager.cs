@@ -51,7 +51,7 @@ namespace MobiledgeX
     }
     static LatencyProcessingStatus processingStatus;
     public delegate void FCPerformanceCallback(FindCloudletReply findCloudletReply);
-    FCPerformanceThreadManager fcThreadManager; //FindCloudletPerformanceMode Thread Manager
+    FCPerformanceThreadManager fcThreadManager;//FindCloudletPerformanceMode Thread Manager
     Statistics latestServerStats;
 
     /// <summary>
