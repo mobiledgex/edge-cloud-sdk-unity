@@ -55,9 +55,9 @@ namespace MobiledgeX
     };
 
 #if UNITY_ANDROID
-    public DeviceDynamicInfo GetDeviceDynamicInfo()
+    public DeviceInfoDynamic GetDeviceInfoDynamic()
     {
-      DeviceDynamicInfo deviceInfoDynamic = new DeviceDynamicInfo();
+      DeviceInfoDynamic deviceInfoDynamic = new DeviceInfoDynamic();
       CarrierInfoClass carrierInfo = new CarrierInfoClass();
       if (UnityEngine.XR.XRSettings.loadedDeviceName.Contains("oculus"))
       {
@@ -96,9 +96,9 @@ namespace MobiledgeX
       return deviceInfoDynamic;
     }
 
-    public DeviceStaticInfo GetDeviceStaticInfo()
+    public DeviceInfoStatic GetDeviceInfoStatic()
     {
-      DeviceStaticInfo deviceInfoStatic = new DeviceStaticInfo()
+      DeviceInfoStatic deviceInfoStatic = new DeviceInfoStatic()
       {
         DeviceModel = SystemInfo.deviceModel,
         DeviceOs = SystemInfo.operatingSystem
@@ -113,10 +113,10 @@ namespace MobiledgeX
 
 #elif UNITY_IOS
     
-    public DeviceDynamicInfo GetDeviceDynamicInfo()
+    public DeviceInfoDynamic GetDeviceInfoDynamic()
     {
       CarrierInfoClass carrierInfo = new CarrierInfoClass();
-      DeviceDynamicInfo deviceInfoDynamic = new DeviceDynamicInfo()
+      DeviceInfoDynamic deviceInfoDynamic = new DeviceInfoDynamic()
       {
         CarrierName = carrierInfo.GetCurrentCarrierName()
       };
@@ -124,9 +124,9 @@ namespace MobiledgeX
       return deviceInfoDynamic;
     }
 
-    public DeviceStaticInfo GetDeviceStaticInfo()
+    public DeviceInfoStatic GetDeviceInfoStatic()
     {
-      DeviceStaticInfo deviceInfoStatic = new DeviceStaticInfo()
+      DeviceInfoStatic deviceInfoStatic = new DeviceInfoStatic()
       {
         DeviceModel = SystemInfo.deviceModel,
         DeviceOs = SystemInfo.operatingSystem
@@ -140,15 +140,15 @@ namespace MobiledgeX
     }
 
 #else // Unsupported platform.
-    public DeviceDynamicInfo GetDeviceDynamicInfo()
+    public DeviceInfoDynamic GetDeviceInfoDynamic()
     {
-      Logger.Log("DeviceDynamicInfo not implemented!");
+      Logger.Log("DeviceInfoDynamic not implemented!");
       return null;
     }
 
-    public DeviceStaticInfo GetDeviceStaticInfo()
+    public DeviceInfoStatic GetDeviceInfoStatic()
     {
-      DeviceStaticInfo deviceInfoStatic = new DeviceStaticInfo()
+      DeviceInfoStatic deviceInfoStatic = new DeviceInfoStatic()
       {
         DeviceModel = SystemInfo.deviceModel,
         DeviceOs = SystemInfo.operatingSystem
@@ -165,15 +165,15 @@ namespace MobiledgeX
   // Used for DeviceInfo in UnityEditor (any target platform)
   public class TestDeviceInfo : DeviceInfoApp
   {
-    public DeviceDynamicInfo GetDeviceDynamicInfo()
+    public DeviceInfoDynamic GetDeviceInfoDynamic()
     {
-      Logger.Log("DeviceDynamicInfo not implemented!");
+      Logger.Log("DeviceInfoDynamic not implemented!");
       return null;
     }
 
-    public DeviceStaticInfo GetDeviceStaticInfo()
+    public DeviceInfoStatic GetDeviceInfoStatic()
     {
-      Logger.Log("DeviceStaticInfo not implemented!");
+      Logger.Log("DeviceInfoStatic not implemented!");
       return null;
     }
 
