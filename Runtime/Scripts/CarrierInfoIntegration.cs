@@ -178,6 +178,10 @@ namespace MobiledgeX
         return -1;
       }
       AndroidJavaObject signalStrength = telManager.Call<AndroidJavaObject>("getSignalStrength");
+      if (signalStrength == null)
+      {
+        return -1;
+      }
       int signalStrengthLevel =  signalStrength.Call<int>("getLevel");
       return signalStrengthLevel;
     }
