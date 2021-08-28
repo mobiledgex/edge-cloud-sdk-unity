@@ -100,7 +100,7 @@ namespace MobiledgeX
                     while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
                     {
                         yield return new WaitForSeconds(1);
-                        Logger.Log("Initializing Location Service, Exiting in " + maxWait);
+                        Logger.Log("Initializing Location Service, Exiting " + maxWait);
                         maxWait--;
                     }
 
@@ -147,7 +147,7 @@ namespace MobiledgeX
                 while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
                 {
                     yield return new WaitForSeconds(1);
-                    Logger.Log("Initializing Location Service, Exiting in " + maxWait);
+                    Logger.Log("Initializing Location Service, Exiting " + maxWait);
                     maxWait--;
                 }
                 // Service didn't initialize in before the timeOut threshold
