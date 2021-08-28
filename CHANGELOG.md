@@ -4,7 +4,7 @@ All notable changes to this package will be documented in this file.
 ## [3.0.0] - 2021-08-31
 
 ### Fix & Improvements.
-- Call MobiledgeXIntegration.Dispos() to avoid memory leakage, see the examples for more details.
+- Call MobiledgeXIntegration.Dispose() to avoid memory leakage, see the examples for more details.
 - LocationService updated with more robust behavior on Android and iOS.
 
 ## [3.0.0] - 2021-08-31 (gRPC) 
@@ -17,7 +17,7 @@ All notable changes to this package will be documented in this file.
 - EdgeEvents works only on Android and iOS, gRPC bidirectional streaming is not supported in UnityEditor yet.
 
 ### Fix & Improvements.
-- Call MobiledgeXIntegration.Dispos() to avoid memory leakage, see the examples for more details.
+- Call MobiledgeXIntegration.Dispose() to avoid memory leakage, see the examples for more details.
 - LocationService updated with more robust behavior on Android and iOS.
 ### MobiledgeX Settings
 - Edge Events configuration, your edge events config. will be used by EdgeEventsManager.cs to ensure you are always connected to the best server.
