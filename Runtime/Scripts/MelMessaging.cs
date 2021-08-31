@@ -22,107 +22,109 @@ using DistributedMatchEngine.Mel;
 
 public class MelMessaging : MelMessagingInterface
 {
-
-#if UNITY_ANDROID
-  AndroidJavaObject getActivity()
-  {
-    AndroidJavaClass unityPlayer = PlatformIntegrationUtil.GetAndroidJavaClass("com.unity3d.player.UnityPlayer");
-    if (unityPlayer == null)
+  /*
+  MEL Interface is disabled untill the DME is updated to handle the AppOfficialFqdnRequest with mel session cookie
+  #if UNITY_ANDROID
+    AndroidJavaObject getActivity()
     {
-      return null;
+      AndroidJavaClass unityPlayer = PlatformIntegrationUtil.GetAndroidJavaClass("com.unity3d.player.UnityPlayer");
+      if (unityPlayer == null)
+      {
+        return null;
+      }
+      AndroidJavaObject activity = PlatformIntegrationUtil.GetStatic<AndroidJavaObject>(unityPlayer, "currentActivity");
+      if (activity == null)
+      {
+        return null;
+      }
+      return activity;
     }
-    AndroidJavaObject activity = PlatformIntegrationUtil.GetStatic<AndroidJavaObject>(unityPlayer, "currentActivity");
-    if (activity == null)
+
+    AndroidJavaClass getMel()
     {
-      return null;
+      AndroidJavaClass MelCls = PlatformIntegrationUtil.GetAndroidJavaClass("com.mobiledgex.mel.MelMessaging");
+      return MelCls;
     }
-    return activity;
-  }
 
-  AndroidJavaClass getMel()
-  {
-    AndroidJavaClass MelCls = PlatformIntegrationUtil.GetAndroidJavaClass("com.mobiledgex.mel.MelMessaging");
-    return MelCls;
-  }
-
-  public MelMessaging(string appName)
-  {
-    // MobiledgeX Vender Interface. Only for Android.
-    AndroidJavaClass MelCls = getMel();
-
-    // Fire off intents to update MEL state.
-    var activity = getActivity();
-    if (activity == null)
+    public MelMessaging(string appName)
     {
-      return;
-    }
-    MelCls.CallStatic("sendForMelStatus", activity, appName);
-  }
+      // MobiledgeX Vender Interface. Only for Android.
+      AndroidJavaClass MelCls = getMel();
 
-  public bool IsMelEnabled()
-  {
-    AndroidJavaClass MelCls = getMel();
-    if (MelCls == null)
+      // Fire off intents to update MEL state.
+      var activity = getActivity();
+      if (activity == null)
+      {
+        return;
+      }
+      MelCls.CallStatic("sendForMelStatus", activity, appName);
+    }
+
+    public bool IsMelEnabled()
     {
-      return false;
+      AndroidJavaClass MelCls = getMel();
+      if (MelCls == null)
+      {
+        return false;
+      }
+      bool enabled = PlatformIntegrationUtil.CallStatic<Boolean>(MelCls, "isMelEnabled");
+      return enabled;
     }
-    bool enabled = PlatformIntegrationUtil.CallStatic<Boolean>(MelCls, "isMelEnabled");
-    return enabled;
-  }
 
-  public string GetMelVersion()
-  {
-    AndroidJavaClass MelCls = getMel();
-    if (MelCls == null)
+    public string GetMelVersion()
     {
-      return "";
+      AndroidJavaClass MelCls = getMel();
+      if (MelCls == null)
+      {
+        return "";
+      }
+      return PlatformIntegrationUtil.CallStatic<string>(MelCls, "getMelVersion");
     }
-    return PlatformIntegrationUtil.CallStatic<string>(MelCls, "getMelVersion");
-  }
 
-  public string GetUid()
-  {
-    AndroidJavaClass MelCls = getMel();
-    if (MelCls == null)
+    public string GetUid()
     {
-      return "";
+      AndroidJavaClass MelCls = getMel();
+      if (MelCls == null)
+      {
+        return "";
+      }
+      string uid = PlatformIntegrationUtil.CallStatic<string>(MelCls, "getUid");
+      return uid;
     }
-    string uid = PlatformIntegrationUtil.CallStatic<string>(MelCls, "getUid");
-    return uid;
-  }
 
-  public string SetToken(string token, string app_name)
-  {
-    AndroidJavaClass MelCls = getMel();
-    if (MelCls == null)
+    public string SetToken(string token, string app_name)
     {
-      return "";
+      AndroidJavaClass MelCls = getMel();
+      if (MelCls == null)
+      {
+        return "";
+      }
+      object[] pa = new object[3] { getActivity(), token, app_name };
+      string sent_token = PlatformIntegrationUtil.CallStatic<string>(MelCls, "sendSetToken", pa);
+      return sent_token;
     }
-    object[] pa = new object[3] { getActivity(), token, app_name };
-    string sent_token = PlatformIntegrationUtil.CallStatic<string>(MelCls, "sendSetToken", pa);
-    return sent_token;
-  }
 
-  // MelMessaging related:
-  public string GetManufacturer()
-  {
-     AndroidJavaClass BuildCls = PlatformIntegrationUtil.GetAndroidJavaClass("android.os.Build");
-     string manufacturer = PlatformIntegrationUtil.GetStatic<string>(BuildCls, "MANUFACTURER");
-     return manufacturer;
-  }
-#elif UNITY_IOS
-  public MelMessaging(string app_name) { }
-  public bool IsMelEnabled() { return false; }
-  public string GetMelVersion() { return ""; }
-  public string SetToken(string token, string app_name) { return ""; }
-  public string GetUid() { return ""; }
-  public string GetManufacturer() { return "Apple"; }
-#else
+    // MelMessaging related:
+    public string GetManufacturer()
+    {
+       AndroidJavaClass BuildCls = PlatformIntegrationUtil.GetAndroidJavaClass("android.os.Build");
+       string manufacturer = PlatformIntegrationUtil.GetStatic<string>(BuildCls, "MANUFACTURER");
+       return manufacturer;
+    }
+  #elif UNITY_IOS
+    public MelMessaging(string app_name) { }
+    public bool IsMelEnabled() { return false; }
+    public string GetMelVersion() { return ""; }
+    public string SetToken(string token, string app_name) { return ""; }
+    public string GetUid() { return ""; }
+    public string GetManufacturer() { return "Apple"; }
+  #else
+  */
   public MelMessaging(string app_name) { }
   public bool IsMelEnabled() { return false; }
   public string GetMelVersion() { return ""; }
   public string SetToken(string token, string app_name) { return ""; }
   public string GetUid() { return ""; }
   public string GetManufacturer() { return ""; }
-#endif
+  // #endif
 }

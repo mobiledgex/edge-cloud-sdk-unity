@@ -218,9 +218,6 @@ namespace MobiledgeX
         Debug.Log("EdgeEventsConnection is null");
         return;
       }
-      DeviceInfoIntegration deviceInfo = new DeviceInfoIntegration();
-      DeviceStaticInfo deviceStaticInfo = deviceInfo.GetDeviceStaticInfo();
-      DeviceDynamicInfo deviceDynamicInfo = deviceInfo.GetDeviceDynamicInfo();
       integration.matchingEngine.EdgeEventsConnection.Open();
       config = MobiledgeXIntegration.settings.edgeEventsConfig;
       //Log summary of EdgeEvents
