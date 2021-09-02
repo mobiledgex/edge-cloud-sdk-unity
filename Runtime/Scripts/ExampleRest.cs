@@ -98,4 +98,9 @@ public class ExampleRest : MonoBehaviour
         httpClient.BaseAddress = new Uri(url);
         return await httpClient.GetAsync("/"); //makes a get request
     }
+
+    void OnDestroy()
+    {
+        mxi.Dispose();
+    }
 }
