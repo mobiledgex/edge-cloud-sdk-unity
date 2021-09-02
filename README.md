@@ -111,6 +111,7 @@ using System.Collections;
 [RequireComponent(typeof(MobiledgeX.LocationService))]
 public class YourClassName : MonoBehaviour
 { 
+    MobiledgeXIntegration mxi;
     IEnumerator Start()
     {
         yield return StartCoroutine(MobiledgeX.LocationService.EnsureLocation()); // Location is needed to connect you to the closet edge
@@ -119,7 +120,7 @@ public class YourClassName : MonoBehaviour
     
     async void GetEdgeConnection()
     {
-        MobiledgeXIntegration mxi = new MobiledgeXIntegration();
+        mxi = new MobiledgeXIntegration();
         // you can use new MobiledgeXIntegration("orgName","appName","appVers");
         try
         {
@@ -148,6 +149,11 @@ public class YourClassName : MonoBehaviour
         
         mxi.GetAppPort(LProto.L_PROTO_TCP); // Get the port of the desired protocol
         string url = mxi.GetUrl("http"); // Get the url of the desired protocol
+    }
+
+    void OnDestroy()
+    {
+        mxi.Dispose();
     }
     
 }
