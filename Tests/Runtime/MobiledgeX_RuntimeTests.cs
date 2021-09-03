@@ -60,6 +60,7 @@ namespace MobiledgeX
                 return await RegisterHelper(mxi);
             });
             Assert.True(task.Result);
+            mxi.Dispose();
         }
 
         [Test]
@@ -77,6 +78,7 @@ namespace MobiledgeX
                 return await FindCloudletHelper(mxi);
             });
             Assert.True(task.Result);
+            mxi.Dispose();
         }
 
         [Test]
@@ -98,6 +100,7 @@ namespace MobiledgeX
             Debug.Log(task.Result);
             Assert.True(task.Result.Contains(proto));
             Assert.True(task.Result.Contains(port.ToString()));
+            mxi.Dispose();
         }
 
         [Test]
@@ -118,6 +121,7 @@ namespace MobiledgeX
             });
             Debug.Log(task.Result);
             Assert.IsNotEmpty(task.Result);
+            mxi.Dispose();
         }
 
         [Test]
@@ -149,6 +153,7 @@ namespace MobiledgeX
                     }
                 }
             }
+            mxi.Dispose();
         }
 
         [Test]
@@ -183,6 +188,7 @@ namespace MobiledgeX
                     }
                 }
             }
+            mxi.Dispose();
         }
 
         [Test]
@@ -204,11 +210,12 @@ namespace MobiledgeX
                 return await WebsocketMessageHelper(wsClient, url, "hello", timeOutMs);
             });
             Assert.True(sendWSMessage.Result == "olleh");
+            mxi.Dispose();
         }
 
 
         [Test]
-        [TestCase("MobiledgeX-Samples", "sdktest", "9.0", 30000)]
+        [TestCase("MobiledgeX-Samples", "sdktest", "9.0", 20000)]
         public void UDPTest(string orgName, string appName, string appVers, int timeOutMs)
         {
             MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
@@ -219,9 +226,10 @@ namespace MobiledgeX
             {
                 string hostName = await GetHostHelper(mxi, "udp");
                 MobiledgeXUDPClient udpClient = new MobiledgeXUDPClient(hostName, mxi.GetAppPort(LProto.L_PROTO_UDP).public_port);
-                return UDPMessageHelper(udpClient, "ping", 20000);
+                return UDPMessageHelper(udpClient, "ping", timeOutMs);
             });
             Assert.True(task.Result == "pong");
+            mxi.Dispose();
         }
 
         #endregion
