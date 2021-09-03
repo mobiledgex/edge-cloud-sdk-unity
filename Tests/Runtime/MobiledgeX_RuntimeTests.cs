@@ -28,7 +28,7 @@ namespace MobiledgeX
 {
     public class MobiledgeX_RuntimeTests
     {
-
+        MobiledgeXIntegration mxi;
         #region Testing Setup
 
         [OneTimeSetUp]
@@ -52,15 +52,17 @@ namespace MobiledgeX
         public void RegisterClient(string orgName, string appName, string appVers)
         {
             MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
-            mxi.appName = appName;
-            mxi.appVers = appVers;
-            mxi.orgName = orgName;
-            var task = Task.Run(async () =>
+            using (mxi)
             {
-                return await RegisterHelper(mxi);
-            });
-            Assert.True(task.Result);
-            mxi.Dispose();
+                mxi.appName = appName;
+                mxi.appVers = appVers;
+                mxi.orgName = orgName;
+                var task = Task.Run(async () =>
+                {
+                    return await RegisterHelper(mxi);
+                });
+                Assert.True(task.Result);
+            }
         }
 
         [Test]
@@ -68,17 +70,19 @@ namespace MobiledgeX
         public void FindCloudlet(string orgName, string appName, string appVers)
         {
             MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
-            mxi.appName = appName;
-            mxi.appVers = appVers;
-            mxi.orgName = orgName;
-            var task = Task.Run(async () =>
+            using (mxi)
             {
-                bool registered = await RegisterHelper(mxi);
-                Assert.True(registered, "Unable to register");
-                return await FindCloudletHelper(mxi);
-            });
-            Assert.True(task.Result);
-            mxi.Dispose();
+                mxi.appName = appName;
+                mxi.appVers = appVers;
+                mxi.orgName = orgName;
+                var task = Task.Run(async () =>
+                {
+                    bool registered = await RegisterHelper(mxi);
+                    Assert.True(registered, "Unable to register");
+                    return await FindCloudletHelper(mxi);
+                });
+                Assert.True(task.Result);
+            }
         }
 
         [Test]
@@ -90,17 +94,19 @@ namespace MobiledgeX
         public void GetUrl(string orgName, string appName, string appVers, string proto, int port)
         {
             MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
-            mxi.appName = appName;
-            mxi.appVers = appVers;
-            mxi.orgName = orgName;
-            var task = Task.Run(async () =>
+            using (mxi)
             {
-                return await GetUrlHelper(mxi, proto, port);
-            });
-            Debug.Log(task.Result);
-            Assert.True(task.Result.Contains(proto));
-            Assert.True(task.Result.Contains(port.ToString()));
-            mxi.Dispose();
+                mxi.appName = appName;
+                mxi.appVers = appVers;
+                mxi.orgName = orgName;
+                var task = Task.Run(async () =>
+                {
+                    return await GetUrlHelper(mxi, proto, port);
+                });
+                Debug.Log(task.Result);
+                Assert.True(task.Result.Contains(proto));
+                Assert.True(task.Result.Contains(port.ToString()));
+            }
         }
 
         [Test]
@@ -112,16 +118,18 @@ namespace MobiledgeX
         public void GetHost(string orgName, string appName, string appVers, string proto, int port)
         {
             MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
-            mxi.appName = appName;
-            mxi.appVers = appVers;
-            mxi.orgName = orgName;
-            var task = Task.Run(async () =>
+            using (mxi)
             {
-                return await GetHostHelper(mxi, proto, port);
-            });
-            Debug.Log(task.Result);
-            Assert.IsNotEmpty(task.Result);
-            mxi.Dispose();
+                mxi.appName = appName;
+                mxi.appVers = appVers;
+                mxi.orgName = orgName;
+                var task = Task.Run(async () =>
+                {
+                    return await GetHostHelper(mxi, proto, port);
+                });
+                Debug.Log(task.Result);
+                Assert.IsNotEmpty(task.Result);
+            }
         }
 
         [Test]
@@ -129,31 +137,33 @@ namespace MobiledgeX
         public void RegisterClientFaliure(string orgName, string appName, string appVers)
         {
             MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
-            mxi.appName = appName;
-            mxi.appVers = appVers;
-            mxi.orgName = orgName;
-            try
+            using (mxi)
             {
-                var task = Task.Run(async () =>
+                mxi.appName = appName;
+                mxi.appVers = appVers;
+                mxi.orgName = orgName;
+                try
                 {
-                    await RegisterHelper(mxi);
-                });
-            }
-            catch (Exception e)
-            {
-                if (e.GetBaseException().GetType() == typeof(HttpException))
-                {
-                    Assert.True(true);
-                }
-                else
-                {
-                    if (e.GetBaseException().GetType() != typeof(HttpException))
+                    var task = Task.Run(async () =>
                     {
-                        Assert.True(false);
+                        await RegisterHelper(mxi);
+                    });
+                }
+                catch (Exception e)
+                {
+                    if (e.GetBaseException().GetType() == typeof(HttpException))
+                    {
+                        Assert.True(true);
+                    }
+                    else
+                    {
+                        if (e.GetBaseException().GetType() != typeof(HttpException))
+                        {
+                            Assert.True(false);
+                        }
                     }
                 }
             }
-            mxi.Dispose();
         }
 
         [Test]
@@ -161,34 +171,36 @@ namespace MobiledgeX
         public void FindCloudletFaliure(string orgName, string appName, string appVers, double latitude, double longitude)
         {
             MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
-            mxi.appName = appName;
-            mxi.appVers = appVers;
-            mxi.orgName = orgName;
-            try
+            using (mxi)
             {
-                var task = Task.Run(async () =>
+                mxi.appName = appName;
+                mxi.appVers = appVers;
+                mxi.orgName = orgName;
+                try
                 {
-                    mxi.useFallbackLocation = true;
-                    mxi.SetFallbackLocation(longitude, latitude);
-                    await RegisterHelper(mxi);
-                    return await FindCloudletHelper(mxi);
-                });
-            }
-            catch (Exception e)
-            {
-                if (e.GetBaseException().GetType() == typeof(FindCloudletException))
-                {
-                    Assert.True(true);
-                }
-                else
-                {
-                    if (e.GetBaseException().GetType() != typeof(HttpException))
+                    var task = Task.Run(async () =>
                     {
-                        Assert.True(false);
+                        mxi.useFallbackLocation = true;
+                        mxi.SetFallbackLocation(longitude, latitude);
+                        await RegisterHelper(mxi);
+                        return await FindCloudletHelper(mxi);
+                    });
+                }
+                catch (Exception e)
+                {
+                    if (e.GetBaseException().GetType() == typeof(FindCloudletException))
+                    {
+                        Assert.True(true);
+                    }
+                    else
+                    {
+                        if (e.GetBaseException().GetType() != typeof(HttpException))
+                        {
+                            Assert.True(false);
+                        }
                     }
                 }
             }
-            mxi.Dispose();
         }
 
         [Test]
@@ -196,21 +208,23 @@ namespace MobiledgeX
         public void WebSocketTest(string orgName, string appName, string appVers, string proto, int port, int timeOutMs)
         {
             MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
-            mxi.appName = appName;
-            mxi.appVers = appVers;
-            mxi.orgName = orgName;
-            var getUrlTask = Task.Run(async () =>
+            using (mxi)
             {
-                return await GetUrlHelper(mxi, proto, port);
-            });
-            string url = getUrlTask.Result + "/ws";
-            MobiledgeXWebSocketClient wsClient = new MobiledgeXWebSocketClient();
-            var sendWSMessage = Task.Run(async () =>
-            {
-                return await WebsocketMessageHelper(wsClient, url, "hello", timeOutMs);
-            });
-            Assert.True(sendWSMessage.Result == "olleh");
-            mxi.Dispose();
+                mxi.appName = appName;
+                mxi.appVers = appVers;
+                mxi.orgName = orgName;
+                var getUrlTask = Task.Run(async () =>
+                {
+                    return await GetUrlHelper(mxi, proto, port);
+                });
+                string url = getUrlTask.Result + "/ws";
+                MobiledgeXWebSocketClient wsClient = new MobiledgeXWebSocketClient();
+                var sendWSMessage = Task.Run(async () =>
+                {
+                    return await WebsocketMessageHelper(wsClient, url, "hello", timeOutMs);
+                });
+                Assert.True(sendWSMessage.Result == "olleh");
+            }
         }
 
 
@@ -219,17 +233,19 @@ namespace MobiledgeX
         public void UDPTest(string orgName, string appName, string appVers, int timeOutMs)
         {
             MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo());
-            mxi.appName = appName;
-            mxi.appVers = appVers;
-            mxi.orgName = orgName;
-            var task = Task.Run(async () =>
+            using (mxi)
             {
-                string hostName = await GetHostHelper(mxi, "udp");
-                MobiledgeXUDPClient udpClient = new MobiledgeXUDPClient(hostName, mxi.GetAppPort(LProto.L_PROTO_UDP).public_port);
-                return UDPMessageHelper(udpClient, "ping", timeOutMs);
-            });
-            Assert.True(task.Result == "pong");
-            mxi.Dispose();
+                mxi.appName = appName;
+                mxi.appVers = appVers;
+                mxi.orgName = orgName;
+                var task = Task.Run(async () =>
+                {
+                    string hostName = await GetHostHelper(mxi, "udp");
+                    MobiledgeXUDPClient udpClient = new MobiledgeXUDPClient(hostName, mxi.GetAppPort(LProto.L_PROTO_UDP).public_port);
+                    return UDPMessageHelper(udpClient, "ping", timeOutMs);
+                });
+                Assert.True(task.Result == "pong");
+            }
         }
 
         #endregion
