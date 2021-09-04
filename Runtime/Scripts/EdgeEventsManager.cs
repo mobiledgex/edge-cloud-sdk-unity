@@ -616,6 +616,7 @@ namespace MobiledgeX
       else
       {
         Logger.Log("Current Latency (" + stats.Avg + ") < LatencyThreshold (" + config.latencyThresholdTriggerMs + ")");
+        processingStatus = LatencyProcessingStatus.Ready;
       }
       return;
     }
