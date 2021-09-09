@@ -22,7 +22,7 @@ namespace MobiledgeX
     public class Logger
     {
         public enum LogType { All, ErrorsAndWarnings, ErrorsOnly};
-        public static void LogWarning(string message)
+        internal static void LogWarning(string message)
         {
             if (MobiledgeXIntegration.settings.logType == LogType.All || MobiledgeXIntegration.settings.logType == LogType.ErrorsAndWarnings)
             {
@@ -30,11 +30,20 @@ namespace MobiledgeX
             }
         }
 
-        public static void Log(string message)
+        internal static void Log(string message)
         {
             if(MobiledgeXIntegration.settings.logType == LogType.All)
             {
                 Debug.Log("MobiledgeX: "+message);
+            }
+        }
+
+        internal static void LogObject(object obj, string message = "")
+        {
+            if (MobiledgeXIntegration.settings.logType == LogType.All)
+            {
+                string stringifiedObj = JsonUtility.ToJson(obj, true);
+                Debug.Log("MobiledgeX: " + message + " " + stringifiedObj);
             }
         }
     }
