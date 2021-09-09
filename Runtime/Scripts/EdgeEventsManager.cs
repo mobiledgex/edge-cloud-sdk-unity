@@ -132,7 +132,6 @@ namespace MobiledgeX
       if (processingStatus == LatencyProcessingStatus.Processed)
       {
         processingStatus = LatencyProcessingStatus.Ready;
-        Logger.Log("<color=green>FindCloudletPerformance done, Find Status: " + FCPerformanceReply.Status + " </color>");
         CompareLatencies(FCPerformanceReply, latestServerStats);
       }
     }
@@ -220,22 +219,7 @@ namespace MobiledgeX
       }
       integration.matchingEngine.EdgeEventsConnection.Open();
       config = MobiledgeXIntegration.settings.edgeEventsConfig;
-      //Log summary of EdgeEvents
-      string configSummary = "EdgeEvents Config Summary:\n Latency Test Port: " + config.latencyTestPort;
-      configSummary += "\n EdgeEvents Config: Latency Threshold Trigger (Milliseconds): " + config.latencyThresholdTriggerMs;
-      configSummary += "\n EdgeEvents Config: Latency Update Pattern: " + config.latencyConfig.updatePattern;
-      configSummary += "\n EdgeEvents Config: Latency Max. Number of Updates: " + config.latencyConfig.maxNumberOfUpdates;
-      configSummary += "\n EdgeEvents Config: Latency Update Interval (Seconds): " + config.latencyConfig.updateIntervalSeconds;
-      configSummary += "\n EdgeEvents Config: Location Update Pattern: " + config.locationConfig.updatePattern;
-      configSummary += "\n EdgeEvents Config: Location Max. Number of Updates: " + config.locationConfig.maxNumberOfUpdates;
-      configSummary += "\n EdgeEvents Config: Location Update Interval (Seconds): " + config.locationConfig.updateIntervalSeconds;
-      configSummary += "\n NewFindCloudletEventTriggers: ";
-      foreach (FindCloudletEventTrigger trigger in config.newFindCloudletEventTriggers)
-      {
-        configSummary += "\n  Trigger : " + trigger.ToString();
-      }
-      Logger.Log(configSummary);
-
+      Logger.LogObject(message: "configSummary", obj: config);
       integration.matchingEngine.EdgeEventsReceiver += HandleReceivedEvents;
       EdgeEventsConnection connection = integration.matchingEngine.EdgeEventsConnection;
 
@@ -359,16 +343,14 @@ namespace MobiledgeX
       {
         connection.TestPingAndPostLatencyUpdate(host, location).ConfigureAwait(false);
       }
-      Logger.Log("EdgeEvents Posting latency update," +
-        "Host : " + host +
-        ", Location to send [" + location.Latitude + ", " + location.Longitude + "]");
+      Logger.Log("EdgeEvents Posting latency update, Host : " + host +", Location to send[" + location.Latitude + ", " + location.Longitude + "]");
       latencyUpdatesCounter++;
       yield return StartCoroutine(OnIntervalEdgeEventsLatency(connection, host));
     }
 
     void HandleReceivedEvents(ServerEdgeEvent edgeEvent)
     {
-      Logger.Log("Received event type: " + edgeEvent.EventType);
+      Logger.LogObject( message: "Received event : " , obj: edgeEvent);
       List<FindCloudletEventTrigger> fcTriggers = config.newFindCloudletEventTriggers;
       switch (edgeEvent.EventType)
       {
@@ -384,7 +366,7 @@ namespace MobiledgeX
         case ServerEventType.EventLatencyProcessed:
           if (fcTriggers.Contains(FindCloudletEventTrigger.LatencyTooHigh))
           {
-            if (processingStatus == LatencyProcessingStatus.Ready)
+            if (processingStatus == LatencyProcessingStatus.Ready )
             {
               latestServerStats = edgeEvent.Statistics;
               processingStatus = LatencyProcessingStatus.Start;
@@ -440,11 +422,11 @@ namespace MobiledgeX
           }
           return;
         case ServerEventType.EventError:
-          Logger.Log("Received EventError from server, " + edgeEvent.ToString());
+          Logger.LogObject(message: "Received EventError from server, ", obj: edgeEvent);
           PropagateError(FindCloudletEventTrigger.Error, edgeEvent.ErrorMsg);
           return;
         default:
-          Logger.Log("Received Unknown event, " + edgeEvent.ToString());
+          Logger.LogObject(message: "Received Unknown event, " , obj: edgeEvent.ToString());
           return;
       }
     }
@@ -540,7 +522,7 @@ namespace MobiledgeX
 
     void PropagateSuccess(FindCloudletEventTrigger trigger, FindCloudletReply newCloudlet)
     {
-      Logger.Log("Received NewCloudlet from the server triggered by" + trigger);
+      Logger.LogObject(message: "Received NewCloudlet by trigger: " + trigger + ", NewCloudlet", obj: newCloudlet);
       FindCloudletEvent findCloudletEvent = new FindCloudletEvent();
       findCloudletEvent.trigger = trigger;
       findCloudletEvent.newCloudlet = newCloudlet;
@@ -691,7 +673,7 @@ namespace MobiledgeX
     {
       FindCloudletReply fcReply = null;
       FindCloudletRequest fcReq = matchingEngine.CreateFindCloudletRequest(location, "");
-      Debug.Log("FindCloudletPerformanceMode Request: " + fcReq.ToString());
+      Logger.LogObject(message: "FindCloudletPerformanceMode Request: ", obj: fcReq);
       try
       {
         fcReply = await matchingEngine.FindCloudletPerformanceMode(hostOverride, portOverride, fcReq);
@@ -702,7 +684,7 @@ namespace MobiledgeX
         callback(fcReply);
         Thread.CurrentThread.Abort();
       }
-      Debug.Log("FindCloudletPerformance done :" + fcReply.Status);
+      Logger.LogObject(message: "FindCloudletPerformance done, fcReply: ", obj: fcReply);
       if (callback != null)
       {
         callback(fcReply);
