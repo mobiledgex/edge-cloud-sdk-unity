@@ -350,7 +350,7 @@ namespace MobiledgeX
 
     void HandleReceivedEvents(ServerEdgeEvent edgeEvent)
     {
-      Logger.LogObject( message:"Received event : " , obj: edgeEvent);
+      Logger.LogObject( message: "Received event : " , obj: edgeEvent);
       List<FindCloudletEventTrigger> fcTriggers = config.newFindCloudletEventTriggers;
       switch (edgeEvent.EventType)
       {
