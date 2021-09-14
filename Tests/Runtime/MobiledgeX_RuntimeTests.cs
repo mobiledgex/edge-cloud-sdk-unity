@@ -41,7 +41,7 @@ namespace MobiledgeX
             {
                 Assert.Fail("MobiledgeX Plugins are not loaded in the project, Can't preform tests");
             }
-			MobiledgeXIntegration.settings.region = "EU"; //For Testing Purposes, works in Editor only.
+	    MobiledgeXIntegration.settings.region = "EU"; //For Testing Purposes, works in Editor only.
         }
 
         #endregion
