@@ -219,7 +219,21 @@ namespace MobiledgeX
       }
       integration.matchingEngine.EdgeEventsConnection.Open();
       config = MobiledgeXIntegration.settings.edgeEventsConfig;
-      Logger.LogObject(message: "configSummary", obj: config);
+      string configSummary = "EdgeEvents Config Summary:";
+      configSummary += "\nLatency Test Port: " + config.latencyTestPort;
+      configSummary += "\nLatency Threshold Trigger (Milliseconds): " + config.latencyThresholdTriggerMs;
+      configSummary += "\nLatency Update Pattern: " + config.latencyConfig.updatePattern;
+      configSummary += "\nLatency Max. Number of Updates: " + config.latencyConfig.maxNumberOfUpdates;
+      configSummary += "\nLatency Update Interval (Seconds): " + config.latencyConfig.updateIntervalSeconds;
+      configSummary += "\nLocation Update Pattern: " + config.locationConfig.updatePattern;
+      configSummary += "\nLocation Max. Number of Updates: " + config.locationConfig.maxNumberOfUpdates;
+      configSummary += "\nLocation Update Interval (Seconds): " + config.locationConfig.updateIntervalSeconds;
+      configSummary += "\nNewFindCloudletEventTriggers: ";
+      foreach (FindCloudletEventTrigger trigger in config.newFindCloudletEventTriggers)
+      {
+        configSummary += "\nTrigger : " + trigger.ToString();
+      }
+      Logger.Log(configSummary);
       integration.matchingEngine.EdgeEventsReceiver += HandleReceivedEvents;
       EdgeEventsConnection connection = integration.matchingEngine.EdgeEventsConnection;
 
@@ -343,14 +357,20 @@ namespace MobiledgeX
       {
         connection.TestPingAndPostLatencyUpdate(host, location).ConfigureAwait(false);
       }
-      Logger.Log("EdgeEvents Posting latency update, Host : " + host +", Location to send[" + location.Latitude + ", " + location.Longitude + "]");
+      Logger.Log("EdgeEvents Posting latency update, Host : " + host + ", Location to send[" + location.Latitude + ", " + location.Longitude + "]");
       latencyUpdatesCounter++;
       yield return StartCoroutine(OnIntervalEdgeEventsLatency(connection, host));
     }
 
     void HandleReceivedEvents(ServerEdgeEvent edgeEvent)
     {
-      Logger.LogObject( message: "Received event : " , obj: edgeEvent);
+      Debug.Log("Received event: " + edgeEvent.EventType
+        + "\nStatistics: " + edgeEvent.Statistics
+        + "\nHealthCheck: " + edgeEvent.HealthCheck
+        + "\nMaintenanceState: " + edgeEvent.MaintenanceState
+        + "\nNewCloudlet: " + edgeEvent.NewCloudlet
+        + "\nCloudletState: " + edgeEvent.CloudletState
+        + "\nErrorMsg: " + edgeEvent.ErrorMsg);
       List<FindCloudletEventTrigger> fcTriggers = config.newFindCloudletEventTriggers;
       switch (edgeEvent.EventType)
       {
@@ -366,7 +386,7 @@ namespace MobiledgeX
         case ServerEventType.EventLatencyProcessed:
           if (fcTriggers.Contains(FindCloudletEventTrigger.LatencyTooHigh))
           {
-            if (processingStatus == LatencyProcessingStatus.Ready )
+            if (processingStatus == LatencyProcessingStatus.Ready)
             {
               latestServerStats = edgeEvent.Statistics;
               processingStatus = LatencyProcessingStatus.Start;
@@ -422,11 +442,11 @@ namespace MobiledgeX
           }
           return;
         case ServerEventType.EventError:
-          Logger.LogObject(message: "Received EventError from server, ", obj: edgeEvent);
+          Logger.Log("Received EventError from server, Error : " + edgeEvent.ErrorMsg);
           PropagateError(FindCloudletEventTrigger.Error, edgeEvent.ErrorMsg);
           return;
         default:
-          Logger.LogObject(message: "Received Unknown event, " , obj: edgeEvent.ToString());
+          Logger.Log("Received Unknown event, event type: " + edgeEvent.EventType);
           return;
       }
     }
@@ -522,7 +542,7 @@ namespace MobiledgeX
 
     void PropagateSuccess(FindCloudletEventTrigger trigger, FindCloudletReply newCloudlet)
     {
-      Logger.LogObject(message: "Received NewCloudlet by trigger: " + trigger + ", NewCloudlet", obj: newCloudlet);
+      Logger.Log("Received NewCloudlet by trigger: " + trigger.ToString() + ", NewCloudlet" + newCloudlet.ToString());
       FindCloudletEvent findCloudletEvent = new FindCloudletEvent();
       findCloudletEvent.trigger = trigger;
       findCloudletEvent.newCloudlet = newCloudlet;
@@ -553,7 +573,6 @@ namespace MobiledgeX
       findCloudletEvent.trigger = trigger;
       Debug.LogError(error_msg);
       EdgeEventsStatus eventStatus = new EdgeEventsStatus(Status.error, error_msg);
-      StopEdgeEvents();
       try
       {
         integration.NewFindCloudletHandler(eventStatus, findCloudletEvent);
@@ -655,10 +674,10 @@ namespace MobiledgeX
         return;
       }
     }
-    
+
     internal void Interrupt()
     {
-      if(FCPerformanceThread != null && FCPerformanceThread.IsAlive)
+      if (FCPerformanceThread != null && FCPerformanceThread.IsAlive)
       {
         FCPerformanceThread.Interrupt();
       }
@@ -673,18 +692,18 @@ namespace MobiledgeX
     {
       FindCloudletReply fcReply = null;
       FindCloudletRequest fcReq = matchingEngine.CreateFindCloudletRequest(location, "");
-      Logger.LogObject(message: "FindCloudletPerformanceMode Request: ", obj: fcReq);
+      Logger.Log("FindCloudletPerformanceMode Request: " + fcReq.ToString());
       try
       {
         fcReply = await matchingEngine.FindCloudletPerformanceMode(hostOverride, portOverride, fcReq);
       }
       catch (Exception fce)
       {
-        Debug.Log("FindCloudletException: " + fce.Message + "Inner Exception: " + fce.InnerException + ", Stack: " + fce.StackTrace);
+        Debug.LogError("FindCloudletException: " + fce.Message + "Inner Exception: " + fce.InnerException + ", Stack: " + fce.StackTrace);
         callback(fcReply);
         Thread.CurrentThread.Abort();
       }
-      Logger.LogObject(message: "FindCloudletPerformance done, fcReply: ", obj: fcReply);
+      Logger.Log("FindCloudletPerformance done, fcReply: " + fcReply.ToString());
       if (callback != null)
       {
         callback(fcReply);
