@@ -273,7 +273,7 @@ namespace MobiledgeX
     IEnumerator StartEdgeEventsLocation(EdgeEventsConnection connection)
     {
       yield return StartCoroutine(UpdateLocation());
-      connection.PostLocationUpdate(location).ConfigureAwait(false).GetAwaiter().GetResult();
+      connection.PostLocationUpdate(location).ConfigureAwait(false);
       switch (config.locationConfig.updatePattern)
       {
         case UpdatePattern.OnStart:
@@ -294,13 +294,13 @@ namespace MobiledgeX
       bool requestSent;
       if (hasTCPPorts)
       {
-        requestSent = connection.TestConnectAndPostLatencyUpdate(host, (uint)config.latencyTestPort, location).ConfigureAwait(false).GetAwaiter().GetResult();
-        Logger.Log("TestConnectAndPostLatencyUpdate : " + requestSent);
+        connection.TestConnectAndPostLatencyUpdate(host, (uint)config.latencyTestPort, location).ConfigureAwait(false);
+        Logger.Log("TestConnectAndPostLatencyUpdate : fired " );
       }
       else
       {
-        requestSent = connection.TestPingAndPostLatencyUpdate(host, location).ConfigureAwait(false).GetAwaiter().GetResult();
-        Logger.Log("TestPingAndPostLatencyUpdate : " + requestSent);
+         connection.TestPingAndPostLatencyUpdate(host, location).ConfigureAwait(false);
+         Logger.Log("TestConnectAndPostLatencyUpdate : fired ");
       }
 
       switch (config.latencyConfig.updatePattern)
@@ -537,7 +537,6 @@ namespace MobiledgeX
       latencyUpdatesRunning = false;
       locationUpdatesCounter = 0;
       locationUpdatesRunning = false;
-      location = null;
     }
 
     void PropagateSuccess(FindCloudletEventTrigger trigger, FindCloudletReply newCloudlet)
@@ -695,6 +694,8 @@ namespace MobiledgeX
       Logger.Log("FindCloudletPerformanceMode Request: " + fcReq.ToString());
       try
       {
+        Logger.Log("FindCloudletPerformanceMode HostOverride: " + hostOverride);
+        Logger.Log("FindCloudletPerformanceMode portOverride: " + portOverride);
         fcReply = await matchingEngine.FindCloudletPerformanceMode(hostOverride, portOverride, fcReq);
       }
       catch (Exception fce)
