@@ -208,7 +208,7 @@ namespace MobiledgeX
       }
       return true;
     }
-    public async void StartEdgeEvents(MobiledgeXIntegration mxi)
+    public void StartEdgeEvents(MobiledgeXIntegration mxi)
     {
       processingStatus = LatencyProcessingStatus.Ready;
       integration = mxi;
@@ -218,7 +218,7 @@ namespace MobiledgeX
         Debug.LogError("EdgeEventsConnection is null");
         return;
       }
-      await integration.matchingEngine.EdgeEventsConnection.Open();
+      integration.matchingEngine.EdgeEventsConnection.Open();
       config = MobiledgeXIntegration.settings.edgeEventsConfig;
       string configSummary = "EdgeEvents Config Summary:";
       configSummary += "\nLatency Test Port: " + config.latencyTestPort;
@@ -292,8 +292,6 @@ namespace MobiledgeX
     {
       yield return StartCoroutine(UpdateLocation());
       Logger.Log("EdgeEvents Posting latency update," + "Host : " + host + ", Location to send [" + location.Latitude + ", " + location.Longitude + "]");
-
-      bool requestSent;
       if (hasTCPPorts)
       {
         connection.TestConnectAndPostLatencyUpdate(host, (uint)config.latencyTestPort, location).ConfigureAwait(false);
@@ -332,7 +330,7 @@ namespace MobiledgeX
       yield return new WaitForSecondsRealtime(config.locationConfig.updateIntervalSeconds);
       yield return StartCoroutine(UpdateLocation());
       Logger.Log("EdgeEvents Posting location update, Location to send [" + location.Latitude + ", " + location.Longitude + "]");
-      connection.PostLocationUpdate(location);
+      connection.PostLocationUpdate(location).ConfigureAwait(false);
       locationUpdatesCounter++;
       yield return StartCoroutine(OnIntervalEdgeEventsLocation(connection));
     }
@@ -532,14 +530,14 @@ namespace MobiledgeX
     /// Terminates EdgeEvents Connection
     /// If you didn't set AutoMigration to true, You need to call StopEdgeEvents() to close the connection before migrating to a new app instance.
     /// </summary>
-    public async Task StopEdgeEvents()
+    public void StopEdgeEvents()
     {
       Logger.Log("Stopping EdgeEvents");
       StopAllCoroutines();
       if (integration != null)
       {
-        await integration.matchingEngine.EdgeEventsConnection.Close();
         integration.matchingEngine.EdgeEventsReceiver -= HandleReceivedEvents;
+        integration.matchingEngine.EdgeEventsConnection.Close();
       }
       integration.matchingEngine.EdgeEventsConnection = null;
       latencyUpdatesCounter = 0;
@@ -548,7 +546,7 @@ namespace MobiledgeX
       locationUpdatesRunning = false;
     }
 
-    async void PropagateSuccess(FindCloudletEventTrigger trigger, FindCloudletReply newCloudlet)
+    void PropagateSuccess(FindCloudletEventTrigger trigger, FindCloudletReply newCloudlet)
     {
       Logger.Log("Received NewCloudlet by trigger: " + trigger.ToString() + ", NewCloudlet" + newCloudlet.ToString());
       FindCloudletEvent findCloudletEvent = new FindCloudletEvent();
@@ -568,7 +566,7 @@ namespace MobiledgeX
       {
         integration.latestFindCloudletReply = newCloudlet;
         integration.matchingEngine.edgeEventsCookie = newCloudlet.EdgeEventsCookie;
-        await StopEdgeEvents();
+        StopEdgeEvents();
         StartEdgeEvents(integration);
       }
       else
