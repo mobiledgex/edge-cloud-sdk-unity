@@ -86,7 +86,7 @@ public class ExampleRest : MonoBehaviour
         }
         if (edgeEventstatus.status == Status.error)
         {
-            print("Error received: " + edgeEventstatus.error_msg);
+            print("Error received: " + edgeEventstatus.error);
         }
     }
 
