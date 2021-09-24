@@ -212,7 +212,8 @@ namespace MobiledgeX
     {
       processingStatus = LatencyProcessingStatus.Ready;
       integration = mxi;
-      integration.matchingEngine.GetEdgeEventsConnection(integration.matchingEngine.edgeEventsCookie, integration.region, MatchingEngine.defaultDmeGrpcPort);
+      ConnectionDetails connectionDetails = ConnectionDetails.GetConnectionDetails(hostOverride, portOverride, integration);
+      integration.matchingEngine.GetEdgeEventsConnection(integration.matchingEngine.edgeEventsCookie, connectionDetails.host, connectionDetails.port);
       if (integration.matchingEngine.EdgeEventsConnection == null)
       {
         Debug.LogError("EdgeEventsConnection is null");
@@ -619,16 +620,9 @@ namespace MobiledgeX
       {
         Logger.Log("Current Latency (" + stats.Avg + ") > LatencyThreshold (" + config.latencyThresholdTriggerMs + ")");
         Logger.Log("Performing FindCloudlet PerformanceMode");
-        if (hostOverride == "" || hostOverride == null)
-        {
-          hostOverride = integration.region;
-        }
-        if (portOverride == 0)
-        {
-          portOverride = MatchingEngine.defaultDmeGrpcPort;
-        }
+        ConnectionDetails connectionDetails = ConnectionDetails.GetConnectionDetails(hostOverride, portOverride, integration);
         FCPerformanceThreadManager fcThreadObj = new FCPerformanceThreadManager
-          (matchingEngine: integration.matchingEngine, location: location, hostOverride: hostOverride, portOverride: portOverride, callbackDelegate: FCCallback);
+          (matchingEngine: integration.matchingEngine, location: location, hostOverride: connectionDetails.host, portOverride: connectionDetails.port, callbackDelegate: FCCallback);
         fcThreadObj.RunFCPerformance();
       }
       else
@@ -727,6 +721,55 @@ namespace MobiledgeX
       {
         callback(fcReply);
       }
+    }
+  }
+
+  public class ConnectionDetails
+  {
+    public string host;
+    public uint port;
+
+    public ConnectionDetails(string dmeHost, uint port)
+    {
+      this.host = dmeHost;
+      this.port = port;
+    }
+
+    public static ConnectionDetails GetConnectionDetails(string hostOverride, uint portOverride, MobiledgeXIntegration integration)
+    {
+      string connectionHost = null;
+      uint connectionPort = 0;
+      if (hostOverride == "" || hostOverride == null)
+      {
+#if UNITY_EDITOR
+        connectionHost = integration.region;
+#endif
+        if (integration.useSelectedRegionInProduction == true)
+        {
+          connectionHost = integration.region;
+        }
+      }
+      else
+      {
+        connectionHost = hostOverride;
+      }
+
+      if (portOverride == 0)
+      {
+#if UNITY_EDITOR
+        connectionPort = MatchingEngine.defaultDmeGrpcPort;
+#endif
+        if (integration.useSelectedRegionInProduction == true)
+        {
+          connectionPort = MatchingEngine.defaultDmeGrpcPort;
+        }
+      }
+      else
+      {
+        connectionPort = portOverride;
+      }
+
+      return new ConnectionDetails(connectionHost, connectionPort);
     }
   }
 }
