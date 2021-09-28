@@ -126,7 +126,9 @@ namespace MobiledgeX
       if (processingStatus == LatencyProcessingStatus.Processed)
       {
         processingStatus = LatencyProcessingStatus.Ready;
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         CompareLatencies(FCPerformanceReply, latestServerStats);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
       }
     }
     #endregion
@@ -219,7 +221,12 @@ namespace MobiledgeX
         Debug.LogError("EdgeEventsConnection is null");
         return;
       }
-      integration.matchingEngine.EdgeEventsConnection.Open();
+      DeviceInfoDynamic deviceInfoDynamic = null;
+      if (Application.platform == RuntimePlatform.Android)
+      {
+        deviceInfoDynamic = GetDynamicInfoAndroid(mxi.matchingEngine);
+      }
+      integration.matchingEngine.EdgeEventsConnection.Open(deviceInfoDynamic: deviceInfoDynamic);
       config = MobiledgeXIntegration.settings.edgeEventsConfig;
       string configSummary = "EdgeEvents Config Summary:";
       configSummary += "\nLatency Test Port: " + config.latencyTestPort;
@@ -276,7 +283,12 @@ namespace MobiledgeX
     IEnumerator StartEdgeEventsLocation(EdgeEventsConnection connection)
     {
       yield return StartCoroutine(UpdateLocation());
-      connection.PostLocationUpdate(location).ConfigureAwait(false);
+      DeviceInfoDynamic deviceInfoDynamic = null;
+      if (Application.platform == RuntimePlatform.Android)
+      {
+        deviceInfoDynamic = GetDynamicInfoAndroid(integration.matchingEngine);
+      }
+      connection.PostLocationUpdate(location, deviceInfoDynamic).ConfigureAwait(false);
       switch (config.locationConfig.updatePattern)
       {
         case UpdatePattern.OnStart:
@@ -292,15 +304,20 @@ namespace MobiledgeX
     IEnumerator StartEdgeEventsLatency(EdgeEventsConnection connection, string host)
     {
       yield return StartCoroutine(UpdateLocation());
+      DeviceInfoDynamic deviceInfoDynamic = null;
+      if (Application.platform == RuntimePlatform.Android)
+      {
+        deviceInfoDynamic = GetDynamicInfoAndroid(integration.matchingEngine);
+      }
       Logger.Log("EdgeEvents Posting latency update," + "Host : " + host + ", Location to send [" + location.Latitude + ", " + location.Longitude + "]");
       if (hasTCPPorts)
       {
-        connection.TestConnectAndPostLatencyUpdate(host, (uint)config.latencyTestPort, location).ConfigureAwait(false);
+        connection.TestConnectAndPostLatencyUpdate(host, (uint)config.latencyTestPort, location, deviceInfoDynamic: deviceInfoDynamic).ConfigureAwait(false);
         Logger.Log("TestConnectAndPostLatencyUpdate : fired ");
       }
       else
       {
-        connection.TestPingAndPostLatencyUpdate(host, location).ConfigureAwait(false);
+        connection.TestPingAndPostLatencyUpdate(host, location, deviceInfoDynamic: deviceInfoDynamic).ConfigureAwait(false);
         Logger.Log("TestConnectAndPostLatencyUpdate : fired ");
       }
 
@@ -331,7 +348,12 @@ namespace MobiledgeX
       yield return new WaitForSecondsRealtime(config.locationConfig.updateIntervalSeconds);
       yield return StartCoroutine(UpdateLocation());
       Logger.Log("EdgeEvents Posting location update, Location to send [" + location.Latitude + ", " + location.Longitude + "]");
-      connection.PostLocationUpdate(location).ConfigureAwait(false);
+      DeviceInfoDynamic deviceInfoDynamic = null;
+      if (Application.platform == RuntimePlatform.Android)
+      {
+        deviceInfoDynamic = GetDynamicInfoAndroid(integration.matchingEngine);
+      }
+      connection.PostLocationUpdate(location, deviceInfoDynamic).ConfigureAwait(false);
       locationUpdatesCounter++;
       yield return StartCoroutine(OnIntervalEdgeEventsLocation(connection));
     }
@@ -350,13 +372,19 @@ namespace MobiledgeX
       }
       yield return new WaitForSecondsRealtime(config.latencyConfig.updateIntervalSeconds);
       yield return StartCoroutine(UpdateLocation());
+      DeviceInfoDynamic deviceInfoDynamic = null;
+      if (Application.platform == RuntimePlatform.Android)
+      {
+        deviceInfoDynamic = GetDynamicInfoAndroid(integration.matchingEngine);
+      }
       if (hasTCPPorts)
       {
-        connection.TestConnectAndPostLatencyUpdate(host, (uint)config.latencyTestPort, location).ConfigureAwait(false);
+
+        connection.TestConnectAndPostLatencyUpdate(host, (uint)config.latencyTestPort, location, deviceInfoDynamic: deviceInfoDynamic).ConfigureAwait(false);
       }
       else
       {
-        connection.TestPingAndPostLatencyUpdate(host, location).ConfigureAwait(false);
+        connection.TestPingAndPostLatencyUpdate(host, location, deviceInfoDynamic: deviceInfoDynamic).ConfigureAwait(false);
       }
       Logger.Log("EdgeEvents Posting latency update, Host : " + host + ", Location to send[" + location.Latitude + ", " + location.Longitude + "]");
       latencyUpdatesCounter++;
@@ -460,15 +488,20 @@ namespace MobiledgeX
     {
       string host = integration.GetHost();
       yield return StartCoroutine(UpdateLocation());
+      DeviceInfoDynamic deviceInfoDynamic = null;
+      if (Application.platform == RuntimePlatform.Android)
+      {
+        deviceInfoDynamic = GetDynamicInfoAndroid(integration.matchingEngine);
+      }
       if (hasTCPPorts)
       {
         Logger.Log("Sending Latency Samples (TCP) as a response to LatencyRequest from the server");
-        integration.matchingEngine.EdgeEventsConnection.TestConnectAndPostLatencyUpdate(host, (uint)config.latencyTestPort, location).ConfigureAwait(false);
+        integration.matchingEngine.EdgeEventsConnection.TestConnectAndPostLatencyUpdate(host, (uint)config.latencyTestPort, location, deviceInfoDynamic: deviceInfoDynamic).ConfigureAwait(false);
       }
       else
       {
         Logger.Log("Sending Latency Samples (UDP) as a response to LatencyRequest from the server");
-        integration.matchingEngine.EdgeEventsConnection.TestPingAndPostLatencyUpdate(host, location).ConfigureAwait(false);
+        integration.matchingEngine.EdgeEventsConnection.TestPingAndPostLatencyUpdate(host, location, deviceInfoDynamic: deviceInfoDynamic).ConfigureAwait(false);
       }
     }
 
@@ -540,7 +573,6 @@ namespace MobiledgeX
         integration.matchingEngine.EdgeEventsReceiver -= HandleReceivedEvents;
         integration.matchingEngine.EdgeEventsConnection.Close();
       }
-      integration.matchingEngine.EdgeEventsConnection = null;
       latencyUpdatesCounter = 0;
       latencyUpdatesRunning = false;
       locationUpdatesCounter = 0;
@@ -631,6 +663,18 @@ namespace MobiledgeX
         processingStatus = LatencyProcessingStatus.Ready;
       }
       return;
+    }
+
+    private DeviceInfoDynamic GetDynamicInfoAndroid(MatchingEngine matchingEngine)
+    {
+      DeviceInfoDynamic deviceInfoDynamic = Task.Run(() =>
+      {
+        AndroidJNI.AttachCurrentThread();
+        DeviceInfoDynamic result = matchingEngine.GetDeviceInfoDynamic();
+        AndroidJNI.DetachCurrentThread();
+        return result;
+      }).Result;
+      return deviceInfoDynamic;
     }
 
     // This callback is emitted from a ThreadPoolWorker
