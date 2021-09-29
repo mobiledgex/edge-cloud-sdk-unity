@@ -295,7 +295,7 @@ namespace MobiledgeX
       if (hasTCPPorts)
       {
         connection.TestConnectAndPostLatencyUpdate(host, (uint)config.latencyTestPort, location).ConfigureAwait(false);
-        Logger.Log("TestConnectAndPostLatencyUpdate : fired " );
+        Logger.Log("TestConnectAndPostLatencyUpdate : fired ");
       }
       else
       {
