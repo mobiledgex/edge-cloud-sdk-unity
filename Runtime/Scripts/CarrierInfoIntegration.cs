@@ -512,41 +512,6 @@ namespace MobiledgeX
       return 0;
     }
 
-#else
-
-    // Implement CarrierInfo
-    public string GetCurrentCarrierName()
-    {
-      Logger.Log("GetCurrentCarrierName is NOT IMPLEMENTED");
-      return null;
-    }
-
-    public string GetMccMnc()
-    {
-      Logger.Log("GetMccMnc is NOT IMPLEMENTED");
-      return null;
-    }
-
-    public ulong GetCellID()
-    {
-      Logger.Log("GetCellID is NOT IMPLEMENTED");
-      return 0;
-    }
-
-    public string GetDataNetworkPath()
-    {
-      Logger.Log("GetDataNetworkPath is NOT IMPLEMENTED");
-      return "";
-    }
-
-    public ulong GetSignalStrength()
-    {
-      Logger.Log("GetSignalStrength is NOT IMPLEMENTED");
-      return 0;
-    }
-
-#endif
-
     public async Task<bool> IsRoaming(double longitude, double latitude)
     {
       if (Application.platform == RuntimePlatform.IPhonePlayer)
@@ -622,6 +587,42 @@ namespace MobiledgeX
       }
       return isoCC;
     }
+  
+#else
+
+    // Implement CarrierInfo
+    public string GetCurrentCarrierName()
+    {
+      Logger.Log("GetCurrentCarrierName is NOT IMPLEMENTED");
+      return null;
+    }
+
+    public string GetMccMnc()
+    {
+      Logger.Log("GetMccMnc is NOT IMPLEMENTED");
+      return null;
+    }
+
+    public ulong GetCellID()
+    {
+      Logger.Log("GetCellID is NOT IMPLEMENTED");
+      return 0;
+    }
+
+    public string GetDataNetworkPath()
+    {
+      Logger.Log("GetDataNetworkPath is NOT IMPLEMENTED");
+      return "";
+    }
+
+    public ulong GetSignalStrength()
+    {
+      Logger.Log("GetSignalStrength is NOT IMPLEMENTED");
+      return 0;
+    }
+
+#endif
+
   }
 
   // Used for testing in UnityEditor (any target platform)
