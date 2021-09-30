@@ -59,6 +59,31 @@ namespace MobiledgeX
     string cellInfoTdscdmaString;
     string cellInfoNrString;
 
+    // Source: https://developer.android.com/reference/android/telephony/TelephonyManager
+    enum NetworkDataType
+    {
+      NETWORK_TYPE_1xRTT = 7,
+      NETWORK_TYPE_CDMA = 4,
+      NETWORK_TYPE_EDGE = 2,
+      NETWORK_TYPE_EHRPD = 14,
+      NETWORK_TYPE_EVDO_0 = 5,
+      NETWORK_TYPE_EVDO_A = 6,
+      NETWORK_TYPE_EVDO_B = 12,
+      NETWORK_TYPE_GPRS = 1,
+      NETWORK_TYPE_GSM = 16,
+      NETWORK_TYPE_HSDPA = 8,
+      NETWORK_TYPE_HSPA = 10,
+      NETWORK_TYPE_HSPAP = 15,
+      NETWORK_TYPE_HSUPA = 9,
+      NETWORK_TYPE_IDEN = 11,
+      NETWORK_TYPE_IWLAN = 18,
+      NETWORK_TYPE_LTE = 13,
+      NETWORK_TYPE_NR = 20,
+      NETWORK_TYPE_TD_SCDMA = 17,
+      NETWORK_TYPE_UMTS = 3,
+      NETWORK_TYPE_UNKNOWN = 0
+    };
+
     public CarrierInfoClass()
     {
       sdkVersion = getAndroidSDKVers();
@@ -379,6 +404,50 @@ namespace MobiledgeX
       return 0;
     }
 
+    public string GetDataNetworkPath()
+    {
+      AndroidJavaObject telManager = GetTelephonyManager();
+      if (telManager == null)
+      {
+        return "";
+      }
+      const string readPhoneStatePermissionString = "android.permission.READ_PHONE_STATE";
+      try
+      {
+        if (Permission.HasUserAuthorizedPermission(readPhoneStatePermissionString))
+        {
+          int nType = PlatformIntegrationUtil.Call<int>(telManager, "getDataNetworkType");
+          NetworkDataType datatype = (NetworkDataType)nType;
+          return datatype.ToString();
+        }
+        else
+        {
+          return "";
+        }
+      }
+      catch (Exception e)
+      {
+        Logger.LogWarning("Exception retrieving properties: " + e.GetBaseException() + ", " + e.Message);
+        return "";
+      }
+    }
+
+    public ulong GetSignalStrength()
+    {
+      AndroidJavaObject telManager = GetTelephonyManager();
+      if (telManager == null)
+      {
+        return 0;
+      }
+      AndroidJavaObject signalStrength = telManager.Call<AndroidJavaObject>("getSignalStrength");
+      if (signalStrength == null)
+      {
+        return 0;
+      }
+      uint signalStrengthLevel = (uint)signalStrength.Call<int>("getLevel");
+      return signalStrengthLevel;
+    }
+
 #elif UNITY_IOS
 
     // Sets iOS platform specific internal callbacks (reference counted objects), etc.
@@ -433,15 +502,60 @@ namespace MobiledgeX
       return (ulong)cellID;
     }
 
+    public string GetDataNetworkPath()
+    {
+      return "";
+    }
+
+    public ulong GetSignalStrength()
+    {
+      return 0;
+    }
+
+#else
+
+    // Implement CarrierInfo
+    public string GetCurrentCarrierName()
+    {
+      Logger.Log("GetCurrentCarrierName is NOT IMPLEMENTED");
+      return null;
+    }
+
+    public string GetMccMnc()
+    {
+      Logger.Log("GetMccMnc is NOT IMPLEMENTED");
+      return null;
+    }
+
+    public ulong GetCellID()
+    {
+      Logger.Log("GetCellID is NOT IMPLEMENTED");
+      return 0;
+    }
+
+    public string GetDataNetworkPath()
+    {
+      Logger.Log("GetDataNetworkPath is NOT IMPLEMENTED");
+      return "";
+    }
+
+    public ulong GetSignalStrength()
+    {
+      Logger.Log("GetSignalStrength is NOT IMPLEMENTED");
+      return 0;
+    }
+
+#endif
+
     public async Task<bool> IsRoaming(double longitude, double latitude)
     {
       if (Application.platform == RuntimePlatform.IPhonePlayer)
-      {  
+      {
         Task<string> task = ConvertGPSToISOCountryCode(longitude, latitude);
         string isoCCFromGPS = null;
         if (await Task.WhenAny(task, Task.Delay(5000)) == task)
         {
-          isoCCFromGPS = await task; 
+          isoCCFromGPS = await task;
         }
         else
         {
@@ -475,18 +589,19 @@ namespace MobiledgeX
       if (Application.platform == RuntimePlatform.IPhonePlayer)
       {
         _convertGPSToISOCountryCode(longitude, latitude);
-        return await Task.Run(() => {
+        return await Task.Run(() =>
+        {
           string isoCC = "";
-          while(isoCC == "" || isoCC == null)
+          while (isoCC == "" || isoCC == null)
           {
             isoCC = GetISOCountryCodeFromGPS();
           }
           return isoCC;
-         }).ConfigureAwait(false);
+        }).ConfigureAwait(false);
       }
 
       return null;
-    }  
+    }
 
     public string GetISOCountryCodeFromGPS()
     {
@@ -507,29 +622,6 @@ namespace MobiledgeX
       }
       return isoCC;
     }
-
-#else
-
-    // Implement CarrierInfo
-    public string GetCurrentCarrierName()
-    {
-      Logger.Log("GetCurrentCarrierName is NOT IMPLEMENTED");
-      return null;
-    }
-
-    public string GetMccMnc()
-    {
-      Logger.Log("GetMccMnc is NOT IMPLEMENTED");
-      return null;
-    }
-
-    public ulong GetCellID()
-    {
-      Logger.Log("GetCellID is NOT IMPLEMENTED");
-      return 0;
-    }
-
-#endif
   }
 
   // Used for testing in UnityEditor (any target platform)
@@ -547,6 +639,16 @@ namespace MobiledgeX
     }
 
     public ulong GetCellID()
+    {
+      return 0;
+    }
+
+    public string GetDataNetworkPath()
+    {
+      return "";
+    }
+
+    public ulong GetSignalStrength()
     {
       return 0;
     }

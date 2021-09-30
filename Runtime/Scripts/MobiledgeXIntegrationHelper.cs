@@ -247,10 +247,14 @@ namespace MobiledgeX
         {
             UpdateLocationFromDevice();
 #if UNITY_IOS
-            bool isRoaming = await IsRoaming();
-            if (isRoaming) {
+            if (!useSelectedRegionInProduction)
+            {
+              bool isRoaming = await IsRoaming();
+              if (isRoaming)
+              {
                 UseWifiOnly(true);
                 Logger.Log("IOS Device is roaming. Unable to get current network information from IOS device. Switching to wifi mode");
+              }
             }
 #endif
             UpdateCarrierName();
