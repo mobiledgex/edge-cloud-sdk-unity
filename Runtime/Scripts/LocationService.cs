@@ -171,11 +171,11 @@ namespace MobiledgeX
     }
     private void OnApplicationFocus(bool focus)
     {
-      if(focus && locationStatus == LocationStatus.LocationPermissionRequested)
+      if (focus && locationStatus == LocationStatus.LocationPermissionRequested)
       {
         StartCoroutine(EnsureLocationAndroid());
       }
-      if(!focus && locationStatus == LocationStatus.LocationPermissionNotAcquired)
+      if (!focus && locationStatus == LocationStatus.LocationPermissionNotAcquired)
       {
         if (Application.platform == RuntimePlatform.Android)
         {
