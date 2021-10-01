@@ -144,7 +144,7 @@ namespace MobiledgeX
         return null;
       }
 
-      AndroidJavaObject telManager = PlatformIntegrationUtil.Call<AndroidJavaObject>(context, "getSystemService", new object[] {CONTEXT_TELEPHONY_SERVICE});
+      AndroidJavaObject telManager = PlatformIntegrationUtil.Call<AndroidJavaObject>(context, "getSystemService", new object[] { CONTEXT_TELEPHONY_SERVICE });
 
       sdkVersion = getAndroidSDKVers();
 
@@ -155,13 +155,15 @@ namespace MobiledgeX
 
       // Call SubscriptionManager to get a specific telManager:
       AndroidJavaClass subscriptionManagerCls = PlatformIntegrationUtil.GetAndroidJavaClass("android.telephony.SubscriptionManager");
-      if (subscriptionManagerCls == null) {
+      if (subscriptionManagerCls == null)
+      {
         Logger.Log("Can't get Subscription Manager Class.");
         return null;
       }
       int subId = PlatformIntegrationUtil.CallStatic<int>(subscriptionManagerCls, "getDefaultDataSubscriptionId");
       int invalidSubId = PlatformIntegrationUtil.GetStatic<int>(subscriptionManagerCls, "INVALID_SUBSCRIPTION_ID");
-      if (subId == invalidSubId) {
+      if (subId == invalidSubId)
+      {
         Logger.Log("The Subscription ID is invalid: " + subId);
         return null;
       }
@@ -276,7 +278,7 @@ namespace MobiledgeX
       {
         int cid = PlatformIntegrationUtil.Call<int>(cellIdentity, "getCid");
         if (cid > 0)
-        { 
+        {
           pair = new KeyValuePair<string, ulong>(simpleName, (ulong)cid);
         }
       }
@@ -284,7 +286,7 @@ namespace MobiledgeX
       {
         int baseStationId = PlatformIntegrationUtil.Call<int>(cellIdentity, "getBaseStationId");
         if (baseStationId > 0)
-        { 
+        {
           pair = new KeyValuePair<string, ulong>(simpleName, (ulong)baseStationId);
         }
       }
@@ -333,13 +335,13 @@ namespace MobiledgeX
 
       List<KeyValuePair<String, ulong>> cellIDList = new List<KeyValuePair<string, ulong>>();
       // KeyValuePair to compare to in case GetCidKeyValuePair returns nothing
-      KeyValuePair<string,ulong> empty = new KeyValuePair<string, ulong>(null, 0);
+      KeyValuePair<string, ulong> empty = new KeyValuePair<string, ulong>(null, 0);
 
       for (int i = 0; i < length; i++)
       {
-        AndroidJavaObject cellInfo = PlatformIntegrationUtil.Call<AndroidJavaObject>(cellInfoList, "get", new object[] {i});
+        AndroidJavaObject cellInfo = PlatformIntegrationUtil.Call<AndroidJavaObject>(cellInfoList, "get", new object[] { i });
         if (cellInfo == null) continue;
-        
+
         bool isRegistered = PlatformIntegrationUtil.Call<bool>(cellInfo, "isRegistered");
         if (isRegistered)
         {
@@ -362,7 +364,7 @@ namespace MobiledgeX
        * (https://developer.android.com/distribute/best-practices/develop/restrictions-non-sdk-interfaces)
        * The following code can be used with older Android API versions.
        */
-       
+
       /*ulong cellID = 0;
 
       List<KeyValuePair<String, ulong>> cellInfoList = GetCellInfoList();
@@ -436,12 +438,12 @@ namespace MobiledgeX
     public async Task<bool> IsRoaming(double longitude, double latitude)
     {
       if (Application.platform == RuntimePlatform.IPhonePlayer)
-      {  
+      {
         Task<string> task = ConvertGPSToISOCountryCode(longitude, latitude);
         string isoCCFromGPS = null;
         if (await Task.WhenAny(task, Task.Delay(5000)) == task)
         {
-          isoCCFromGPS = await task; 
+          isoCCFromGPS = await task;
         }
         else
         {
@@ -475,18 +477,19 @@ namespace MobiledgeX
       if (Application.platform == RuntimePlatform.IPhonePlayer)
       {
         _convertGPSToISOCountryCode(longitude, latitude);
-        return await Task.Run(() => {
+        return await Task.Run(() =>
+        {
           string isoCC = "";
-          while(isoCC == "" || isoCC == null)
+          while (isoCC == "" || isoCC == null)
           {
             isoCC = GetISOCountryCodeFromGPS();
           }
           return isoCC;
-         }).ConfigureAwait(false);
+        }).ConfigureAwait(false);
       }
 
       return null;
-    }  
+    }
 
     public string GetISOCountryCodeFromGPS()
     {
