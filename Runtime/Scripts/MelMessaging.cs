@@ -106,9 +106,9 @@ public class MelMessaging : MelMessagingInterface
   // MelMessaging related:
   public string GetManufacturer()
   {
-     AndroidJavaClass BuildCls = PlatformIntegrationUtil.GetAndroidJavaClass("android.os.Build");
-     string manufacturer = PlatformIntegrationUtil.GetStatic<string>(BuildCls, "MANUFACTURER");
-     return manufacturer;
+    AndroidJavaClass BuildCls = PlatformIntegrationUtil.GetAndroidJavaClass("android.os.Build");
+    string manufacturer = PlatformIntegrationUtil.GetStatic<string>(BuildCls, "MANUFACTURER");
+    return manufacturer;
   }
 #elif UNITY_IOS
   public MelMessaging(string app_name) { }
