@@ -6,6 +6,7 @@ All notable changes to this package will be documented in this file.
 ### Fix & Improvements.
 - Call MobiledgeXIntegration.Dispose() to avoid memory leakage, see the examples for more details.
 - LocationService updated with more robust behavior on Android and iOS.
+- Added Support for non-cellular devices, see ExampleNonCellular.cs.
 
 ## [3.0.0] - 2021-08-31 (gRPC) 
 
