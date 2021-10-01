@@ -20,24 +20,24 @@ using UnityEngine;
 
 namespace MobiledgeX
 {
-    public class MobiledgeXSettings: ScriptableObject
+  public class MobiledgeXSettings : ScriptableObject
+  {
+    [HideInInspector]
+    public string sdkVersion;
+    public string orgName;
+    public string appName;
+    public string appVers;
+    public string authPublicKey;
+    public string region;
+    public Logger.LogType logType = Logger.LogType.ErrorsAndWarnings;
+    public EdgeEventsConfig edgeEventsConfig;
+
+    private void OnEnable()
     {
-        [HideInInspector]
-        public string sdkVersion;
-        public string orgName;
-        public string appName;
-        public string appVers;
-        public string authPublicKey;
-        public string region;
-        public Logger.LogType logType = Logger.LogType.ErrorsAndWarnings;
-        public EdgeEventsConfig edgeEventsConfig;
-
-        private void OnEnable()
-        {
-            edgeEventsConfig.newFindCloudletEventTriggers.Add(FindCloudletEventTrigger.Error);
-            //remove any duplicates once the scriptable object is loaded
-            edgeEventsConfig.newFindCloudletEventTriggers = edgeEventsConfig.newFindCloudletEventTriggers.Distinct().ToList();
-        }
-
+      edgeEventsConfig.newFindCloudletEventTriggers.Add(FindCloudletEventTrigger.Error);
+      //remove any duplicates once the scriptable object is loaded
+      edgeEventsConfig.newFindCloudletEventTriggers = edgeEventsConfig.newFindCloudletEventTriggers.Distinct().ToList();
     }
+
+  }
 }
