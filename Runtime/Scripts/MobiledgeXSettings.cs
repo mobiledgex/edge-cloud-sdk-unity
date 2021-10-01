@@ -19,15 +19,15 @@ using UnityEngine;
 
 namespace MobiledgeX
 {
-    public class MobiledgeXSettings: ScriptableObject
-    {
-        [HideInInspector]
-        public string sdkVersion;
-        public string orgName;
-        public string appName;
-        public string appVers;
-        public string authPublicKey;
-        public string region;
-        public Logger.LogType logType = Logger.LogType.ErrorsAndWarnings;
-    }
+  public class MobiledgeXSettings : ScriptableObject
+  {
+    [HideInInspector]
+    public string sdkVersion;
+    public string orgName;
+    public string appName;
+    public string appVers;
+    public string authPublicKey;
+    public string region;
+    public Logger.LogType logType = Logger.LogType.ErrorsAndWarnings;
+  }
 }

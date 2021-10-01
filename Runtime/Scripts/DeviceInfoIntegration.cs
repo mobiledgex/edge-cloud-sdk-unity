@@ -66,13 +66,13 @@ namespace MobiledgeX
       map["Build.VERSION.SDK_INT"] = sdk_int.ToString();
       if (UnityEngine.XR.XRSettings.loadedDeviceName.Contains("oculus"))
       {
-          return map;
+        return map;
       }
       AndroidJavaObject telephonyManager = carrierInfo.GetTelephonyManager();
       if (telephonyManager == null)
       {
-          Logger.Log("No TelephonyManager!");
-          return map;
+        Logger.Log("No TelephonyManager!");
+        return map;
       }
       const string readPhoneStatePermissionString = "android.permission.READ_PHONE_STATE";
       try
@@ -150,13 +150,13 @@ namespace MobiledgeX
 #elif UNITY_IOS
     [DllImport("__Internal")]
     private static extern string _getManufacturerCode();
-    
+
     [DllImport("__Internal")]
     private static extern string _getDeviceSoftwareVersion();
-    
+
     [DllImport("__Internal")]
     private static extern string _getDeviceModel();
-    
+
     [DllImport("__Internal")]
     private static extern string _getOperatingSystem();
 
@@ -189,10 +189,10 @@ namespace MobiledgeX
   // Used for DeviceInfo in UnityEditor (any target platform)
   public class TestDeviceInfo : DeviceInfo
   {
-      public Dictionary<string, string> GetDeviceInfo()
-      {
-          Logger.Log("DeviceInfo not implemented!");
-          return null;
-      }
+    public Dictionary<string, string> GetDeviceInfo()
+    {
+      Logger.Log("DeviceInfo not implemented!");
+      return null;
+    }
   }
 }

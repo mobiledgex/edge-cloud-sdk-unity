@@ -66,7 +66,7 @@ namespace MobiledgeX
         return "";
       }
     }
-   
+
     // Generic functions that get static variables, call static functions, and call object functions
 
     public static T GetStatic<T>(AndroidJavaClass c, string member)
