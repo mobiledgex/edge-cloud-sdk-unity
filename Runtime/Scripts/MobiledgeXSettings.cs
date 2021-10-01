@@ -29,5 +29,7 @@ namespace MobiledgeX
     public string authPublicKey;
     public string region;
     public Logger.LogType logType = Logger.LogType.ErrorsAndWarnings;
+    [Tooltip("Set to true, If MEL mode is Enabled on your device.")]
+    public bool MEL_ENABLED;
   }
 }

@@ -80,7 +80,6 @@ namespace MobiledgeX
     AppPort latestAppPort = null;
     AppPort[] latestAppPortList = null;
     Location fallbackLocation = new Location(0, 0);
-    CarrierInfoClass carrierInfoClass = new CarrierInfoClass(); // used for IsRoaming check
     MelMessaging melMessaging;
 
     string region
@@ -122,9 +121,11 @@ namespace MobiledgeX
         netInterface == null ? pIntegration.NetInterface : netInterface,
         uniqueId == null ? pIntegration.UniqueID : uniqueId,
         deviceInfo == null ? pIntegration.DeviceInfo : deviceInfo);
-
-      melMessaging = new MelMessaging(appName);
-      matchingEngine.SetMelMessaging(melMessaging);
+      if (settings.MEL_ENABLED)
+      {
+        melMessaging = new MelMessaging(appName);
+        matchingEngine.SetMelMessaging(melMessaging);
+      }
     }
 
     /// <summary>
@@ -141,9 +142,11 @@ namespace MobiledgeX
       pIntegration = new PlatformIntegration();
 
       matchingEngine = new MatchingEngine(pIntegration.CarrierInfo, pIntegration.NetInterface, pIntegration.UniqueID, pIntegration.DeviceInfo);
-
-      melMessaging = new MelMessaging(appName);
-      matchingEngine.SetMelMessaging(melMessaging);
+      if (settings.MEL_ENABLED)
+      {
+        melMessaging = new MelMessaging(appName);
+        matchingEngine.SetMelMessaging(melMessaging);
+      }
     }
 
     /// <summary>
