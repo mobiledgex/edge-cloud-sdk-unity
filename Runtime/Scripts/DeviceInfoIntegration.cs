@@ -112,7 +112,7 @@ namespace MobiledgeX
     }
 
 #elif UNITY_IOS
-    
+
     public DeviceInfoDynamic GetDeviceInfoDynamic()
     {
       CarrierInfoClass carrierInfo = new CarrierInfoClass();
