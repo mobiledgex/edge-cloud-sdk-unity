@@ -327,7 +327,7 @@ namespace MobiledgeX
 
 
     /// <summary>
-    /// Checks whether the default netowrk data path Edge is Enabled on the device or not, Edge requires connections to run over cellular interface.
+    /// Checks whether the default network data path Edge is Enabled on the device or not, Edge requires connections to run over cellular interface.
     /// This status is independent of the UseWiFiOnly setting.
     /// </summary>
     /// <returns>bool</returns>
