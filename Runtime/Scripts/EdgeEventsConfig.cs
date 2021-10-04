@@ -139,12 +139,12 @@ namespace MobiledgeX
     /// <summary>
     /// empty if the status = success
     /// </summary>
-    public string error_msg;
+    public EdgeEventsError error;
 
-    public EdgeEventsStatus(Status status, string error_msg = "")
+    public EdgeEventsStatus(Status status, EdgeEventsError error = EdgeEventsError.None)
     {
       this.status = status;
-      this.error_msg = error_msg;
+      this.error = error;
     }
   }
 
@@ -152,5 +152,21 @@ namespace MobiledgeX
   {
     success,
     error
+  }
+
+  public enum EdgeEventsError
+  {
+    MissingSessionCookie,
+    MissingEdgeEventsCookie,
+    UnableToGetLastLocation,
+    InvalidEdgeEventsSetup,
+    InvalidLatencyThreshold,
+    InvalidPerformanceSwitchMargin,
+    InvalidUpdateInterval,
+    PortDoesNotExist,
+    EventTriggeredButCurrentCloudletIsBest,
+    EventTriggeredButFindCloudletError,
+    EventError,
+    None
   }
 }
