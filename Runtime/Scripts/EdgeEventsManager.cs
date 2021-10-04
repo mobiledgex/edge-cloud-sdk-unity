@@ -596,7 +596,8 @@ namespace MobiledgeX
       {
         integration.latestFindCloudletReply = newCloudlet;
         StopEdgeEvents();
-        integration.matchingEngine.RestartEdgeEventsConnection(newCloudlet.EdgeEventsCookie, hostOverride, portOverride);
+        ConnectionDetails connectionDetails = ConnectionDetails.GetConnectionDetails(hostOverride, portOverride, integration);
+        integration.matchingEngine.RestartEdgeEventsConnection(newCloudlet.EdgeEventsCookie, connectionDetails.host, connectionDetails.port);
         StartEdgeEvents(integration);
       }
       else
