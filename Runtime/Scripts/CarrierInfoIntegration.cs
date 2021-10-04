@@ -510,12 +510,12 @@ namespace MobiledgeX
     public async Task<bool> IsRoaming(double longitude, double latitude)
     {
       if (Application.platform == RuntimePlatform.IPhonePlayer)
-      {  
+      {
         Task<string> task = ConvertGPSToISOCountryCode(longitude, latitude);
         string isoCCFromGPS = null;
         if (await Task.WhenAny(task, Task.Delay(5000)) == task)
         {
-          isoCCFromGPS = await task; 
+          isoCCFromGPS = await task;
         }
         else
         {
@@ -551,16 +551,16 @@ namespace MobiledgeX
         _convertGPSToISOCountryCode(longitude, latitude);
         return await Task.Run(() => {
           string isoCC = "";
-          while(isoCC == "" || isoCC == null)
+          while (isoCC == "" || isoCC == null)
           {
             isoCC = GetISOCountryCodeFromGPS();
           }
           return isoCC;
-         }).ConfigureAwait(false);
+        }).ConfigureAwait(false);
       }
 
       return null;
-    }  
+    }
 
     public string GetISOCountryCodeFromGPS()
     {
