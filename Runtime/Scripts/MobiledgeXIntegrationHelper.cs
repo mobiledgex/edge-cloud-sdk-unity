@@ -261,12 +261,16 @@ namespace MobiledgeX
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     {
       UpdateLocationFromDevice();
+
 #if UNITY_IOS
-      bool isRoaming = await IsRoaming();
-      if (isRoaming)
+      if (!useSelectedRegionInProduction)
       {
-        UseWifiOnly(true);
-        Logger.Log("IOS Device is roaming. Unable to get current network information from IOS device. Switching to wifi mode");
+        bool isRoaming = await IsRoaming();
+        if (isRoaming)
+        {
+          //UseWifiOnly(true);
+          Logger.Log("IOS Device is roaming. Unable to get current network information from IOS device. Switching to wifi mode");
+        }
       }
 #endif
       UpdateCarrierName();
@@ -329,6 +333,7 @@ namespace MobiledgeX
 
       try
       {
+        CarrierInfoClass carrierInfoClass = new CarrierInfoClass(); // used for IsRoaming check
         return await carrierInfoClass.IsRoaming(location.Longitude, location.Latitude);
       }
       catch (CarrierInfoException cie)

@@ -15,84 +15,34 @@
  * limitations under the License.
  */
 
-using System;
-using System.Runtime.InteropServices;
 using DistributedMatchEngine;
 using UnityEngine;
-using UnityEngine.Android;
 
 namespace MobiledgeX
 {
   public class DeviceInfoIntegration : DeviceInfoApp
   {
-    public DeviceInfoIntegration()
+    CarrierInfo overrideCarrierInfo;
+    public DeviceInfoIntegration(CarrierInfo carrierInfo = null)
     {
+      overrideCarrierInfo = carrierInfo;
     }
 
-    // Source: https://developer.android.com/reference/android/telephony/TelephonyManager
-    enum NetworkDataType
-    {
-      NETWORK_TYPE_1xRTT = 7,
-      NETWORK_TYPE_CDMA = 4,
-      NETWORK_TYPE_EDGE = 2,
-      NETWORK_TYPE_EHRPD = 14,
-      NETWORK_TYPE_EVDO_0 = 5,
-      NETWORK_TYPE_EVDO_A = 6,
-      NETWORK_TYPE_EVDO_B = 12,
-      NETWORK_TYPE_GPRS = 1,
-      NETWORK_TYPE_GSM = 16,
-      NETWORK_TYPE_HSDPA = 8,
-      NETWORK_TYPE_HSPA = 10,
-      NETWORK_TYPE_HSPAP = 15,
-      NETWORK_TYPE_HSUPA = 9,
-      NETWORK_TYPE_IDEN = 11,
-      NETWORK_TYPE_IWLAN = 18,
-      NETWORK_TYPE_LTE = 13,
-      NETWORK_TYPE_NR = 20,
-      NETWORK_TYPE_TD_SCDMA = 17,
-      NETWORK_TYPE_UMTS = 3,
-      NETWORK_TYPE_UNKNOWN = 0
-    };
-
-#if UNITY_ANDROID
     public DeviceInfoDynamic GetDeviceInfoDynamic()
     {
       DeviceInfoDynamic deviceInfoDynamic = new DeviceInfoDynamic();
-      CarrierInfoClass carrierInfo = new CarrierInfoClass();
-      if (UnityEngine.XR.XRSettings.loadedDeviceName.Contains("oculus"))
+      CarrierInfo carrierInfo;
+      if (overrideCarrierInfo != null)
       {
-        return deviceInfoDynamic;
+        carrierInfo = overrideCarrierInfo;
       }
-      AndroidJavaObject telephonyManager = carrierInfo.GetTelephonyManager();
-      if (telephonyManager == null)
+      else
       {
-        Logger.Log("No TelephonyManager!");
-        return deviceInfoDynamic;
+        carrierInfo = new CarrierInfoClass();
       }
-      int signalStrengthLevel = carrierInfo.GetSignalStrength();//Doesn't require SignalStrength
-      if (signalStrengthLevel >= 0)
-      {
-        deviceInfoDynamic.SignalStrength = (ulong)signalStrengthLevel;
-      }
-      string simOperatorName = PlatformIntegrationUtil.Call<string>(telephonyManager, "getSimOperatorName");
-      if (simOperatorName != null)
-      {
-        deviceInfoDynamic.CarrierName = simOperatorName;
-      }
-      const string readPhoneStatePermissionString = "android.permission.READ_PHONE_STATE";
-      try
-      {
-        if (Permission.HasUserAuthorizedPermission(readPhoneStatePermissionString))
-        {
-          int nType = PlatformIntegrationUtil.Call<int>(telephonyManager, "getDataNetworkType");
-          NetworkDataType datatype = (NetworkDataType)nType;
-          deviceInfoDynamic.DataNetworkType = datatype.ToString();
-        }
-      }
-      catch (Exception e)
-      {
-        Logger.LogWarning("Exception retrieving properties: " + e.GetBaseException() + ", " + e.Message);
-      }
+      deviceInfoDynamic.CarrierName = carrierInfo.GetCurrentCarrierName();
+      deviceInfoDynamic.SignalStrength = carrierInfo.GetSignalStrength();
+      deviceInfoDynamic.DataNetworkType = carrierInfo.GetDataNetworkType();
       return deviceInfoDynamic;
     }
 
@@ -105,6 +55,8 @@ namespace MobiledgeX
       };
       return deviceInfoStatic;
     }
+
+#if UNITY_ANDROID
 
     public bool IsPingSupported()
     {
@@ -113,48 +65,13 @@ namespace MobiledgeX
 
 #elif UNITY_IOS
 
-    public DeviceInfoDynamic GetDeviceInfoDynamic()
-    {
-      CarrierInfoClass carrierInfo = new CarrierInfoClass();
-      DeviceInfoDynamic deviceInfoDynamic = new DeviceInfoDynamic()
-      {
-        CarrierName = carrierInfo.GetCurrentCarrierName()
-      };
-      //TODO Cellular Signal Strength for iOS if possible 
-      return deviceInfoDynamic;
-    }
-
-    public DeviceInfoStatic GetDeviceInfoStatic()
-    {
-      DeviceInfoStatic deviceInfoStatic = new DeviceInfoStatic()
-      {
-        DeviceModel = SystemInfo.deviceModel,
-        DeviceOs = SystemInfo.operatingSystem
-      };
-      return deviceInfoStatic;
-    }
-
     public bool IsPingSupported()
     {
       return false;
     }
 
 #else // Unsupported platform.
-    public DeviceInfoDynamic GetDeviceInfoDynamic()
-    {
-      Logger.Log("DeviceInfoDynamic not implemented!");
-      return null;
-    }
 
-    public DeviceInfoStatic GetDeviceInfoStatic()
-    {
-      DeviceInfoStatic deviceInfoStatic = new DeviceInfoStatic()
-      {
-        DeviceModel = SystemInfo.deviceModel,
-        DeviceOs = SystemInfo.operatingSystem
-      };
-      return deviceInfoStatic;
-    }
     public bool IsPingSupported()
     {
       return true;
