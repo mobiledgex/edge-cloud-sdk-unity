@@ -28,7 +28,6 @@ using System.Threading;
 
 namespace MobiledgeX
 {
-  [RequireComponent(typeof(LocationService))]
   [AddComponentMenu("MobiledgeX/EdgeEventsManager")]
   public class EdgeEventsManager : MonoBehaviour
   {
@@ -214,6 +213,10 @@ namespace MobiledgeX
     {
       processingStatus = LatencyProcessingStatus.Ready;
       integration = mxi;
+      if (!ValidateConfigs())
+      {
+        return;
+      }
       ConnectionDetails connectionDetails = ConnectionDetails.GetConnectionDetails(hostOverride, portOverride, integration);
       EdgeEventsConnection connection = integration.matchingEngine.GetEdgeEventsConnection(integration.matchingEngine.edgeEventsCookie, connectionDetails.host, connectionDetails.port);
       if (connection == null)
@@ -244,10 +247,6 @@ namespace MobiledgeX
       }
       Logger.Log(configSummary);
       integration.matchingEngine.EdgeEventsReceiver += HandleReceivedEvents;
-      if (!ValidateConfigs())
-      {
-        return;
-      }
       AppPort appPort = integration.GetAppPort(LProto.Tcp, config.latencyTestPort);
       if (appPort != null)
       {
