@@ -67,7 +67,6 @@ public class ExampleNonCellular : MonoBehaviour
     }
   }
 
-
   private void OnDestroy()
   {
     mxi.NewFindCloudletHandler -= HandleFindCloudlet;
