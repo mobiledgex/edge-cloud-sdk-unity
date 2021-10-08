@@ -10,7 +10,8 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "MatchingEngineSDKRestLibrary.dll"
+        "MatchingEngineSDKRestLibrary.dll",
+        "nunit.framework.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [
