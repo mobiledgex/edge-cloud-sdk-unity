@@ -5,7 +5,9 @@
         "UnityEditor.TestRunner",
         "Unity.Mobiledgex"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,
