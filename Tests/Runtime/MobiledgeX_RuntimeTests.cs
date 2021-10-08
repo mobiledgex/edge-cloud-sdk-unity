@@ -34,14 +34,18 @@ namespace MobiledgeX
     [OneTimeSetUp]
     public void MobiledgeXEnvironmentSetup()
     {
+      MobiledgeXIntegration.settings.region = "EU"; //For Testing Purposes, works in Editor only.
+      if (!UnityEditorInternal.InternalEditorUtility.isHumanControllingUs)
+      {
+        return;
+      }
       if (!File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/iOS/PlatformIntegration.m")) &&
-      !File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/link.xml")) &&
-      !File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/MatchingEngineSDKRestLibrary.dll")) &&
-      !File.Exists(Path.Combine(Application.dataPath, "Resources/MobiledgeXSettings.asset")))
+       !File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/link.xml")) &&
+       !File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/MatchingEngineSDKRestLibrary.dll")) &&
+       !File.Exists(Path.Combine(Application.dataPath, "Resources/MobiledgeXSettings.asset")))
       {
         Assert.Fail("MobiledgeX Plugins are not loaded in the project, Can't perform tests");
       }
-      MobiledgeXIntegration.settings.region = "EU"; //For Testing Purposes, works in Editor only.
     }
 
     #endregion
@@ -88,8 +92,6 @@ namespace MobiledgeX
     [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "http", 8085)]
     [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "https", 2015)]
     [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "tcp", 2016)]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "ws", 3765)]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "udp", 2015)]
     public void GetUrl(string orgName, string appName, string appVers, string proto, int port)
     {
       using (MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo()))
@@ -109,10 +111,6 @@ namespace MobiledgeX
 
     [Test]
     [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "http", 8085)]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "https", 2015)]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "tcp", 2016)]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "ws", 3765)]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "udp", 2015)]
     public void GetHost(string orgName, string appName, string appVers, string proto, int port)
     {
       using (MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo()))
@@ -199,7 +197,7 @@ namespace MobiledgeX
     }
 
     [Test]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "ws", 3765, 20000)]
+    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "ws", 3765, 2000)]
     public void WebSocketTest(string orgName, string appName, string appVers, string proto, int port, int timeOutMs)
     {
       using (MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo()))
@@ -223,7 +221,7 @@ namespace MobiledgeX
 
 
     [Test]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", 20000)]
+    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", 2000)]
     public void UDPTest(string orgName, string appName, string appVers, int timeOutMs)
     {
       using (MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo()))
@@ -343,7 +341,7 @@ namespace MobiledgeX
       stopWatch.Start();
       while (mxiWS.receiveQueue.Count == 0 && stopWatch.ElapsedMilliseconds < timeOutMs)
       {
-        Debug.Log("Waiting for WebSocket Received messgae");
+        //Debug.Log("Waiting for WebSocket Received messgae");
       }
       stopWatch = null;
       mxiWS.receiveQueue.TryDequeue(out output);
@@ -357,7 +355,7 @@ namespace MobiledgeX
       stopWatch.Start();
       while (mxiUDP.receiveQueue.Count == 0 && stopWatch.ElapsedMilliseconds < timeOutMs)
       {
-        Debug.Log("Waiting for UDP Received messgae");
+        //Debug.Log("Waiting for UDP Received messgae");
       }
       stopWatch = null;
       byte[] receivedBytes;
