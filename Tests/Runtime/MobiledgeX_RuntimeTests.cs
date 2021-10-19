@@ -38,7 +38,7 @@ namespace MobiledgeX
       !File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/MatchingEngineSDKRestLibrary.dll")) &&
       !File.Exists(Path.Combine(Application.dataPath, "Resources/MobiledgeXSettings.asset")))
       {
-        Assert.Fail("MobiledgeX Plugins are not loaded in the project, Can't preform tests");
+        Assert.Fail("MobiledgeX Plugins are not loaded in the project, Can't perform tests");
       }
     }
 

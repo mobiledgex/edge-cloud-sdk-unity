@@ -81,7 +81,6 @@ namespace MobiledgeX
     AppPort latestAppPort = null;
     AppPort[] latestAppPortList = null;
     Location fallbackLocation = new Location(0, 0);
-    CarrierInfoClass carrierInfoClass = new CarrierInfoClass(); // used for IsRoaming check
     MelMessaging melMessaging;
 
     /// <summary>
@@ -93,7 +92,7 @@ namespace MobiledgeX
     /// Use this action to get notified when a connection upgrade is available
     /// </summary>
     public Action<EdgeEventsStatus, FindCloudletEvent> NewFindCloudletHandler;
-    string region
+    internal string region
     {
       get
       {
@@ -125,7 +124,6 @@ namespace MobiledgeX
       ConfigureMobiledgeXSettings();
       // Set the platform specific way to get SIM carrier information.
       pIntegration = new PlatformIntegration();
-
       // Optionally override each interface:
       matchingEngine = new MatchingEngine(
         carrierInfo == null ? pIntegration.CarrierInfo : carrierInfo,
@@ -133,8 +131,12 @@ namespace MobiledgeX
         uniqueId == null ? pIntegration.UniqueID : uniqueId,
         deviceInfo == null ? pIntegration.DeviceInfo : deviceInfo);
 
-      melMessaging = new MelMessaging(appName);
-      matchingEngine.SetMelMessaging(melMessaging);
+      if (settings.MEL_ENABLED)
+      {
+        melMessaging = new MelMessaging(appName);
+        matchingEngine.SetMelMessaging(melMessaging);
+      }
+
       this.edgeEventsManager = edgeEventsManager;
 #if UNITY_EDITOR
       matchingEngine.EnableEdgeEvents = false;
@@ -156,8 +158,12 @@ namespace MobiledgeX
 
       matchingEngine = new MatchingEngine(pIntegration.CarrierInfo, pIntegration.NetInterface, pIntegration.UniqueID, pIntegration.DeviceInfo);
 
-      melMessaging = new MelMessaging(appName);
-      matchingEngine.SetMelMessaging(melMessaging);
+      if (settings.MEL_ENABLED)
+      {
+        melMessaging = new MelMessaging(appName);
+        matchingEngine.SetMelMessaging(melMessaging);
+      }
+
       this.edgeEventsManager = edgeEventsManager;
 #if UNITY_EDITOR
       matchingEngine.EnableEdgeEvents = false;
