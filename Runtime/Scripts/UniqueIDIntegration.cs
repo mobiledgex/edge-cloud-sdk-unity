@@ -134,7 +134,7 @@ namespace MobiledgeX
       }
 
       // Directly retrieve on IOS. The Unity UI Thread Agent isn't needed.
-      string adId = UnityEngine.iOS.Device.advertisingIdentifier;
+      string adId = _getUniqueID();
       if (adId != null)
       {
         string hashedAdId = HexUtil.HexStringSha512(adId);
