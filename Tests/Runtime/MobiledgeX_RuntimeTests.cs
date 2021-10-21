@@ -40,9 +40,9 @@ namespace MobiledgeX
         return;
       }
       if (!File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/iOS/PlatformIntegration.m")) &&
-       !File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/link.xml")) &&
-       !File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/MatchingEngineSDKRestLibrary.dll")) &&
-       !File.Exists(Path.Combine(Application.dataPath, "Resources/MobiledgeXSettings.asset")))
+          !File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/link.xml")) &&
+          !File.Exists(Path.Combine(Application.dataPath, "Plugins/MobiledgeX/MatchingEngineSDKRestLibrary.dll")) &&
+          !File.Exists(Path.Combine(Application.dataPath, "Resources/MobiledgeXSettings.asset")))
       {
         Assert.Fail("MobiledgeX Plugins are not loaded in the project, Can't perform tests");
       }
