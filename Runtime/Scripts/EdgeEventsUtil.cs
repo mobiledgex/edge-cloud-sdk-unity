@@ -86,8 +86,8 @@ namespace MobiledgeX
 
     public override string ToString()
     {
-      string summary = "dmeHostOverride" + dmeHostOverride;
-      summary += ", dmePortOverride" + dmePortOverride;
+      string summary = "dmeHostOverride: " + dmeHostOverride;
+      summary += ", dmePortOverride: " + dmePortOverride;
       summary += ", app Host: " + appHost;
       summary += ", latencyTestPort: " + latencyTestPort;
       summary += ", mobiledgexManager: " + mobiledgexManager;
