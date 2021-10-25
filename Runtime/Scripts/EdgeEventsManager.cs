@@ -93,6 +93,35 @@ namespace MobiledgeX
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
       }
     }
+
+    private void OnApplicationPause(bool pause)
+    {
+      if (Application.platform == RuntimePlatform.Android)
+      {
+        if (pause)
+        {
+          if (config == null || managerConnectionDetails == null)
+          {
+            Logger.Log("Application paused but EdgeEvents didn't start, yet");
+            return;
+          }
+          managerConnectionDetails.matchingEngine.EdgeEventsConnection.PauseSendingUpdates();
+          updatesMonitor.PauseUpdates();
+          stopUpdatesSource.Cancel();
+        }
+        else
+        {
+          if (config == null || managerConnectionDetails == null)
+          {
+            Logger.Log("Application resumed but EdgeEvents didn't start, yet");
+            return;
+          }
+          managerConnectionDetails.matchingEngine.EdgeEventsConnection.ResumeSendingUpdates();
+          updatesMonitor.ResumeUpdates();
+          EdgeEventsUpdatesDispatcher(managerConnectionDetails, config);
+        }
+      }
+    }
     #endregion
 
     #region EdgeEventsManager Functions
