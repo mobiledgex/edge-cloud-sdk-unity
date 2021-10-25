@@ -245,9 +245,7 @@ namespace MobiledgeX
       {
         if (edgeEventsManager != null)
         {
-          edgeEventsManager.hostOverride = dmeHost;
-          edgeEventsManager.portOverride = dmePort;
-          edgeEventsManager.startStreamingEvents(this);
+          edgeEventsManager.startStreamingEvents(new ConnectionDetails(this, dmeHost, dmePort));
         }
       }
       return reply.Status == FindCloudletReply.Types.FindStatus.FindFound;
