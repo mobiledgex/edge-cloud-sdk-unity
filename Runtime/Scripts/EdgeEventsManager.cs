@@ -155,9 +155,9 @@ namespace MobiledgeX
             Debug.LogError("latencyConfig.maxNumberOfUpdates must be >= 0");
             return EdgeEventsError.InvalidEdgeEventsSetup;
           }
-          if (config.latencyConfig.updateIntervalSeconds < 30)
+          if (config.latencyConfig.updateIntervalSeconds <= 0)
           {
-            Debug.LogError("latencyConfig.updateIntervalSeconds must be > 30");
+            Debug.LogError("latencyConfig.updateIntervalSeconds must be > 0");
             return EdgeEventsError.InvalidUpdateInterval;
           }
         }
