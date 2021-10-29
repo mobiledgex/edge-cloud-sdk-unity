@@ -70,18 +70,13 @@ namespace MobiledgeX
       {
         dmePortOverride = portOverride;
       }
-
       matchingEngine = this.mobiledgexManager.matchingEngine;
-      this.mobiledgexManager.GetAppPort(LProto.Tcp);
-      appHost = this.mobiledgexManager.GetHost();
     }
 
-
-    public void RefreshConnectionDetails()
+    public void SetAppHost(int latencyPort)
     {
-      matchingEngine = this.mobiledgexManager.matchingEngine;
-      this.mobiledgexManager.GetAppPort(LProto.Tcp);
-      appHost = this.mobiledgexManager.GetHost();
+      mobiledgexManager.GetAppPort(LProto.Tcp, latencyPort);
+      appHost = mobiledgexManager.GetHost();
     }
 
     public override string ToString()

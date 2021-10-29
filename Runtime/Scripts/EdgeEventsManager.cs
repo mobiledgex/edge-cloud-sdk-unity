@@ -196,7 +196,6 @@ namespace MobiledgeX
     public void StartEdgeEvents(ConnectionDetails connectionDetails)
     {
       Logger.Log("Starting EdgeEvents");
-
       config = MobiledgeXIntegration.settings.edgeEventsConfig;
       Logger.Log(config.ToString());
       updatesMonitor.Reset();
@@ -227,6 +226,7 @@ namespace MobiledgeX
         return;
       }
       managerConnectionDetails.latencyTestPort = appPort.PublicPort;
+      managerConnectionDetails.SetAppHost(appPort.PublicPort);
       if (appPort.Proto == LProto.Tcp)
       {
         managerConnectionDetails.hasTCPPort = true;
@@ -694,7 +694,6 @@ namespace MobiledgeX
           + ", dmeHostOverride: " + managerConnectionDetails.dmeHostOverride
           + ", dmePortOverride: " + managerConnectionDetails.dmePortOverride);
         managerConnectionDetails.matchingEngine.RestartEdgeEventsConnection(newCloudlet, managerConnectionDetails.dmeHostOverride, managerConnectionDetails.dmePortOverride);
-        managerConnectionDetails.RefreshConnectionDetails();
         StartEdgeEvents(managerConnectionDetails);
       }
       else
