@@ -213,7 +213,8 @@ namespace MobiledgeX
       }
       managerConnectionDetails.matchingEngine.EdgeEventsReceiver += HandleReceivedEvents;
       DeviceInfoDynamic deviceInfoDynamic = GetDynamicInfo(managerConnectionDetails.matchingEngine);
-      bool connectionOpened = managerConnectionDetails.matchingEngine.EdgeEventsConnection.Open(deviceInfoDynamic: deviceInfoDynamic);
+      DeviceInfoStatic deviceInfoStatic = GetStaticInfo(managerConnectionDetails.matchingEngine);
+      bool connectionOpened = managerConnectionDetails.matchingEngine.EdgeEventsConnection.Open(deviceInfoDynamic: deviceInfoDynamic, deviceInfoStatic: deviceInfoStatic);
       if (!connectionOpened)
       {
         Debug.LogError("Failed to OpenEdgeEventsConnection, StoppingEdgeEvents updates");
@@ -776,6 +777,26 @@ namespace MobiledgeX
         deviceInfoDynamic.CarrierName = "";
       }
       return deviceInfoDynamic;
+    }
+
+    public static DeviceInfoStatic GetStaticInfo(MatchingEngine matchingEngine)
+    {
+      DeviceInfoStatic deviceInfoStatic;
+      if (Application.platform == RuntimePlatform.Android)
+      {
+        deviceInfoStatic = Task.Run(() =>
+        {
+          AndroidJNI.AttachCurrentThread();
+          DeviceInfoStatic result = matchingEngine.GetDeviceInfoStatic();
+          AndroidJNI.DetachCurrentThread();
+          return result;
+        }).Result;
+      }
+      else
+      {
+        deviceInfoStatic = matchingEngine.GetDeviceInfoStatic();
+      }
+      return deviceInfoStatic;
     }
 
     // This callback is emitted from a ThreadPoolWorker
