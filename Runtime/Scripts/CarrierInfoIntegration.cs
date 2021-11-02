@@ -441,6 +441,26 @@ namespace MobiledgeX
         return "";
       }
     }
+
+    public string GetManufacturer()
+    {
+      AndroidJavaObject telephonyManager = GetTelephonyManager();
+      if (telephonyManager == null)
+      {
+        Logger.Log("No TelephonyManager!");
+        return "";
+      }
+      AndroidJavaClass versionCodesClass = new AndroidJavaClass("android.os.Build$VERSION_CODES");
+      int versionCode = PlatformIntegrationUtil.GetStatic<int>(versionCodesClass, "Q");
+      if (sdkVersion > versionCode)
+      {
+        string mc = PlatformIntegrationUtil.Call<string>(telephonyManager, "getManufacturerCode");
+
+        return mc;
+      }
+      return "";
+    }
+
 #elif UNITY_IOS
 
     // Sets iOS platform specific internal callbacks (reference counted objects), etc.
