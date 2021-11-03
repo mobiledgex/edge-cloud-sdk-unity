@@ -221,18 +221,20 @@ namespace MobiledgeX
   {
     string hostOverride;
     uint portOverride;
+    int latencyTestPort;
     MatchingEngine matchingEngine;
     EdgeEventsManager.FCPerformanceCallback callback;
     Loc location;
     Thread FCPerformanceThread;
 
     internal FCPerformanceThreadManager(MatchingEngine matchingEngine, Loc location, string hostOverride, uint portOverride,
-     EdgeEventsManager.FCPerformanceCallback callbackDelegate)
+     EdgeEventsManager.FCPerformanceCallback callbackDelegate, int latencyTestPort)
     {
       this.hostOverride = hostOverride;
       this.portOverride = portOverride;
       this.matchingEngine = matchingEngine;
       this.location = location;
+      this.latencyTestPort = latencyTestPort;
       callback = callbackDelegate;
     }
 
@@ -279,7 +281,8 @@ namespace MobiledgeX
       {
         Logger.Log("FindCloudletPerformanceMode HostOverride: " + hostOverride);
         Logger.Log("FindCloudletPerformanceMode portOverride: " + portOverride);
-        fcReply = await matchingEngine.FindCloudletPerformanceMode(hostOverride, portOverride, fcReq);
+        Logger.Log("FindCloudletPerformanceMode LatencyTestPort: " + latencyTestPort);
+        fcReply = await matchingEngine.FindCloudletPerformanceMode(hostOverride, portOverride, fcReq, testPort: latencyTestPort);
       }
       catch (Exception fce)
       {
