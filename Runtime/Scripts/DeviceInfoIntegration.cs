@@ -17,6 +17,7 @@
 
 using DistributedMatchEngine;
 using UnityEngine;
+using System.Runtime.InteropServices;
 
 namespace MobiledgeX
 {
@@ -46,17 +47,24 @@ namespace MobiledgeX
       return deviceInfoDynamic;
     }
 
+#if UNITY_ANDROID
     public DeviceInfoStatic GetDeviceInfoStatic()
     {
+      string deviceModel = "Android";
+      string deviceOS = "Android";
+      if (overrideCarrierInfo == null)
+      {
+        CarrierInfoClass carrierInfo = new CarrierInfoClass();
+        deviceModel += carrierInfo.GetManufacturer();
+        deviceOS += carrierInfo.getAndroidSDKVers(); 
+      }
       DeviceInfoStatic deviceInfoStatic = new DeviceInfoStatic()
       {
-        DeviceModel = SystemInfo.deviceModel,
-        DeviceOs = SystemInfo.operatingSystem
+        DeviceModel = deviceModel,
+        DeviceOs = deviceOS
       };
       return deviceInfoStatic;
     }
-
-#if UNITY_ANDROID
 
     public bool IsPingSupported()
     {
@@ -65,13 +73,40 @@ namespace MobiledgeX
 
 #elif UNITY_IOS
 
+    [DllImport("__Internal")]
+    private static extern string _getDeviceModel();
+
+    [DllImport("__Internal")]
+    private static extern string _getOperatingSystem();
+
+    public DeviceInfoStatic GetDeviceInfoStatic()
+    {
+      string deviceModel = _getDeviceModel();
+      string deviceOS = _getOperatingSystem();
+
+      DeviceInfoStatic deviceInfoStatic = new DeviceInfoStatic()
+      {
+        DeviceModel = deviceModel,
+        DeviceOs = deviceOS
+      };
+      return deviceInfoStatic;
+    }
+
     public bool IsPingSupported()
     {
       return false;
     }
 
 #else // Unsupported platform.
-
+    public DeviceInfoStatic GetDeviceInfoStatic()
+    {
+      DeviceInfoStatic deviceInfoStatic = new DeviceInfoStatic()
+      {
+        DeviceModel = "UnityUnsupportedDeviceModel",
+        DeviceOs = "UnityUnsupportedDeviceOS"
+      };
+      return deviceInfoStatic;
+    }
     public bool IsPingSupported()
     {
       return true;

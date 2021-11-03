@@ -62,6 +62,52 @@ namespace MobiledgeX
     /// </summary>
     [Tooltip("Config for location updates")]
     public UpdateConfig locationConfig;
+
+    /// <summary>
+    /// Set to true to switch to any better cloudlet even if it's with a different carrier other than the device carrier.
+    /// </summary>
+    [Tooltip("Set to true to switch to any better cloudlet even if it's with a different carrier other than the device carrier")]
+    public bool useAnyCarrier;
+    //DefaultConfig
+    public EdgeEventsConfig()
+    {
+      latencyThresholdTriggerMs = 50;
+      latencyTestPort = 0;
+      newFindCloudletEventTriggers = new List<FindCloudletEventTrigger>() {
+        FindCloudletEventTrigger.AppInstHealthChanged,
+        FindCloudletEventTrigger.LatencyTooHigh,
+        FindCloudletEventTrigger.CloudletStateChanged,
+        FindCloudletEventTrigger.CloudletMaintenanceStateChanged,
+        FindCloudletEventTrigger.CloserCloudlet,
+        FindCloudletEventTrigger.Error,
+      };
+      autoMigration = true;
+      performanceSwitchMargin = 0.05f;
+      latencyConfig = new UpdateConfig();
+      locationConfig = new UpdateConfig();
+      useAnyCarrier = true;
+    }
+
+    public override string ToString()
+    {
+      string configSummary = "EdgeEvents Config Summary:";
+      configSummary += "\nLatency Test Port: " + latencyTestPort;
+      configSummary += "\nLatency Threshold Trigger (Milliseconds): " + latencyThresholdTriggerMs;
+      configSummary += "\nLatency Update Pattern: " + latencyConfig.updatePattern;
+      configSummary += "\nLatency Max. Number of Updates: " + latencyConfig.maxNumberOfUpdates;
+      configSummary += "\nLatency Update Interval (Seconds): " + latencyConfig.updateIntervalSeconds;
+      configSummary += "\nLocation Update Pattern: " + locationConfig.updatePattern;
+      configSummary += "\nLocation Max. Number of Updates: " + locationConfig.maxNumberOfUpdates;
+      configSummary += "\nLocation Update Interval (Seconds): " + locationConfig.updateIntervalSeconds;
+      configSummary += "\nAutoMigration : " + autoMigration;
+      configSummary += "\nPerformanceMarginSwitch : " + performanceSwitchMargin;
+      configSummary += "\nNewFindCloudletEventTriggers: ";
+      foreach (FindCloudletEventTrigger trigger in newFindCloudletEventTriggers)
+      {
+        configSummary += "\nTrigger : " + trigger.ToString();
+      }
+      return configSummary;
+    }
   }
 
 
@@ -95,6 +141,13 @@ namespace MobiledgeX
         "\nWorks only if the UpdatePattern is set to OnInterval" +
         "\nSet to 0 for updates to run till the EdgeEvents connection is closed")]
     public int maxNumberOfUpdates;
+    //DefaultUpdateConfig
+    public UpdateConfig()
+    {
+      updatePattern = UpdatePattern.OnInterval;
+      updateIntervalSeconds = 30;
+      maxNumberOfUpdates = 0;
+    }
   }
 
   /// <summary>
