@@ -730,7 +730,7 @@ namespace MobiledgeX
         Logger.Log("Current Latency (" + stats.Avg + ") > LatencyThreshold (" + config.latencyThresholdTriggerMs + ")");
         Logger.Log("Performing FindCloudlet PerformanceMode");
         FCPerformanceThreadManager fcThreadObj = new FCPerformanceThreadManager
-          (matchingEngine: managerConnectionDetails.matchingEngine, location: location, hostOverride: managerConnectionDetails.dmeHostOverride, portOverride: managerConnectionDetails.dmePortOverride, callbackDelegate: FCCallback);
+          (matchingEngine: managerConnectionDetails.matchingEngine, location: location, hostOverride: managerConnectionDetails.dmeHostOverride, portOverride: managerConnectionDetails.dmePortOverride, callbackDelegate: FCCallback, latencyTestPort: config.latencyTestPort);
         fcThreadObj.RunFCPerformance();
       }
       else
