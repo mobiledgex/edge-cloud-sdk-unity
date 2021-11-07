@@ -23,194 +23,227 @@ using System;
 
 namespace MobiledgeX
 {
-    // Unity Location Service, based on the documentation example
-    [AddComponentMenu("MobiledgeX/LocationService")]
-    public class LocationService : MonoBehaviour
+  // Unity Location Service, based on the documentation example
+  [AddComponentMenu("MobiledgeX/LocationService")]
+  public class LocationService : MonoBehaviour
+  {
+    private static Exception initLocationServiceException;
+    public enum LocationStatus
     {
-        private static Exception initLocationServiceException;
+      LocationNotSupported,
+      LocationPermissionNotAcquired,
+      LocationPermissionRequested,
+      LocationPermissionAcquired,
+    }
+    public static LocationStatus locationStatus;
+    /// <summary>
+    /// After initializing location services, this is the maximum wait time (in seconds) to acquire location info
+    /// if the value selected is zero or less the default value (20 seconds) will be used.
+    /// </summary>
+    [Tooltip("After initializing location services, this is the maximum wait time (in seconds) to acquire location info" +
+        "if the value selected is zero or less the default value (20 seconds) will be used.")]
+    public int timeOut = 20;
 
-        /// <summary>
-        /// After initializing location services, this is the maximum wait time (in seconds) to acquire location info
-        /// if the value selected is zero or less the default value (20 seconds) will be used.
-        /// </summary>
-        [Tooltip("After initializing location services, this is the maximum wait time (in seconds) to acquire location info" +
-            "if the value selected is zero or less the default value (20 seconds) will be used.")]
-        public int timeOut = 20;
-
-        /// <summary>
-        /// EnsureLocation Confirm that user location is valid, user location is essential for MobiledgeX services
-        /// If Location permission is denied by User an exception will be thrown once RetrieveLocation() is called
-        /// </summary>
-        public static IEnumerator EnsureLocation()
-        {
-            if (!SystemInfo.supportsLocationService)
-            {
-                Logger.Log("Your Device doesn't support LocationService");
-                yield break;
-            }
-
+    /// <summary>
+    /// EnsureLocation Confirm that user location is valid, user location is essential for MobiledgeX services
+    /// If Location permission is denied by User an exception will be thrown once RetrieveLocation() is called
+    /// </summary>
+    public static IEnumerator EnsureLocation()
+    {
+      if (!SystemInfo.supportsLocationService)
+      {
+        Logger.Log("Your Device doesn't support LocationService");
+        yield break;
+      }
 #if UNITY_EDITOR
-            Logger.Log("LocationService is not supported in UNITY_EDITOR");
-            yield break;
+      locationStatus = LocationStatus.LocationNotSupported;
+      Logger.Log("LocationService is not supported in UNITY_EDITOR");
+      yield break;
 #else
-            int timeOutValue = FindObjectOfType<LocationService>().timeOut;
-            int maxWait = timeOutValue > 0 ? timeOutValue : 20;
-            if (Application.platform == RuntimePlatform.IPhonePlayer)
-            {
-                Input.location.Start();
-                yield return new WaitForEndOfFrame();
-                while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
-                {
-                    yield return new WaitForSeconds(1);
-                    Logger.Log("Initializing Location Service, Exiting in " + maxWait);
-                    maxWait--;
-                }
+      int timeOutValue = FindObjectOfType<LocationService>().timeOut;
+      int maxWait = timeOutValue > 0 ? timeOutValue : 20;
+      if (Application.platform == RuntimePlatform.IPhonePlayer)
+      {
+        Input.location.Start();
+        yield return new WaitForEndOfFrame();
+        while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
+        {
+          yield return new WaitForSeconds(1);
+          Logger.Log("Initializing Location Service, Exiting " + maxWait);
+          maxWait--;
+        }
 
-                // Service didn't initialize in before the timeOut threshold
-                if (maxWait < 1)
-                {
-                    Logger.Log("Initializing Location Service Timed Out");
-                    initLocationServiceException = new LocationException("Initializing Location Service Timed Out");
-                    yield break;//Exception will be thrown from RetrieveLocation()
-                }
-                else
-                {
-                    if (Input.location.status == LocationServiceStatus.Running)
-                    {
-                        Logger.Log("Location Service succeded, Stopping LocationService, data saved to Input.location.lastData");
-                        Input.location.Stop();
-                    }
-                    yield break;
-                }
-            }
+        // Service didn't initialize in before the timeOut threshold
+        if (maxWait < 1)
+        {
+          Logger.Log("Initializing Location Service Timed Out");
+          initLocationServiceException = new LocationException("Initializing Location Service Timed Out");
+          yield break;//Exception will be thrown from RetrieveLocation()
+        }
+        else
+        {
+          if (Input.location.status == LocationServiceStatus.Running)
+          {
+            Logger.Log("Location Service succeded, Stopping LocationService, data saved to Input.location.lastData");
+            Input.location.Stop();
+          }
+          yield break;
+        }
+      }
 
-            if (Application.platform == RuntimePlatform.Android)
-            {
-                if (Input.location.isEnabledByUser)
-                {
-                    Input.location.Start();
-                    while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
-                    {
-                        yield return new WaitForSeconds(1);
-                        Logger.Log("Initializing Location Service, Exiting in " + maxWait);
-                        maxWait--;
-                    }
+      if (Application.platform == RuntimePlatform.Android)
+      {
+        if (Input.location.isEnabledByUser)
+        {
+          locationStatus = LocationStatus.LocationPermissionAcquired;
+          Input.location.Start();
+          while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
+          {
+            yield return new WaitForSeconds(1);
+            Logger.Log("Initializing Location Service, Exiting " + maxWait);
+            maxWait--;
+          }
 
-                    // Service didn't initialize in before the timeOut threshold
-                    if (maxWait < 1)
-                    {
-                        Logger.Log("Initializing Location Service Timed Out");
-                        Input.location.Stop();
-                        initLocationServiceException = new LocationException("Initializing Location Service Timed Out");
-                        yield break;//Exception will be thrown from RetrieveLocation()
-                    }
-                    if (Input.location.status == LocationServiceStatus.Running)
-                    {
-                        Logger.Log("Location Service succeded, Stopping LocationService, data saved to Input.location.lastData");
-                        Input.location.Stop();
-                    }
-                    yield break;
-                }
-                else
-                {
-                    Logger.Log("Location permission is not allowed by user yet.");
-                    Permission.RequestUserPermission(Permission.FineLocation);
-                    yield return new WaitForEndOfFrame(); // Application Out of focus , waiting for user decision on Location Permission
-                    if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
-                    {
-                        Logger.Log("User rejected location permission.");
-                        initLocationServiceException = new LocationException("User rejected location permission");
-                        yield break;//Exception will be thrown from RetrieveLocation()
-                    }
-                    else
-                    {
-                        Logger.Log("User accepted location permission.");
-                        Input.location.Start();
-                        while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
-                        {
-                            yield return new WaitForSeconds(1);
-                            Logger.Log("Initializing Location Service, Exiting in " + maxWait);
-                            maxWait--;
-                        }
-                        // Service didn't initialize in before the timeOut threshold
-                        if (maxWait < 1)
-                        {
-                            Logger.Log("Initializing Location Service Timed Out");
-                            Input.location.Stop();
-                            initLocationServiceException = new LocationException("Initializing Location Service Timed Out");
-                            yield break;//Exception will be thrown from RetrieveLocation()
-                        }
-                        else
-                        {
-                            if (Input.location.status == LocationServiceStatus.Running)
-                            {
-                                Logger.Log("Location Service succeded, Stopping LocationService, data saved to Input.location.lastData");
-                                Input.location.Stop();
-                            }
-                            yield break;
-                        }
-                    }
-                }
-            }
+          // Service didn't initialize in before the timeOut threshold
+          if (maxWait < 1)
+          {
+            Logger.Log("Initializing Location Service Timed Out");
+            Input.location.Stop();
+            initLocationServiceException = new LocationException("Initializing Location Service Timed Out");
+            yield break;//Exception will be thrown from RetrieveLocation()
+          }
+          if (Input.location.status == LocationServiceStatus.Running)
+          {
+            Logger.Log("Location Service succeded, Stopping LocationService, data saved to Input.location.lastData");
+            Input.location.Stop();
+          }
+          yield break;
+        }
+        else
+        {
+          locationStatus = LocationStatus.LocationPermissionNotAcquired;
+          Logger.Log("Location permission is not allowed by user yet.");
+          Permission.RequestUserPermission(Permission.FineLocation);
+          yield return new WaitForSeconds(1); // Application Out of focus , waiting for user decision on Location Permission
+        }
+      }
 #endif
-        }
-
-        // Retrieve the lastest location, without restarting locationService.
-        public static Loc RetrieveLocation()
-        {
-            LocationInfo locationInfo = Input.location.lastData;
-            if (locationInfo.Equals(default(LocationInfo)) || !Input.location.isEnabledByUser || Input.location.status == LocationServiceStatus.Failed)
-            {
-                if(initLocationServiceException != null)
-                {
-                    throw initLocationServiceException;
-                }
-                else
-                {
-                    throw new LocationException("MobiledgeX: Location Service disabled by user.");
-                }
-            }
-            Logger.Log("Location Info: [" + locationInfo.longitude + "," + locationInfo.latitude + "]");
-            return ConvertUnityLocationToDMELoc(locationInfo);
-        }
-
-        public static Timestamp ConvertTimestamp(double timeInSeconds)
-        {
-            Timestamp ts;
-            int nanos;
-            long sec = (long)(timeInSeconds); // Truncate.
-            double remainder = timeInSeconds - (double)sec;
-            nanos = (int)(remainder * 1e9);
-            ts = new Timestamp { seconds = sec.ToString(), nanos = nanos };
-            return ts;
-        }
-
-        public static Loc ConvertUnityLocationToDMELoc(LocationInfo info)
-        {
-            Timestamp ts = ConvertTimestamp(info.timestamp);
-            Loc loc = new Loc
-            {
-                latitude = info.latitude,
-                longitude = info.longitude,
-                horizontal_accuracy = info.horizontalAccuracy,
-                vertical_accuracy = info.verticalAccuracy,
-                altitude = info.altitude,
-                course = 0,
-                speed = 0,
-                timestamp = ts
-            };
-            return loc;
-        }
     }
 
-    public class LocationException : Exception
+    IEnumerator EnsureLocationAndroid()
     {
-        public LocationException()
+      int maxWait = timeOut > 0 ? timeOut : 20;
+      if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
+      {
+        Logger.Log("User rejected location permission.");
+        initLocationServiceException = new LocationException("User rejected location permission");
+        yield break;//Exception will be thrown from RetrieveLocation()
+      }
+      else
+      {
+        locationStatus = LocationStatus.LocationPermissionAcquired;
+        Logger.Log("User accepted location permission.");
+        Input.location.Start();
+        while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
         {
+          yield return new WaitForSeconds(1);
+          Logger.Log("Initializing Location Service, Exiting " + maxWait);
+          maxWait--;
         }
-
-        public LocationException(string message) : base(message)
+        // Service didn't initialize in before the timeOut threshold
+        if (maxWait < 1)
         {
+          Logger.Log("Initializing Location Service Timed Out");
+          Input.location.Stop();
+          initLocationServiceException = new LocationException("Initializing Location Service Timed Out");
+          yield break; //Exception will be thrown from RetrieveLocation()
         }
+        else
+        {
+          if (Input.location.status == LocationServiceStatus.Running)
+          {
+            Logger.Log("Location Service succeded, Stopping LocationService, data saved to Input.location.lastData");
+            Input.location.Stop();
+          }
+          yield break;
+        }
+      }
     }
+
+    private void OnApplicationFocus(bool focus)
+    {
+      if (focus && locationStatus == LocationStatus.LocationPermissionRequested)
+      {
+        StartCoroutine(EnsureLocationAndroid());
+      }
+      if (!focus && locationStatus == LocationStatus.LocationPermissionNotAcquired)
+      {
+        if (Application.platform == RuntimePlatform.Android)
+        {
+          locationStatus = LocationStatus.LocationPermissionRequested;
+        }
+      }
+    }
+
+    /// <summary>
+    /// Retrieve the lastest location, without restarting locationService.
+    /// </summary>
+    /// <returns>Loc Object</returns>
+    public static Loc RetrieveLocation()
+    {
+      LocationInfo locationInfo = Input.location.lastData;
+      if (locationInfo.Equals(default(LocationInfo)) || !Input.location.isEnabledByUser || Input.location.status == LocationServiceStatus.Failed)
+      {
+        if (initLocationServiceException != null)
+        {
+          throw initLocationServiceException;
+        }
+        else
+        {
+          throw new LocationException("MobiledgeX: Location Service disabled by user.");
+        }
+      }
+      Logger.Log("Location Info: [" + locationInfo.longitude + "," + locationInfo.latitude + "]");
+      return ConvertUnityLocationToDMELoc(locationInfo);
+    }
+
+    public static Timestamp ConvertTimestamp(double timeInSeconds)
+    {
+      Timestamp ts;
+      int nanos;
+      long sec = (long)(timeInSeconds); // Truncate.
+      double remainder = timeInSeconds - (double)sec;
+      nanos = (int)(remainder * 1e9);
+      ts = new Timestamp { seconds = sec.ToString(), nanos = nanos };
+      return ts;
+    }
+
+    public static Loc ConvertUnityLocationToDMELoc(LocationInfo info)
+    {
+      Timestamp ts = ConvertTimestamp(info.timestamp);
+      Loc loc = new Loc
+      {
+        latitude = info.latitude,
+        longitude = info.longitude,
+        horizontal_accuracy = info.horizontalAccuracy,
+        vertical_accuracy = info.verticalAccuracy,
+        altitude = info.altitude,
+        course = 0,
+        speed = 0,
+        timestamp = ts
+      };
+      return loc;
+    }
+  }
+
+  public class LocationException : Exception
+  {
+    public LocationException()
+    {
+    }
+
+    public LocationException(string message) : base(message)
+    {
+    }
+  }
 }
