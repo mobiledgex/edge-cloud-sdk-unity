@@ -19,24 +19,32 @@ using UnityEngine;
 
 namespace MobiledgeX
 {
-    public class Logger
+  public class Logger
+  {
+    public enum LogType { All, ErrorsAndWarnings, ErrorsOnly };
+    internal static void LogWarning(string message)
     {
-        public enum LogType { All, ErrorsAndWarnings, ErrorsOnly};
-        static MobiledgeXSettings settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
-        public static void LogWarning(string message)
-        {
-            if (settings.logType == LogType.All || settings.logType == LogType.ErrorsAndWarnings)
-            {
-                Debug.LogWarning("MobiledgeX: "+message);
-            }
-        }
-
-        public static void Log(string message)
-        {
-            if(settings.logType == LogType.All)
-            {
-                Debug.Log("MobiledgeX: "+message);
-            }
-        }
+      if (MobiledgeXIntegration.settings.logType == LogType.All || MobiledgeXIntegration.settings.logType == LogType.ErrorsAndWarnings)
+      {
+        Debug.LogWarning("MobiledgeX: " + message);
+      }
     }
+
+    internal static void Log(string message)
+    {
+      if (MobiledgeXIntegration.settings.logType == LogType.All)
+      {
+        Debug.Log("MobiledgeX: " + message);
+      }
+    }
+
+    internal static void LogObject(object obj, string message = "")
+    {
+      if (MobiledgeXIntegration.settings.logType == LogType.All)
+      {
+        string stringifiedObj = JsonUtility.ToJson(obj, true);
+        Debug.Log("MobiledgeX: " + message + " " + stringifiedObj);
+      }
+    }
+  }
 }
