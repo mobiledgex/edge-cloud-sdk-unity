@@ -59,6 +59,31 @@ namespace MobiledgeX
     string cellInfoTdscdmaString;
     string cellInfoNrString;
 
+    // Source: https://developer.android.com/reference/android/telephony/TelephonyManager
+    enum NetworkDataType
+    {
+      NETWORK_TYPE_1xRTT = 7,
+      NETWORK_TYPE_CDMA = 4,
+      NETWORK_TYPE_EDGE = 2,
+      NETWORK_TYPE_EHRPD = 14,
+      NETWORK_TYPE_EVDO_0 = 5,
+      NETWORK_TYPE_EVDO_A = 6,
+      NETWORK_TYPE_EVDO_B = 12,
+      NETWORK_TYPE_GPRS = 1,
+      NETWORK_TYPE_GSM = 16,
+      NETWORK_TYPE_HSDPA = 8,
+      NETWORK_TYPE_HSPA = 10,
+      NETWORK_TYPE_HSPAP = 15,
+      NETWORK_TYPE_HSUPA = 9,
+      NETWORK_TYPE_IDEN = 11,
+      NETWORK_TYPE_IWLAN = 18,
+      NETWORK_TYPE_LTE = 13,
+      NETWORK_TYPE_NR = 20,
+      NETWORK_TYPE_TD_SCDMA = 17,
+      NETWORK_TYPE_UMTS = 3,
+      NETWORK_TYPE_UNKNOWN = 0
+    };
+
     public CarrierInfoClass()
     {
       sdkVersion = getAndroidSDKVers();
@@ -78,14 +103,11 @@ namespace MobiledgeX
       /*if (sdkVersion >= 17) {
         cellInfoLte = PlatformIntegrationUtil.GetAndroidJavaObject("android.telephony.CellInfoLte");
         cellInfoLteString = cellInfoLte != null ? PlatformIntegrationUtil.GetSimpleName(cellInfoLte) : "";
-
         cellInfoGsm = PlatformIntegrationUtil.GetAndroidJavaObject("android.telephony.CellInfoGsm");
         cellInfoGsmString = cellInfoGsm != null ? PlatformIntegrationUtil.GetSimpleName(cellInfoGsm) : "";
-
         cellInfoCdma = PlatformIntegrationUtil.GetAndroidJavaObject("android.telephony.CellInfoCdma");
         cellInfoCdmaString = cellInfoCdma != null ? PlatformIntegrationUtil.GetSimpleName(cellInfoCdma) : "";
       }
-
       if (sdkVersion >= 18) {
         cellInfoWcdma = PlatformIntegrationUtil.GetAndroidJavaObject("android.telephony.CellInfoWcdma");
         cellInfoWcdmaString = cellInfoWcdma != null ? PlatformIntegrationUtil.GetSimpleName(cellInfoWcdma) : "";
@@ -144,7 +166,7 @@ namespace MobiledgeX
         return null;
       }
 
-      AndroidJavaObject telManager = PlatformIntegrationUtil.Call<AndroidJavaObject>(context, "getSystemService", new object[] {CONTEXT_TELEPHONY_SERVICE});
+      AndroidJavaObject telManager = PlatformIntegrationUtil.Call<AndroidJavaObject>(context, "getSystemService", new object[] { CONTEXT_TELEPHONY_SERVICE });
 
       sdkVersion = getAndroidSDKVers();
 
@@ -155,13 +177,15 @@ namespace MobiledgeX
 
       // Call SubscriptionManager to get a specific telManager:
       AndroidJavaClass subscriptionManagerCls = PlatformIntegrationUtil.GetAndroidJavaClass("android.telephony.SubscriptionManager");
-      if (subscriptionManagerCls == null) {
+      if (subscriptionManagerCls == null)
+      {
         Logger.Log("Can't get Subscription Manager Class.");
         return null;
       }
       int subId = PlatformIntegrationUtil.CallStatic<int>(subscriptionManagerCls, "getDefaultDataSubscriptionId");
       int invalidSubId = PlatformIntegrationUtil.GetStatic<int>(subscriptionManagerCls, "INVALID_SUBSCRIPTION_ID");
-      if (subId == invalidSubId) {
+      if (subId == invalidSubId)
+      {
         Logger.Log("The Subscription ID is invalid: " + subId);
         return null;
       }
@@ -276,7 +300,7 @@ namespace MobiledgeX
       {
         int cid = PlatformIntegrationUtil.Call<int>(cellIdentity, "getCid");
         if (cid > 0)
-        { 
+        {
           pair = new KeyValuePair<string, ulong>(simpleName, (ulong)cid);
         }
       }
@@ -284,7 +308,7 @@ namespace MobiledgeX
       {
         int baseStationId = PlatformIntegrationUtil.Call<int>(cellIdentity, "getBaseStationId");
         if (baseStationId > 0)
-        { 
+        {
           pair = new KeyValuePair<string, ulong>(simpleName, (ulong)baseStationId);
         }
       }
@@ -333,13 +357,13 @@ namespace MobiledgeX
 
       List<KeyValuePair<String, ulong>> cellIDList = new List<KeyValuePair<string, ulong>>();
       // KeyValuePair to compare to in case GetCidKeyValuePair returns nothing
-      KeyValuePair<string,ulong> empty = new KeyValuePair<string, ulong>(null, 0);
+      KeyValuePair<string, ulong> empty = new KeyValuePair<string, ulong>(null, 0);
 
       for (int i = 0; i < length; i++)
       {
-        AndroidJavaObject cellInfo = PlatformIntegrationUtil.Call<AndroidJavaObject>(cellInfoList, "get", new object[] {i});
+        AndroidJavaObject cellInfo = PlatformIntegrationUtil.Call<AndroidJavaObject>(cellInfoList, "get", new object[] { i });
         if (cellInfo == null) continue;
-        
+
         bool isRegistered = PlatformIntegrationUtil.Call<bool>(cellInfo, "isRegistered");
         if (isRegistered)
         {
@@ -362,21 +386,61 @@ namespace MobiledgeX
        * (https://developer.android.com/distribute/best-practices/develop/restrictions-non-sdk-interfaces)
        * The following code can be used with older Android API versions.
        */
-       
+
       /*ulong cellID = 0;
-
       List<KeyValuePair<String, ulong>> cellInfoList = GetCellInfoList();
-
       if (cellInfoList == null || cellInfoList.Count == 0)
       {
         Logger.Log("no cellID");
         return cellID;
       }
-
       KeyValuePair<String, ulong> pair = cellInfoList[0]; // grab first value
-
       return pair.Value;*/
       return 0;
+    }
+
+    public string GetDataNetworkPath()
+    {
+      AndroidJavaObject telManager = GetTelephonyManager();
+      if (telManager == null)
+      {
+        return "";
+      }
+      const string readPhoneStatePermissionString = "android.permission.READ_PHONE_STATE";
+      try
+      {
+        if (Permission.HasUserAuthorizedPermission(readPhoneStatePermissionString))
+        {
+          int nType = PlatformIntegrationUtil.Call<int>(telManager, "getDataNetworkType");
+          NetworkDataType datatype = (NetworkDataType)nType;
+          return datatype.ToString();
+        }
+        else
+        {
+          return "";
+        }
+      }
+      catch (Exception e)
+      {
+        Logger.LogWarning("Exception retrieving properties: " + e.GetBaseException() + ", " + e.Message);
+        return "";
+      }
+    }
+
+    public ulong GetSignalStrength()
+    {
+      AndroidJavaObject telManager = GetTelephonyManager();
+      if (telManager == null)
+      {
+        return 0;
+      }
+      AndroidJavaObject signalStrength = telManager.Call<AndroidJavaObject>("getSignalStrength");
+      if (signalStrength == null)
+      {
+        return 0;
+      }
+      ulong signalStrengthLevel = (ulong)signalStrength.Call<int>("getLevel");
+      return signalStrengthLevel;
     }
 
 #elif UNITY_IOS
@@ -433,15 +497,25 @@ namespace MobiledgeX
       return (ulong)cellID;
     }
 
+    public string GetDataNetworkPath()
+    {
+      return "";
+    }
+
+    public ulong GetSignalStrength()
+    {
+      return 0;
+    }
+
     public async Task<bool> IsRoaming(double longitude, double latitude)
     {
       if (Application.platform == RuntimePlatform.IPhonePlayer)
-      {  
+      {
         Task<string> task = ConvertGPSToISOCountryCode(longitude, latitude);
         string isoCCFromGPS = null;
         if (await Task.WhenAny(task, Task.Delay(5000)) == task)
         {
-          isoCCFromGPS = await task; 
+          isoCCFromGPS = await task;
         }
         else
         {
@@ -475,18 +549,19 @@ namespace MobiledgeX
       if (Application.platform == RuntimePlatform.IPhonePlayer)
       {
         _convertGPSToISOCountryCode(longitude, latitude);
-        return await Task.Run(() => {
+        return await Task.Run(() =>
+        {
           string isoCC = "";
-          while(isoCC == "" || isoCC == null)
+          while (isoCC == "" || isoCC == null)
           {
             isoCC = GetISOCountryCodeFromGPS();
           }
           return isoCC;
-         }).ConfigureAwait(false);
+        }).ConfigureAwait(false);
       }
 
       return null;
-    }  
+    }
 
     public string GetISOCountryCodeFromGPS()
     {
@@ -529,7 +604,20 @@ namespace MobiledgeX
       return 0;
     }
 
+    public string GetDataNetworkPath()
+    {
+      Logger.Log("GetDataNetworkPath is NOT IMPLEMENTED");
+      return "";
+    }
+
+    public ulong GetSignalStrength()
+    {
+      Logger.Log("GetSignalStrength is NOT IMPLEMENTED");
+      return 0;
+    }
+
 #endif
+
   }
 
   // Used for testing in UnityEditor (any target platform)
@@ -547,6 +635,16 @@ namespace MobiledgeX
     }
 
     public ulong GetCellID()
+    {
+      return 0;
+    }
+
+    public string GetDataNetworkPath()
+    {
+      return "";
+    }
+
+    public ulong GetSignalStrength()
     {
       return 0;
     }

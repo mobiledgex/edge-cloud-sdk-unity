@@ -29,73 +29,78 @@ using System.Collections.Generic;
 [RequireComponent(typeof(MobiledgeX.LocationService))]
 public class ExampleRest : MonoBehaviour
 {
-    MobiledgeXIntegration mxi;
+  MobiledgeXIntegration mxi;
 
-    IEnumerator Start()
+  IEnumerator Start()
+  {
+    yield return StartCoroutine(MobiledgeX.LocationService.EnsureLocation());
+    GetEdgeConnection();
+  }
+
+  async void GetEdgeConnection()
+  {
+    mxi = new MobiledgeXIntegration();
+    try
     {
-        yield return StartCoroutine(MobiledgeX.LocationService.EnsureLocation());
-        GetEdgeConnection();
+      await mxi.RegisterAndFindCloudlet();
     }
-
-    async void GetEdgeConnection()
+    //RegisterClientException is thrown if your app is not found or if your carrier is not registered on MobiledgeX yet
+    catch (RegisterClientException rce)
     {
-        mxi = new MobiledgeXIntegration();
-        try
-        {
-            await mxi.RegisterAndFindCloudlet();
-        }
-        //RegisterClientException is thrown if your app is not found or if your carrier is not registered on MobiledgeX yet
-        catch (RegisterClientException rce)
-        {
-            Debug.Log("RegisterClientException: " + rce.Message + "Inner Exception: " + rce.InnerException);
-            mxi.UseWifiOnly(true); // use location only to find the app instance
-            await mxi.RegisterAndFindCloudlet();
-        }
-        //FindCloudletException is thrown if there is no app instance in the user region
-        catch (FindCloudletException fce)
-        {
-            Debug.Log("FindCloudletException: " + fce.Message + "Inner Exception: " + fce.InnerException);
-            // your fallback logic here
-        }
-        // LocationException is thrown if the app user rejected location permission
-        catch (LocationException locException)
-        {
-            print("Location Exception: " + locException.Message);
-            mxi.useFallbackLocation = true;
-            mxi.SetFallbackLocation(-122.4194, 37.7749); //Example only (SF location),In Production you can optionally use:  MobiledgeXIntegration.LocationFromIPAddress location = await MobiledgeXIntegration.GetLocationFromIP();
-            await mxi.RegisterAndFindCloudlet();
-        }
-        mxi.GetAppPort(LProto.L_PROTO_TCP); // or LProto.L_PROTO_UDP
-        string url = mxi.GetUrl("http"); // or another L7 proto such as https, ws, wss, udp
-
-        Debug.Log("url : " + url); // Once you have your edge server url you can start communicating with your Edge server deployed on MobiledgeX Console
-        StartCoroutine(RestExample(url)); //using UnityWebRequest
-        //await RestExampleHttpClient(url); // You can instead use HttpClient
+      Debug.Log("RegisterClientException: " + rce.Message + "Inner Exception: " + rce.InnerException);
+      mxi.UseWifiOnly(true); // use location only to find the app instance
+      await mxi.RegisterAndFindCloudlet();
     }
-
-    IEnumerator RestExample(string url)
+    //FindCloudletException is thrown if there is no app instance in the user region
+    catch (FindCloudletException fce)
     {
-        UnityWebRequest www = UnityWebRequest.Get(url);
-        yield return www.SendWebRequest();
-
-        if (www.error != null)
-        {
-            Debug.Log(www.error);
-        }
-        else
-        {
-            // Show results as text
-            Debug.Log(www.downloadHandler.text);
-
-            // Or retrieve results as binary data
-            byte[] results = www.downloadHandler.data;
-        }
+      Debug.Log("FindCloudletException: " + fce.Message + "Inner Exception: " + fce.InnerException);
+      // your fallback logic here
     }
-
-    async Task<HttpResponseMessage> RestExampleHttpClient(string url)
+    // LocationException is thrown if the app user rejected location permission
+    catch (LocationException locException)
     {
-        HttpClient httpClient = new HttpClient();
-        httpClient.BaseAddress = new Uri(url);
-        return await httpClient.GetAsync("/"); //makes a get request
+      print("Location Exception: " + locException.Message);
+      mxi.useFallbackLocation = true;
+      mxi.SetFallbackLocation(-122.4194, 37.7749); //Example only (SF location),In Production you can optionally use:  MobiledgeXIntegration.LocationFromIPAddress location = await MobiledgeXIntegration.GetLocationFromIP();
+      await mxi.RegisterAndFindCloudlet();
     }
+    mxi.GetAppPort(LProto.L_PROTO_TCP); // or LProto.L_PROTO_UDP
+    string url = mxi.GetUrl("http"); // or another L7 proto such as https, ws, wss, udp
+
+    Debug.Log("url : " + url); // Once you have your edge server url you can start communicating with your Edge server deployed on MobiledgeX Console
+    StartCoroutine(RestExample(url)); //using UnityWebRequest
+                                      //await RestExampleHttpClient(url); // You can instead use HttpClient
+  }
+
+  IEnumerator RestExample(string url)
+  {
+    UnityWebRequest www = UnityWebRequest.Get(url);
+    yield return www.SendWebRequest();
+
+    if (www.error != null)
+    {
+      Debug.Log(www.error);
+    }
+    else
+    {
+      // Show results as text
+      Debug.Log(www.downloadHandler.text);
+
+      // Or retrieve results as binary data
+      byte[] results = www.downloadHandler.data;
+    }
+  }
+
+  async Task<HttpResponseMessage> RestExampleHttpClient(string url)
+  {
+    HttpClient httpClient = new HttpClient();
+    httpClient.BaseAddress = new Uri(url);
+    return await httpClient.GetAsync("/"); //makes a get request
+  }
+
+  void OnDestroy()
+  {
+    mxi.Dispose();
+  }
 }
