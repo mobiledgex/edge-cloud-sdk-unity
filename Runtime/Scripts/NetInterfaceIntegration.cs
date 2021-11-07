@@ -95,7 +95,8 @@ namespace MobiledgeX
           foreach (UnicastIPAddressInformation ip in ipifaceProperties.UnicastAddresses)
           {
             string potentialIP = ip.Address.ToString();
-            if (potentialIP.Equals(defaultLocalEndPoint.Address.ToString())) {
+            if (potentialIP.Equals(defaultLocalEndPoint.Address.ToString()))
+            {
               // This interface is on the default network route.
               if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
               {

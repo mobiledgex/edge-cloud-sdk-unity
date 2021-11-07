@@ -99,7 +99,8 @@ namespace MobiledgeX
 
       string aid = PlatformIntegrationUtil.CallStatic<string>(secureClass, "getString", parameters);
 
-      if (aid != null) {
+      if (aid != null)
+      {
         string hashedAdId = HexUtil.HexStringSha512(aid);
         return hashedAdId;
       }
@@ -133,8 +134,9 @@ namespace MobiledgeX
       }
 
       // Directly retrieve on IOS. The Unity UI Thread Agent isn't needed.
-      string adId = UnityEngine.iOS.Device.advertisingIdentifier;
-      if (adId != null) {
+      string adId = _getUniqueID();
+      if (adId != null)
+      {
         string hashedAdId = HexUtil.HexStringSha512(adId);
         return hashedAdId;
       }

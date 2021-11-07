@@ -1,4 +1,11 @@
-# Unity SDK
+![GitHub package.json version](https://img.shields.io/github/package-json/v/mobiledgex/edge-cloud-sdk-unity?style=plastic)
+<a href="https://twitter.com/intent/follow?screen_name=mobiledgex">
+<img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/mobiledgex?style=social">
+</a>
+ <a href="https://discord.gg/k22WcfMFZ3">
+<img src="https://img.shields.io/discord/779074183551385620?logo=discord" alt="chat on Discord">
+</a>
+# Unity SDK (gRPC)
 
 This document explains how to download the Matching Engine Unity SDK and integrate it into your applications
 
@@ -12,6 +19,8 @@ The Matching Engine Unity C# SDK provides everything required to create applicat
 * The SDK is compatible with (IL2CPP & .NET 2.0) , (IL2CPP & .NET 4.x) , (Mono & .NET 2.0) **but not compatible with (Mono  & .NET 4.x)**
 * A running AppInst deployed on your edge server
 * Git installed
+* Download gRPC Unity Plugins and add it to your Unity project. **Do this step before importing MobiledgeX SDK**
+https://packages.grpc.io/archive/2019/11/6950e15882f28e43685e948a7e5227bfcef398cd-6d642d6c-a6fc-4897-a612-62b0a3c9026b/csharp/grpc_unity_package.2.26.0-dev.zip
 
 ## Download the Unity SDK Package  
 
@@ -90,7 +99,7 @@ Once that setup has been completed, you can very easily call all the necessary A
 
 **Getting Edge Connection Url**
 
-MobiledgeX SDK uses the device Location and [the device's MCC-MNC ID (if avaliable)](https://developers.mobiledgex.com/sdks/overview#distributed-matching-engine) to connect you to the closest Edge cloudlet where you application instance is deployed.
+MobiledgeX SDK uses the device Location and [the device's MCC-MNC ID (if available)](https://developers.mobiledgex.com/sdks/overview#distributed-matching-engine) to connect you to the closest Edge cloudlet where your application instance is deployed.
 
 If your carrier is not supported yet by MobiledgeX the SDK will throw a RegisterClient Exception. You can catch this exception and instead use WifiOnly(true) to connect to [the wifi dme](https://developers.mobiledgex.com/sdks/overview#distributed-matching-engine) which will connect you to the closest [regional DME](https://developers.mobiledgex.com/sdks/overview#distributed-matching-engine).
 
@@ -178,9 +187,10 @@ By default in Unity Editor you will connect with the Wifi DME, which is specifie
 For full example code, Please check [RunTime/Scripts/ExampleRest.cs](https://github.com/mobiledgex/edge-cloud-sdk-unity/blob/master/Runtime/Scripts/ExampleRest.cs)
 
 ```csharp
+ MobiledgeXIntegration mxi;
  async void GetEdgeConnection()
     {
-        MobiledgeXIntegration mxi = new MobiledgeXIntegration();
+        mxi = new MobiledgeXIntegration();
         await mxi.RegisterAndFindCloudlet();
         
         mxi.GetAppPort(LProto.L_PROTO_TCP); // Get the port of the desired protocol
@@ -216,6 +226,11 @@ For full example code, Please check [RunTime/Scripts/ExampleRest.cs](https://git
         httpClient.BaseAddress = new Uri(url);
         return await httpClient.GetAsync("?q=x"); //makes a get request, "?q=x" is a parameter example 
     }
+    //close the connection
+    void OnDestroy()
+    {
+        mxi.Dispose();
+    }
     
 ```
 
@@ -234,6 +249,8 @@ MobiledgeX Unity Package comes with  WebSocket Implementation (MobiledgeXWebSock
  
  
  ```csharp
+ 
+     MobiledgeXIntegration mxi;
      async void GetEdgeConnection()
         {
             mxi = new MobiledgeXIntegration();
@@ -273,6 +290,11 @@ MobiledgeX Unity Package comes with  WebSocket Implementation (MobiledgeXWebSock
              Debug.Log("WebSocket Received messgae : " + msg);
          }
      }
+    //close the connection
+    void OnDestroy()
+    {
+        mxi.Dispose();
+    }
  
  ```
  **Communicating with your Edge Server using UDP**
@@ -289,6 +311,7 @@ MobiledgeX Unity Package comes with  WebSocket Implementation (MobiledgeXWebSock
   
   
   ```csharp
+      MobiledgeXIntegration mxi;
       async void GetEdgeConnection()
          {
              mxi = new MobiledgeXIntegration();
@@ -327,6 +350,11 @@ MobiledgeX Unity Package comes with  WebSocket Implementation (MobiledgeXWebSock
                   print("Received UDP Message : " + udpReceivedMsg);
               }
           }
+    //close the connection
+    void OnDestroy()
+    {
+        mxi.Dispose();
+    }
   ```
 
 ## Location

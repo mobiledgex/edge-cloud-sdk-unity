@@ -15,173 +15,101 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using DistributedMatchEngine;
-using MobiledgeX;
 using UnityEngine;
-using UnityEngine.Android;
+using System.Runtime.InteropServices;
 
 namespace MobiledgeX
 {
   public class DeviceInfoIntegration : DeviceInfoApp
   {
-    public DeviceInfoIntegration()
+    CarrierInfo overrideCarrierInfo;
+    public DeviceInfoIntegration(CarrierInfo carrierInfo = null)
     {
+      overrideCarrierInfo = carrierInfo;
     }
 
-    // Source: https://developer.android.com/reference/android/telephony/TelephonyManager
-    enum NetworkDataType
+    public DeviceInfoDynamic GetDeviceInfoDynamic()
     {
-      NETWORK_TYPE_1xRTT = 7,
-      NETWORK_TYPE_CDMA = 4,
-      NETWORK_TYPE_EDGE = 2,
-      NETWORK_TYPE_EHRPD = 14,
-      NETWORK_TYPE_EVDO_0 = 5,
-      NETWORK_TYPE_EVDO_A = 6,
-      NETWORK_TYPE_EVDO_B = 12,
-      NETWORK_TYPE_GPRS = 1,
-      NETWORK_TYPE_GSM = 16,
-      NETWORK_TYPE_HSDPA = 8,
-      NETWORK_TYPE_HSPA = 10,
-      NETWORK_TYPE_HSPAP = 15,
-      NETWORK_TYPE_HSUPA = 9,
-      NETWORK_TYPE_IDEN = 11,
-      NETWORK_TYPE_IWLAN = 18,
-      NETWORK_TYPE_LTE = 13,
-      NETWORK_TYPE_NR = 20,
-      NETWORK_TYPE_TD_SCDMA = 17,
-      NETWORK_TYPE_UMTS = 3,
-      NETWORK_TYPE_UNKNOWN = 0
-    };
+      DeviceInfoDynamic deviceInfoDynamic = new DeviceInfoDynamic();
+      CarrierInfo carrierInfo;
+      if (overrideCarrierInfo != null)
+      {
+        carrierInfo = overrideCarrierInfo;
+      }
+      else
+      {
+        carrierInfo = new CarrierInfoClass();
+      }
+      deviceInfoDynamic.CarrierName = carrierInfo.GetCurrentCarrierName();
+      deviceInfoDynamic.SignalStrength = carrierInfo.GetSignalStrength();
+      deviceInfoDynamic.DataNetworkType = carrierInfo.GetDataNetworkType();
+      return deviceInfoDynamic;
+    }
 
-    // Placeholder, if available, just use the Unity version
 #if UNITY_ANDROID
-    public Dictionary<string, string> GetDeviceInfo()
+    public DeviceInfoStatic GetDeviceInfoStatic()
     {
-      CarrierInfoClass carrierInfo = new CarrierInfoClass();
-      Dictionary<string, string> map = new Dictionary<string, string>();
-      int sdk_int = carrierInfo.getAndroidSDKVers();
-      map["Build.VERSION.SDK_INT"] = sdk_int.ToString();
-      if (UnityEngine.XR.XRSettings.loadedDeviceName.Contains("oculus"))
+      string deviceModel = "Android";
+      string deviceOS = "Android";
+      if (overrideCarrierInfo == null)
       {
-          return map;
+        CarrierInfoClass carrierInfo = new CarrierInfoClass();
+        deviceModel += carrierInfo.GetManufacturer();
+        deviceOS += carrierInfo.getAndroidSDKVers(); 
       }
-      AndroidJavaObject telephonyManager = carrierInfo.GetTelephonyManager();
-      if (telephonyManager == null)
+      DeviceInfoStatic deviceInfoStatic = new DeviceInfoStatic()
       {
-          Logger.Log("No TelephonyManager!");
-          return map;
-      }
-      const string readPhoneStatePermissionString = "android.permission.READ_PHONE_STATE";
-      try
-      {
-        if (Permission.HasUserAuthorizedPermission(readPhoneStatePermissionString))
-        {
-          string ver = PlatformIntegrationUtil.Call<string>(telephonyManager, "getDeviceSoftwareVersion");
-          if (ver != null)
-          {
-            map["DeviceSoftwareVersion"] = ver.ToString();
-          }
-        }
-      }
-      catch (Exception e)
-      {
-        Logger.LogWarning("Exception retrieving properties: " + e.GetBaseException() + ", " + e.Message);
-      }
-
-      try
-      {
-        if (Permission.HasUserAuthorizedPermission(readPhoneStatePermissionString))
-        {
-          int nType = PlatformIntegrationUtil.Call<int>(telephonyManager, "getDataNetworkType");
-          NetworkDataType datatype = (NetworkDataType)nType;
-          map["DataNetworkType"] = datatype.ToString();
-        }
-      }
-      catch (Exception e)
-      {
-        Logger.LogWarning("Exception retrieving properties: " + e.GetBaseException() + ", " + e.Message);
-      }
-
-      AndroidJavaClass versionCodesClass = new AndroidJavaClass("android.os.Build$VERSION_CODES");
-      int versionCode = PlatformIntegrationUtil.GetStatic<int>(versionCodesClass, "Q");
-      if (sdk_int > versionCode)
-      {
-        string mc = PlatformIntegrationUtil.Call<string>(telephonyManager, "getManufacturerCode");
-        if (mc != null)
-        {
-          map["ManufacturerCode"] = mc;
-        }
-      }
-
-      string niso = PlatformIntegrationUtil.Call<string>(telephonyManager, "getNetworkCountryIso");
-      if (niso != null)
-      {
-        map["NetworkCountryIso"] = niso;
-      }
-
-      string siso = PlatformIntegrationUtil.Call<string>(telephonyManager, "getSimCountryIso");
-      if (siso != null)
-      {
-        map["SimCountryCodeIso"] = siso;
-      }
-
-      int phoneType = PlatformIntegrationUtil.Call<int>(telephonyManager, "getPhoneType");
-      map["PhoneType"] = phoneType.ToString();
-
-      // Default one.
-      string simOperatorName = PlatformIntegrationUtil.Call<string>(telephonyManager, "getSimOperatorName");
-      if (simOperatorName != null)
-      {
-        map["SimOperatorName"] = simOperatorName;
-      }
-
-      // Default one.
-      string networkOperator = PlatformIntegrationUtil.Call<string>(telephonyManager, "getNetworkOperatorName");
-      if (networkOperator != null)
-      {
-        map["NetworkOperatorName"] = networkOperator;
-      }
-
-      return map;
+        DeviceModel = deviceModel,
+        DeviceOs = deviceOS
+      };
+      return deviceInfoStatic;
     }
+
+    public bool IsPingSupported()
+    {
+      return true;
+    }
+
 #elif UNITY_IOS
-    [DllImport("__Internal")]
-    private static extern string _getManufacturerCode();
-    
-    [DllImport("__Internal")]
-    private static extern string _getDeviceSoftwareVersion();
-    
+
     [DllImport("__Internal")]
     private static extern string _getDeviceModel();
-    
+
     [DllImport("__Internal")]
     private static extern string _getOperatingSystem();
 
-    public Dictionary<string, string> GetDeviceInfo()
+    public DeviceInfoStatic GetDeviceInfoStatic()
     {
-      Dictionary<string, string> deviceInfo = new Dictionary<string, string>();
-      if (Application.platform == RuntimePlatform.IPhonePlayer)
+      string deviceModel = _getDeviceModel();
+      string deviceOS = _getOperatingSystem();
+
+      DeviceInfoStatic deviceInfoStatic = new DeviceInfoStatic()
       {
-        // Fill in device system info
-        deviceInfo["ManufacturerCode"] = _getManufacturerCode();
-        deviceInfo["DeviceSoftwareVersion"] = _getDeviceSoftwareVersion();
-        deviceInfo["DeviceModel"] = _getDeviceModel();
-        deviceInfo["OperatingSystem"] = _getOperatingSystem();
-        // Fill in carrier/ISO info
-        CarrierInfoClass carrierInfo = new CarrierInfoClass();
-        deviceInfo["SimOperatorName"] = carrierInfo.GetCurrentCarrierName();
-        deviceInfo["SimCountryCodeIso"] = carrierInfo.GetISOCountryCodeFromCarrier();
-      }
-      return deviceInfo;
+        DeviceModel = deviceModel,
+        DeviceOs = deviceOS
+      };
+      return deviceInfoStatic;
     }
-#else // Unsupported platform.
-    public Dictionary<string, string> GetDeviceInfo()
+
+    public bool IsPingSupported()
     {
-      Logger.Log("DeviceInfo not implemented!");
-      return null;
+      return false;
+    }
+
+#else // Unsupported platform.
+    public DeviceInfoStatic GetDeviceInfoStatic()
+    {
+      DeviceInfoStatic deviceInfoStatic = new DeviceInfoStatic()
+      {
+        DeviceModel = "UnityUnsupportedDeviceModel",
+        DeviceOs = "UnityUnsupportedDeviceOS"
+      };
+      return deviceInfoStatic;
+    }
+    public bool IsPingSupported()
+    {
+      return true;
     }
 #endif
   }
@@ -189,10 +117,21 @@ namespace MobiledgeX
   // Used for DeviceInfo in UnityEditor (any target platform)
   public class TestDeviceInfo : DeviceInfoApp
   {
-      public Dictionary<string, string> GetDeviceInfo()
-      {
-          Logger.Log("DeviceInfo not implemented!");
-          return null;
-      }
+    public DeviceInfoDynamic GetDeviceInfoDynamic()
+    {
+      Logger.Log("DeviceInfoDynamic not implemented!");
+      return null;
+    }
+
+    public DeviceInfoStatic GetDeviceInfoStatic()
+    {
+      Logger.Log("DeviceInfoStatic not implemented!");
+      return null;
+    }
+
+    public bool IsPingSupported()
+    {
+      return true;
+    }
   }
 }

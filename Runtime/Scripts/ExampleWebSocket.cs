@@ -8,73 +8,85 @@ using MobiledgeX;
 using DistributedMatchEngine;
 
 
-    [RequireComponent(typeof(MobiledgeX.LocationService))]
-    public class ExampleWebSocket : MonoBehaviour
+[RequireComponent(typeof(MobiledgeX.LocationService))]
+public class ExampleWebSocket : MonoBehaviour
+{
+  MobiledgeXWebSocketClient wsClient;
+  MobiledgeXIntegration mxi;
+
+  IEnumerator Start()
+  {
+    yield return StartCoroutine(MobiledgeX.LocationService.EnsureLocation());
+    GetEdgeConnection();
+  }
+
+  async void GetEdgeConnection()
+  {
+    mxi = new MobiledgeXIntegration(FindObjectOfType<EdgeEventsManager>());
+    mxi.NewFindCloudletHandler += HandleFindCloudlet;
+    try
     {
-        MobiledgeXWebSocketClient wsClient;
-        MobiledgeXIntegration mxi;
-
-        IEnumerator Start()
-        {
-            yield return StartCoroutine(MobiledgeX.LocationService.EnsureLocation());
-            GetEdgeConnection();
-        }
-
-        async void GetEdgeConnection()
-        {
-            mxi = new MobiledgeXIntegration();
-            try
-            {
-                await mxi.RegisterAndFindCloudlet();
-            }
-            catch (DmeDnsException)
-            {
-                mxi.UseWifiOnly(true);
-                await mxi.RegisterAndFindCloudlet();
-            }
-            
-            mxi.GetAppPort(LProto.Tcp);
-            string url = mxi.GetUrl("ws");
-            Debug.Log("WebSocket URL is : " + url);
-            await StartWebSocket(url);
-            //wsClient.Send("WebSocketMsg");// You can send  Text or Binary messages to the WebSocket Server 
-        }
-
-
-        async Task StartWebSocket(string url)
-        {
-            wsClient = new MobiledgeXWebSocketClient();
-            if (wsClient.isOpen())
-            {
-                wsClient.Dispose();
-                wsClient = new MobiledgeXWebSocketClient();
-            }
-
-            Uri uri = new Uri(url);
-            await wsClient.Connect(uri);
-        }
-
-
-
-        // Dequeue WebSocket Messages every frame (if there is any)
-        private void Update()
-        {
-            if (wsClient == null)
-            {
-                return;
-            }
-            var cqueue = wsClient.receiveQueue;
-            string msg;
-            while (cqueue.TryPeek(out msg))
-            {
-                cqueue.TryDequeue(out msg);
-                Debug.Log("WebSocket Received messgae : " + msg);
-            }
-        }
-
-        private void OnDestroy()
-        {
-            mxi.Dispose();
-        }
+      await mxi.RegisterAndFindCloudlet();
     }
+    catch (DmeDnsException)
+    {
+      mxi.UseWifiOnly(true);
+      await mxi.RegisterAndFindCloudlet();
+    }
+
+    mxi.GetAppPort(LProto.Tcp);
+    string url = mxi.GetUrl("ws");
+    Debug.Log("WebSocket URL is : " + url);
+    await StartWebSocket(url);
+    //wsClient.Send("WebSocketMsg");// You can send  Text or Binary messages to the WebSocket Server 
+  }
+
+
+  async Task StartWebSocket(string url)
+  {
+    wsClient = new MobiledgeXWebSocketClient();
+    if (wsClient.isOpen())
+    {
+      wsClient.Dispose();
+      wsClient = new MobiledgeXWebSocketClient();
+    }
+
+    Uri uri = new Uri(url);
+    await wsClient.Connect(uri);
+  }
+
+  private void HandleFindCloudlet(EdgeEventsStatus edgeEventstatus, FindCloudletEvent fcEvent)
+  {
+    print("NewFindCloudlet triggered status is " + edgeEventstatus.status + ", Trigger" + fcEvent.trigger);
+    if (fcEvent.newCloudlet != null)
+    {
+      print("New Cloudlet FQDN: " + fcEvent.newCloudlet.Fqdn);
+    }
+    if (edgeEventstatus.status == Status.error)
+    {
+      print("Error received: " + edgeEventstatus.error);
+    }
+  }
+
+  // Dequeue WebSocket Messages every frame (if there is any)
+  private void Update()
+  {
+    if (wsClient == null)
+    {
+      return;
+    }
+    var cqueue = wsClient.receiveQueue;
+    string msg;
+    while (cqueue.TryPeek(out msg))
+    {
+      cqueue.TryDequeue(out msg);
+      Debug.Log("WebSocket Received messgae : " + msg);
+    }
+  }
+
+  private void OnDestroy()
+  {
+    mxi.Dispose();
+  }
+}
 
