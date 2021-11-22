@@ -24,6 +24,7 @@ using System;
 namespace MobiledgeX
 {
   // Unity Location Service, based on the documentation example
+  [DisallowMultipleComponent]
   [AddComponentMenu("MobiledgeX/LocationService")]
   public class LocationService : MonoBehaviour
   {
@@ -36,6 +37,8 @@ namespace MobiledgeX
       LocationPermissionAcquired,
     }
     public static LocationStatus locationStatus;
+    static bool obtainLocationOnce;
+
     /// <summary>
     /// After initializing location services, this is the maximum wait time (in seconds) to acquire location info
     /// if the value selected is zero or less the default value (20 seconds) will be used.
@@ -48,8 +51,9 @@ namespace MobiledgeX
     /// EnsureLocation Confirm that user location is valid, user location is essential for MobiledgeX services
     /// If Location permission is denied by User an exception will be thrown once RetrieveLocation() is called
     /// </summary>
-    public static IEnumerator EnsureLocation()
+    public static IEnumerator EnsureLocation(bool obtainLocationOnce = true)
     {
+      LocationService.obtainLocationOnce = obtainLocationOnce;
       if (!SystemInfo.supportsLocationService)
       {
         Logger.Log("Your Device doesn't support LocationService");
@@ -84,8 +88,12 @@ namespace MobiledgeX
         {
           if (Input.location.status == LocationServiceStatus.Running)
           {
-            Logger.Log("Location Service succeded, Stopping LocationService, data saved to Input.location.lastData");
-            Input.location.Stop();
+            Logger.Log("Location Service succeded");
+            if (obtainLocationOnce)
+            {
+              Logger.Log("Stopping LocationService, data saved to Input.location.lastData");
+              Input.location.Stop();
+            }
           }
           yield break;
         }
@@ -114,8 +122,12 @@ namespace MobiledgeX
           }
           if (Input.location.status == LocationServiceStatus.Running)
           {
-            Logger.Log("Location Service succeded, Stopping LocationService, data saved to Input.location.lastData");
-            Input.location.Stop();
+            Logger.Log("Location Service succeded");
+            if (obtainLocationOnce)
+            {
+              Logger.Log("Stopping LocationService, data saved to Input.location.lastData");
+              Input.location.Stop();
+            }
           }
           yield break;
         }
@@ -162,8 +174,12 @@ namespace MobiledgeX
         {
           if (Input.location.status == LocationServiceStatus.Running)
           {
-            Logger.Log("Location Service succeded, Stopping LocationService, data saved to Input.location.lastData");
-            Input.location.Stop();
+            Logger.Log("Location Service succeded");
+            if (obtainLocationOnce)
+            {
+              Logger.Log("Stopping LocationService, data saved to Input.location.lastData");
+              Input.location.Stop();
+            }
           }
           yield break;
         }
@@ -204,6 +220,34 @@ namespace MobiledgeX
       }
       Logger.Log("Location Info: [" + locationInfo.longitude + "," + locationInfo.latitude + "]");
       return ConvertUnityLocationToDMELoc(locationInfo);
+    }
+
+    internal IEnumerator UpdateEdgeEventsManagerLocation(int intervalSeconds)
+    {
+      CancelInvoke(); //stop existing location updates if any
+      InvokeRepeating("UpdateEdgeEventsLocation", 0, intervalSeconds);
+      yield return null;
+    }
+
+    private void UpdateEdgeEventsLocation()
+    {
+      if (FindObjectOfType<EdgeEventsManager>() == null)
+      {
+        throw new Exception("There is no active EdgeEventsManager components in the scene.");
+      }
+      Loc loc = RetrieveLocation();
+      FindObjectOfType<EdgeEventsManager>().location = RetrieveLocation();
+      Logger.Log($"Location updated to lat: {loc.Latitude}, long: {loc.Longitude}.");
+    }
+
+    internal void StopLocationUpdates()
+    {
+      StopAllCoroutines();
+      CancelInvoke();  //stop existing location updates if any
+      if (Input.location.status == LocationServiceStatus.Running)
+      {
+        Input.location.Stop();
+      }
     }
 
     /// <summary>
