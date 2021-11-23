@@ -233,10 +233,6 @@ namespace MobiledgeX
     {
       Logger.Log("Starting EdgeEvents");
       config = MobiledgeXIntegration.settings.edgeEventsConfig;
-      if (IsMainThread) // Input.location can be accessed only from UI Thread
-      {
-        StartCoroutine(locationService.UpdateEdgeEventsManagerLocation(Math.Min(config.locationConfig.updateIntervalSeconds, config.latencyConfig.updateIntervalSeconds)));
-      }
       if (config == null)
       {
         throw new Exception("MobiledgeX EdgeEventsConfig is Null");
@@ -254,6 +250,10 @@ namespace MobiledgeX
       {
         Debug.LogError("MobiledgeX: EdgeEventsConnection is null");
         return;
+      }
+      if (IsMainThread) // Input.location can be accessed only from UI Thread
+      {
+        StartCoroutine(locationService.UpdateEdgeEventsManagerLocation(Math.Min(config.locationConfig.updateIntervalSeconds, config.latencyConfig.updateIntervalSeconds)));
       }
       managerConnectionDetails.matchingEngine.EdgeEventsReceiver += HandleReceivedEvents;
       DeviceInfoDynamic deviceInfoDynamic = GetDynamicInfo(managerConnectionDetails.matchingEngine);
