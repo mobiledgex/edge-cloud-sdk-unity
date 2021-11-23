@@ -68,6 +68,7 @@ namespace MobiledgeX
       if (useMobiledgexLocationServices)
       {
         locationService = FindObjectOfType<MobiledgeX.LocationService>();
+        config = MobiledgeXIntegration.settings.edgeEventsConfig;
         if (locationService == null)
         {
           throw new Exception("EdgeEventsManager.useMobiledgexLocationServices is set to true but no Active LocationService component in the scene.");
@@ -75,11 +76,11 @@ namespace MobiledgeX
         if (config.locationConfig.updatePattern == UpdatePattern.OnTrigger
         && config.latencyConfig.updatePattern == UpdatePattern.OnTrigger)
         {
-          MobiledgeX.LocationService.EnsureLocation(true);
+          MobiledgeX.LocationService.EnsureLocation(obtainLocationOnce: true);
         }
         else
         {
-          StartCoroutine(MobiledgeX.LocationService.EnsureLocation(false));
+          StartCoroutine(MobiledgeX.LocationService.EnsureLocation(obtainLocationOnce: false));
         }
       }
     }

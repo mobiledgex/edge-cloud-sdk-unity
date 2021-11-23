@@ -231,12 +231,13 @@ namespace MobiledgeX
 
     private void UpdateEdgeEventsLocation()
     {
-      if (FindObjectOfType<EdgeEventsManager>() == null)
+      EdgeEventsManager edgeEventsManager = FindObjectOfType<EdgeEventsManager>();
+      if (edgeEventsManager == null)
       {
         throw new Exception("There is no active EdgeEventsManager components in the scene.");
       }
       Loc loc = RetrieveLocation();
-      FindObjectOfType<EdgeEventsManager>().location = RetrieveLocation();
+      edgeEventsManager.location = RetrieveLocation();
       Logger.Log($"Location updated to lat: {loc.Latitude}, long: {loc.Longitude}.");
     }
 
