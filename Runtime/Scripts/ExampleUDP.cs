@@ -22,7 +22,7 @@ public class ExampleUDP : MonoBehaviour
   {
     mxi = new MobiledgeXIntegration();
     await mxi.RegisterAndFindCloudlet();
-    udpSendPort = mxi.GetAppPort(LProto.L_PROTO_UDP).public_port;
+    udpSendPort = mxi.GetAppPort(LProto.Udp).public_port;
     udpHost = mxi.GetHost();
     Debug.Log("UDP HOST : " + udpHost);
     Debug.Log("UDP PORT : " + udpSendPort);

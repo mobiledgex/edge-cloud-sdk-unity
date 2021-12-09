@@ -65,7 +65,7 @@ public class ExampleRest : MonoBehaviour
       mxi.SetFallbackLocation(-122.4194, 37.7749); //Example only (SF location),In Production you can optionally use:  MobiledgeXIntegration.LocationFromIPAddress location = await MobiledgeXIntegration.GetLocationFromIP();
       await mxi.RegisterAndFindCloudlet();
     }
-    mxi.GetAppPort(LProto.L_PROTO_TCP); // or LProto.L_PROTO_UDP
+    mxi.GetAppPort(LProto.Tcp); // or LProto.L_PROTO_UDP
     string url = mxi.GetUrl("http"); // or another L7 proto such as https, ws, wss, udp
 
     Debug.Log("url : " + url); // Once you have your edge server url you can start communicating with your Edge server deployed on MobiledgeX Console

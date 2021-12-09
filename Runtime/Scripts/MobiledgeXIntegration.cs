@@ -253,10 +253,10 @@ namespace MobiledgeX
 
       switch (proto)
       {
-        case LProto.L_PROTO_TCP:
+        case LProto.Tcp:
           appPortsDict = matchingEngine.GetTCPAppPorts(latestFindCloudletReply);
           break;
-        case LProto.L_PROTO_UDP:
+        case LProto.Udp:
           appPortsDict = matchingEngine.GetUDPAppPorts(latestFindCloudletReply);
           break;
         default:
