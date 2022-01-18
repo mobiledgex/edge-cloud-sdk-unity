@@ -90,7 +90,7 @@ namespace MobiledgeX
         LocationFromIPAddress location = Messaging<LocationFromIPAddress>.Deserialize(responseBodyStr);
         if (location.latitude == 0 && location.longitude == 0)
         {
-          throw new Exception("Location API returned {0,0}, overriding location");
+          throw new Exception("Location API returned {0,0}, Overriding Location to (37.3382, 121.8863)");
         }
         return location;
       }
