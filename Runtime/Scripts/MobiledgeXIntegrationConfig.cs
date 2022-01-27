@@ -88,6 +88,10 @@ namespace MobiledgeX
         HttpResponseMessage response = await httpClient.GetAsync("https://freegeoip.app/json/").ConfigureAwait(false);
         string responseBodyStr = response.Content.ReadAsStringAsync().Result;
         LocationFromIPAddress location = Messaging<LocationFromIPAddress>.Deserialize(responseBodyStr);
+        if (location.latitude == 0 && location.longitude == 0)
+        {
+          throw new Exception("Location API returned {0,0}, Overriding Location to (37.3382, 121.8863)");
+        }
         return location;
       }
       catch (Exception)
