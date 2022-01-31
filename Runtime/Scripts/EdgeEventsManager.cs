@@ -28,6 +28,7 @@ using System.Threading;
 
 namespace MobiledgeX
 {
+  [DisallowMultipleComponent]
   [AddComponentMenu("MobiledgeX/EdgeEventsManager")]
   public class EdgeEventsManager : MonoBehaviour
   {
@@ -44,6 +45,12 @@ namespace MobiledgeX
     /// Location sent to the DME Server, used only if edgeEventsManager.useMobiledgexLocationServices = false
     /// </summary>
     public Loc location;
+    internal MobiledgeX.LocationService locationService;
+    static int uiThread;
+    static bool IsMainThread
+    {
+      get { return Thread.CurrentThread.ManagedThreadId == uiThread; }
+    }
 
     /// <summary>
     /// Set to false if you have your own Location handler. If useMobiledgexLocationServices = false, you must set edgeEventsManager.location to a value.
@@ -55,8 +62,27 @@ namespace MobiledgeX
 
     private void OnEnable()
     {
+      uiThread = Thread.CurrentThread.ManagedThreadId;
       startStreamingEvents += StartEdgeEvents;
       updatesMonitor = new UpdatesMonitor();
+      if (useMobiledgexLocationServices)
+      {
+        locationService = FindObjectOfType<MobiledgeX.LocationService>();
+        config = MobiledgeXIntegration.settings.edgeEventsConfig;
+        if (locationService == null)
+        {
+          throw new Exception("EdgeEventsManager.useMobiledgexLocationServices is set to true but no Active LocationService component in the scene.");
+        }
+        if (config.locationConfig.updatePattern == UpdatePattern.OnTrigger
+        && config.latencyConfig.updatePattern == UpdatePattern.OnTrigger)
+        {
+          MobiledgeX.LocationService.EnsureLocation(obtainLocationOnce: true);
+        }
+        else
+        {
+          StartCoroutine(MobiledgeX.LocationService.EnsureLocation(obtainLocationOnce: false));
+        }
+      }
     }
     private void OnApplicationQuit()
     {
@@ -64,7 +90,10 @@ namespace MobiledgeX
       {
         fcThreadManager.Interrupt();
       }
-      updatesMonitor.StopUpdates();
+      if (updatesMonitor != null)
+      {
+        updatesMonitor.StopUpdates();
+      }
     }
 
     private void OnDestroy()
@@ -73,7 +102,14 @@ namespace MobiledgeX
       {
         fcThreadManager.Interrupt();
       }
-      updatesMonitor.StopUpdates();
+      if (updatesMonitor != null)
+      {
+        updatesMonitor.StopUpdates();
+      }
+      if (locationService != null)
+      {
+        locationService.StopLocationUpdates();
+      }
     }
 
     private void Update()
@@ -197,6 +233,10 @@ namespace MobiledgeX
     {
       Logger.Log("Starting EdgeEvents");
       config = MobiledgeXIntegration.settings.edgeEventsConfig;
+      if (config == null)
+      {
+        throw new Exception("MobiledgeX EdgeEventsConfig is Null");
+      }
       Logger.Log(config.ToString());
       updatesMonitor.Reset();
       managerConnectionDetails = connectionDetails;
@@ -210,6 +250,10 @@ namespace MobiledgeX
       {
         Debug.LogError("MobiledgeX: EdgeEventsConnection is null");
         return;
+      }
+      if (IsMainThread) // Input.location can be accessed only from UI Thread
+      {
+        StartCoroutine(locationService.UpdateEdgeEventsManagerLocation(Math.Min(config.locationConfig.updateIntervalSeconds, config.latencyConfig.updateIntervalSeconds)));
       }
       managerConnectionDetails.matchingEngine.EdgeEventsReceiver += HandleReceivedEvents;
       DeviceInfoDynamic deviceInfoDynamic = GetDynamicInfo(managerConnectionDetails.matchingEngine);
@@ -250,9 +294,7 @@ namespace MobiledgeX
           Task.Run(async () =>
           {
             await LatencyUpdatesLoop(connectionDetails, UpdatesMonitor.latencyUpdatesCounter, config.latencyConfig.updateIntervalSeconds, stopUpdatesSource.Token);
-            Logger.Log("Stopped sending LatencySamples, current latency updates status is " + UpdatesMonitor.latencyUpdatesStatus
-              + ", no. of samples sent since first starting edge events : "
-              + ((config.latencyConfig.maxNumberOfUpdates == 0 ? int.MaxValue : config.latencyConfig.maxNumberOfUpdates) - UpdatesMonitor.latencyUpdatesCounter));
+            Logger.Log("Stopped sending LatencySamples, current latency updates status is " + UpdatesMonitor.latencyUpdatesStatus);
           });
         }
         else
@@ -276,9 +318,7 @@ namespace MobiledgeX
           Task.Run(async () =>
           {
             await LocationUpdatesLoop(connectionDetails, UpdatesMonitor.locationUpdatesCounter, config.locationConfig.updateIntervalSeconds, stopUpdatesSource.Token);
-            Logger.Log("Stopped sending LocationSamples, LocationUpdates status is " + UpdatesMonitor.locationUpdatesStatus
-              + ", no. of samples sent since first starting edge events : "
-              + ((config.locationConfig.maxNumberOfUpdates == 0 ? int.MaxValue : config.locationConfig.maxNumberOfUpdates) - UpdatesMonitor.locationUpdatesCounter));
+            Logger.Log("Stopped sending LocationSamples, LocationUpdates status is " + UpdatesMonitor.locationUpdatesStatus);
           });
         }
         else
@@ -700,6 +740,10 @@ namespace MobiledgeX
       else
       {
         StopEdgeEvents();
+        if (locationService != null)
+        {
+          locationService.StopLocationUpdates();
+        }
         Logger.Log("Migration occured and autoMigration is set to false, you can manually call StartEdgeEvents method.");
       }
     }
