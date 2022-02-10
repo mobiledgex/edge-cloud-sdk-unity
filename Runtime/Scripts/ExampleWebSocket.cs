@@ -33,7 +33,7 @@ public class ExampleWebSocket : MonoBehaviour
       await mxi.RegisterAndFindCloudlet();
     }
 
-    mxi.GetAppPort(LProto.L_PROTO_TCP);
+    mxi.GetAppPort(LProto.Tcp);
     string url = mxi.GetUrl("ws");
     Debug.Log("WebSocket URL is : " + url);
     await StartWebSocket(url);
