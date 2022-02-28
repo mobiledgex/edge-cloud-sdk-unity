@@ -216,14 +216,15 @@ namespace MobiledgeX
 
     private bool CheckIfMobiledgeXSDKInstalled()
     {
-      string MobiledgeXSDKMainPlugin = Application.dataPath + "/MobiledgeX/MobiledgeXGRPC/Runtime/Plugins/MobiledgeX.MatchingEngineGrpc.dll";
+      string MobiledgeXSDKMainPlugin = Application.dataPath + "/MobiledgeXGRPC/Runtime/Plugins/MobiledgeX.MatchingEngineGrpc.dll";
       if (File.Exists(MobiledgeXSDKMainPlugin))
       {
         EditorPrefs.SetBool("MobiledgeXGRPCSDKInstalled", true);
         return true;
       }
-      return false;     
+      return false;
     }
+
     private bool CheckForGRPCPluginsInProject(string[] assetsDirectories)
     {
       string pluginDirectory = "";
