@@ -245,7 +245,16 @@ namespace MobiledgeX
       {
         if (edgeEventsManager != null)
         {
+          if (NewFindCloudletHandler == null || NewFindCloudletHandler.GetInvocationList().Length == 0)
+          {
+            Debug.LogError("MobiledgeX: No delegate assigned to MobiledgeXIntegration.NewFindCloudletHandler, see ExampleRest.cs for complete example. To disable EdgeEvents set matchingEngine.EnableEdgeEvents = false");
+            throw new Exception("MobiledgeX: No NewFindCloudletHandler delegate assigned.");
+          }
           edgeEventsManager.startStreamingEvents(new ConnectionDetails(this, dmeHost, dmePort));
+        }
+        else
+        {
+          Debug.LogError("MobiledgeX: EdgeEventsManager is not assigned.");
         }
       }
       return reply.Status == FindCloudletReply.Types.FindStatus.FindFound;
