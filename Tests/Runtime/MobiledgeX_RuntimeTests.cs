@@ -29,6 +29,9 @@ namespace MobiledgeX
   public class MobiledgeX_RuntimeTests
   {
     MobiledgeXIntegration mxi;
+    string dmeHostOverride = "eu-stage.dme.mobiledgex.net";
+    uint dmePortOverride = 38001;
+    
     #region Testing Setup
 
     [OneTimeSetUp]
@@ -53,7 +56,7 @@ namespace MobiledgeX
     #region Run Time Tests
 
     [Test]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0")]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0")]
     public void RegisterClient(string orgName, string appName, string appVers)
     {
       using (MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo()))
@@ -70,7 +73,7 @@ namespace MobiledgeX
     }
 
     [Test]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0")]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0")]
     public void FindCloudlet(string orgName, string appName, string appVers)
     {
       using (MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo()))
@@ -89,9 +92,9 @@ namespace MobiledgeX
     }
 
     [Test]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "http", 8085)]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "https", 2015)]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "tcp", 2016)]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0", "http", 8085)]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0", "https", 2015)]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0", "tcp", 2016)]
     public void GetUrl(string orgName, string appName, string appVers, string proto, int port)
     {
       using (MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo()))
@@ -110,7 +113,7 @@ namespace MobiledgeX
     }
 
     [Test]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "http", 8085)]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0", "http", 8085)]
     public void GetHost(string orgName, string appName, string appVers, string proto, int port)
     {
       using (MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo()))
@@ -161,7 +164,7 @@ namespace MobiledgeX
     }
 
     [Test]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", 104.1954, 35.8617)]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0", 104.1954, 35.8617)]
     public void FindCloudletFaliure(string orgName, string appName, string appVers, double latitude, double longitude)
     {
       using (MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo()))
@@ -197,7 +200,7 @@ namespace MobiledgeX
     }
 
     [Test]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "ws", 3765, 2000)]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0", "ws", 3765, 2000)]
     public void WebSocketTest(string orgName, string appName, string appVers, string proto, int port, int timeOutMs)
     {
       using (MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo()))
@@ -221,7 +224,7 @@ namespace MobiledgeX
 
 
     [Test]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", 2000)]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0", 2000)]
     public void UDPTest(string orgName, string appName, string appVers, int timeOutMs)
     {
       using (MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo()))
@@ -245,14 +248,14 @@ namespace MobiledgeX
 
     public async Task<bool> RegisterHelper(MobiledgeXIntegration mxi)
     {
-      bool check = await mxi.Register();
+      bool check = await mxi.Register(dmeHostOverride, dmePortOverride);
       await Task.Delay(TimeSpan.FromMilliseconds(1000));
       return check;
     }
 
     public async Task<bool> FindCloudletHelper(MobiledgeXIntegration mxi)
     {
-      bool foundCloudlet = await mxi.FindCloudlet();
+      bool foundCloudlet = await mxi.FindCloudlet(dmeHostOverride, dmePortOverride);
       await Task.Delay(TimeSpan.FromMilliseconds(1000));
       return foundCloudlet;
     }
