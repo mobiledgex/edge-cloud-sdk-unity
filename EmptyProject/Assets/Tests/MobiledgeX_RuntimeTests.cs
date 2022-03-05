@@ -29,12 +29,17 @@ namespace MobiledgeX
   public class MobiledgeX_RuntimeTests
   {
     MobiledgeXIntegration mxi;
+    string dmeHostOverride;
+    uint dmePortOverride;
+
     #region Testing Setup
 
     [OneTimeSetUp]
     public void MobiledgeXEnvironmentSetup()
     {
       MobiledgeXIntegration.settings.region = "EU"; //For Testing Purposes, works in Editor only.
+      dmeHostOverride = "eu-stage.dme.mobiledgex.net";
+      dmePortOverride = 38001;
     }
 
     #endregion
@@ -42,7 +47,7 @@ namespace MobiledgeX
     #region Run Time Tests
 
     [Test]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0")]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0")]
     public void RegisterClient(string orgName, string appName, string appVers)
     {
       using (MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo()))
@@ -59,7 +64,7 @@ namespace MobiledgeX
     }
 
     [Test]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0")]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0")]
     public void FindCloudlet(string orgName, string appName, string appVers)
     {
       using (MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo()))
@@ -78,11 +83,9 @@ namespace MobiledgeX
     }
 
     [Test]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "http", 8085)]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "https", 2015)]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "tcp", 2016)]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "ws", 3765)]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "udp", 2015)]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0", "http", 8085)]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0", "https", 2015)]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0", "tcp", 2016)]
     public void GetUrl(string orgName, string appName, string appVers, string proto, int port)
     {
       using (MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo()))
@@ -101,11 +104,11 @@ namespace MobiledgeX
     }
 
     [Test]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "http", 8085)]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "https", 2015)]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "tcp", 2016)]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "ws", 3765)]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "udp", 2015)]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0", "http", 8085)]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0", "https", 2015)]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0", "tcp", 2016)]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0", "ws", 3765)]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0", "udp", 2015)]
     public void GetHost(string orgName, string appName, string appVers, string proto, int port)
     {
       using (MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo()))
@@ -156,7 +159,7 @@ namespace MobiledgeX
     }
 
     [Test]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", 104.1954, 35.8617)]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0", 104.1954, 35.8617)]
     public void FindCloudletFaliure(string orgName, string appName, string appVers, double latitude, double longitude)
     {
       using (MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo()))
@@ -192,7 +195,7 @@ namespace MobiledgeX
     }
 
     [Test]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", "ws", 3765, 2000)]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0", "ws", 3765, 2000)]
     public void WebSocketTest(string orgName, string appName, string appVers, string proto, int port, int timeOutMs)
     {
       using (MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo()))
@@ -216,7 +219,7 @@ namespace MobiledgeX
 
 
     [Test]
-    [TestCase("MobiledgeX-Samples", "sdktest", "9.0", 2000)]
+    [TestCase("Ahmed-Org", "sdk-test", "9.0", 2000)]
     public void UDPTest(string orgName, string appName, string appVers, int timeOutMs)
     {
       using (MobiledgeXIntegration mxi = new MobiledgeXIntegration(new CarrierInfoClass(), null, new UniqueIDClass(), new TestDeviceInfo()))
@@ -240,14 +243,14 @@ namespace MobiledgeX
 
     public async Task<bool> RegisterHelper(MobiledgeXIntegration mxi)
     {
-      bool check = await mxi.Register();
+      bool check = await mxi.Register(dmeHostOverride, dmePortOverride);
       await Task.Delay(TimeSpan.FromMilliseconds(1000));
       return check;
     }
 
     public async Task<bool> FindCloudletHelper(MobiledgeXIntegration mxi)
     {
-      bool foundCloudlet = await mxi.FindCloudlet();
+      bool foundCloudlet = await mxi.FindCloudlet(dmeHostOverride, dmePortOverride);
       await Task.Delay(TimeSpan.FromMilliseconds(1000));
       return foundCloudlet;
     }
@@ -336,7 +339,7 @@ namespace MobiledgeX
       stopWatch.Start();
       while (mxiWS.receiveQueue.Count == 0 && stopWatch.ElapsedMilliseconds < timeOutMs)
       {
-        Debug.Log("Waiting for WebSocket Received messgae");
+        //Debug.Log("Waiting for WebSocket Received messgae");
       }
       stopWatch = null;
       mxiWS.receiveQueue.TryDequeue(out output);
@@ -350,7 +353,7 @@ namespace MobiledgeX
       stopWatch.Start();
       while (mxiUDP.receiveQueue.Count == 0 && stopWatch.ElapsedMilliseconds < timeOutMs)
       {
-        Debug.Log("Waiting for UDP Received messgae");
+        //Debug.Log("Waiting for UDP Received messgae");
       }
       stopWatch = null;
       byte[] receivedBytes;
