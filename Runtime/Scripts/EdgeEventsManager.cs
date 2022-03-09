@@ -186,7 +186,7 @@ namespace MobiledgeX
       EdgeEventsError validationError = EdgeEventsUtil.ValidateConfigs(config, connectionDetails);
       if (validationError != EdgeEventsError.None)
       {
-        PropagateError(Error, validationError, "EdgeEvents Setup error, check the logs for more details.");
+        PropagateError(Error, validationError, "EdgeEvents Setup error, check logs for more details.");
         return;
       }
       if (connectionDetails.matchingEngine.EdgeEventsConnection == null)
