@@ -43,7 +43,10 @@ public class ExampleRest : MonoBehaviour
   {
 
     mxi = new MobiledgeXIntegration(FindObjectOfType<EdgeEventsManager>());
-    mxi.NewFindCloudletHandler += HandleFindCloudlet;
+    mxi.useSelectedRegionInProduction = true;
+    mxi.OnConnectionFailure = OnConnectionFailure;
+    mxi.OnConnectionUpgrade = OnConnectionUpgrade;
+
     try
     {
       await mxi.RegisterAndFindCloudlet();
@@ -77,17 +80,15 @@ public class ExampleRest : MonoBehaviour
                                       //await RestExampleHttpClient(url); // You can instead use HttpClient
   }
 
-  private void HandleFindCloudlet(EdgeEventsStatus edgeEventstatus, FindCloudletEvent fcEvent)
+  private void OnConnectionFailure(string errorMsg)
   {
-    print("NewFindCloudlet triggered status is " + edgeEventstatus.status + ", Trigger" + fcEvent.trigger);
-    if (fcEvent.newCloudlet != null)
-    {
-      print("New Cloudlet FQDN: " + fcEvent.newCloudlet.Fqdn);
-    }
-    if (edgeEventstatus.status == Status.error)
-    {
-      print("Error received: " + edgeEventstatus.error);
-    }
+    Debug.LogError("Error msg: " + errorMsg);
+    //switch to public cloud
+  }
+
+  private void OnConnectionUpgrade(FindCloudletReply newCloudlet)
+  {
+    Debug.Log("NewCloudelt found, new FQDN: " + newCloudlet.Fqdn);
   }
 
   IEnumerator RestExample(string url)
@@ -118,7 +119,8 @@ public class ExampleRest : MonoBehaviour
 
   private void OnDestroy()
   {
-    mxi.NewFindCloudletHandler -= HandleFindCloudlet;
+    mxi.OnConnectionUpgrade -= OnConnectionUpgrade;
+    mxi.OnConnectionFailure -= OnConnectionFailure;
     mxi.matchingEngine.Dispose();
   }
 }
