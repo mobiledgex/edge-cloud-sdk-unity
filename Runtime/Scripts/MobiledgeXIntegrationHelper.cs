@@ -245,7 +245,21 @@ namespace MobiledgeX
       {
         if (edgeEventsManager != null)
         {
+          if (OnConnectionFailure == null)
+          {
+            Debug.LogError("No delegate assigned to MobiledgeXIntegration.OnConnectionFailure, see ExampleRest.cs for a complete example.\nTo disable EdgeEvents set matchingEngine.EnableEdgeEvents = false");
+            throw new EdgeEventsException("MobiledgeX: No OnConnectionFailure delegate assigned.");
+          }
+          if (OnConnectionUpgrade == null)
+          {
+            Debug.LogError("No delegate assigned to MobiledgeXIntegration.OnConnectionUpgrade, see ExampleRest.cs for a complete example.\nTo disable EdgeEvents set matchingEngine.EnableEdgeEvents = false");
+            throw new EdgeEventsException("MobiledgeX: No OnConnectionUpgrade delegate assigned.");
+          }
           edgeEventsManager.startStreamingEvents(new ConnectionDetails(this, dmeHost, dmePort));
+        }
+        else
+        {
+          Debug.LogError("EdgeEventsManager is not assigned.");
         }
       }
       return reply.Status == FindCloudletReply.Types.FindStatus.FindFound;
