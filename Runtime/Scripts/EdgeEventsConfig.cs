@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
+ * Copyright 2018-2022 MobiledgeX, Inc. All rights and licenses reserved.
  * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,6 @@
 
 using System;
 using UnityEngine;
-using DistributedMatchEngine;
 using System.Collections.Generic;
 
 namespace MobiledgeX
@@ -151,15 +150,6 @@ namespace MobiledgeX
   }
 
   /// <summary>
-  /// FindCloudletEvent received from the server
-  /// </summary>
-  public class FindCloudletEvent
-  {
-    public FindCloudletReply newCloudlet;
-    public FindCloudletEventTrigger trigger;
-  }
-
-  /// <summary>
   /// UpdatePattern for sending client events
   /// </summary>
   public enum UpdatePattern
@@ -183,30 +173,6 @@ namespace MobiledgeX
     Error
   }
 
-  /// <summary>
-  /// Represents the status of handling server received event
-  /// </summary>
-  public class EdgeEventsStatus
-  {
-    public Status status;
-    /// <summary>
-    /// empty if the status = success
-    /// </summary>
-    public EdgeEventsError error;
-
-    public EdgeEventsStatus(Status status, EdgeEventsError error = EdgeEventsError.None)
-    {
-      this.status = status;
-      this.error = error;
-    }
-  }
-
-  public enum Status
-  {
-    success,
-    error
-  }
-
   public enum EdgeEventsError
   {
     MissingSessionCookie,
@@ -221,5 +187,22 @@ namespace MobiledgeX
     EventTriggeredButFindCloudletError,
     EventError,
     None
+  }
+
+  public class EdgeEventsException : Exception
+  {
+    public EdgeEventsException()
+    {
+    }
+
+    public EdgeEventsException(string message)
+    : base(message)
+    {
+    }
+
+    public EdgeEventsException(string message, Exception inner)
+    : base(message, inner)
+    {
+    }
   }
 }
