@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
+ * Copyright 2018-2022 MobiledgeX, Inc. All rights and licenses reserved.
  * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,8 +31,6 @@ namespace MobiledgeX
     public string region;
     public Logger.LogType logType = Logger.LogType.ErrorsAndWarnings;
     public EdgeEventsConfig edgeEventsConfig;
-    [Tooltip("Set to true, If MEL mode is Enabled on your device.")]
-    public bool MEL_ENABLED;
 
     private void OnEnable()
     {
