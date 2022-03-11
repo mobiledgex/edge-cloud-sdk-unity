@@ -91,7 +91,18 @@ namespace MobiledgeX
     /// <summary>
     /// Use this action to get notified when a connection upgrade is available
     /// </summary>
-    public Action<EdgeEventsStatus, FindCloudletEvent> NewFindCloudletHandler;
+    //public Action<EdgeEventsStatus, FindCloudletEvent> NewFindCloudletHandler;
+
+    /// <summary>
+    /// Use this action to get notified when the server goes down and there is no upgrades possible
+    /// </summary>
+    public Action<string> OnConnectionFailure;
+
+    /// <summary>
+    /// Use this action to get notified when there is a connection upgrade available
+    /// </summary>
+    public Action<FindCloudletReply> OnConnectionUpgrade;
+
     internal string region
     {
       get

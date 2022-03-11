@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
+ * Copyright 2018-2022 MobiledgeX, Inc. All rights and licenses reserved.
  * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +21,8 @@ using System.Threading;
 using System;
 using System.Collections;
 using System.Threading.Tasks;
+using static MobiledgeX.EdgeEventsError;
+using static MobiledgeX.FindCloudletEventTrigger;
 
 namespace MobiledgeX
 {
@@ -73,6 +75,10 @@ namespace MobiledgeX
       matchingEngine = this.mobiledgexManager.matchingEngine;
     }
 
+    /// <summary>
+    /// Update appHost (application host) instance variable in ConnectionDetails
+    /// </summary>
+    /// <param name="latencyPort"> TCP LatencyTestPort </param>
     public void SetAppHost(int latencyPort)
     {
       mobiledgexManager.GetAppPort(LProto.Tcp, latencyPort);
@@ -207,6 +213,7 @@ namespace MobiledgeX
       return summary;
     }
   }
+
   public enum UpdatesStatus
   {
     Ready,
@@ -298,7 +305,6 @@ namespace MobiledgeX
     }
   }
 
-
   public class EdgeEventsUtil
   {
     /// <summary>
@@ -339,6 +345,12 @@ namespace MobiledgeX
       return deviceInfoDynamic;
     }
 
+    /// <summary>
+    /// A coroutine responsible for responding to latency request received from MobiledgeX DME
+    /// </summary>
+    /// <param name="connectionDetails"> ConnectionDetails object </param>
+    /// <param name="location"> Loc object </param>
+    /// <param name="latencyPort"> the port used for latency testing </param>
     public static IEnumerator RespondToLatencyRequest(ConnectionDetails connectionDetails, Loc location, int latencyPort = 0)
     {
       string host = connectionDetails.appHost;
@@ -350,8 +362,8 @@ namespace MobiledgeX
       {
         throw new NullReferenceException("edgeEventsConnection is null, Make sure you have a running edge events connection or that you are passing the correct arguments.");
       }
-      DeviceInfoDynamic deviceInfoDynamic = EdgeEventsManager.GetDynamicInfo(connectionDetails.matchingEngine);
-      AppPort appPort = EdgeEventsManager.GetLatencyTestPort(connectionDetails.mobiledgexManager, latencyPort);
+      DeviceInfoDynamic deviceInfoDynamic = EdgeEventsManager.GetDeviceDynamicInfo(connectionDetails.matchingEngine);
+      AppPort appPort = GetLatencyTestPort(connectionDetails.mobiledgexManager, latencyPort);
       if (appPort == null)
       {
         Debug.LogError("Latency Port doesn't exist");
@@ -369,5 +381,121 @@ namespace MobiledgeX
         connectionDetails.matchingEngine.EdgeEventsConnection.TestPingAndPostLatencyUpdate(host, location, deviceInfoDynamic: deviceInfoDynamic).ConfigureAwait(false);
       }
     }
+
+    /// <summary>
+    /// Validates EdgeEvents Config, sessionCookie and edgeEventsCookie
+    /// </summary>
+    /// <param name="config"> EdgeEventsConfig object </param>
+    /// <param name="connectionDetails"> ConnectionDetails object </param>
+    /// <returns></returns>
+    public static EdgeEventsError ValidateConfigs(EdgeEventsConfig config, ConnectionDetails connectionDetails)
+    {
+      if (config.newFindCloudletEventTriggers.Count == 1) //No FindCloudletTrigger except Error (Added By Default)
+      {
+        Debug.LogError("Missing FindCloudlets Triggers");
+        return InvalidEdgeEventsSetup;
+      }
+
+      if (config.latencyThresholdTriggerMs <= 0)
+      {
+        Debug.LogError("LatencyThresholdTriggerMs must be > 0");
+        return InvalidLatencyThreshold;
+      }
+
+      if (config.performanceSwitchMargin > 1 || config.performanceSwitchMargin < 0)
+      {
+        Debug.LogError("performanceSwitchMargin must between (0 to 1.0f)");
+        return InvalidPerformanceSwitchMargin;
+      }
+      //latency config validation
+      if (config.newFindCloudletEventTriggers.Contains(LatencyTooHigh))
+      {
+        if (config.latencyConfig.updatePattern == UpdatePattern.OnInterval)
+        {
+          if (config.latencyConfig.maxNumberOfUpdates < 0)
+          {
+            Debug.LogError("latencyConfig.maxNumberOfUpdates must be >= 0");
+            return InvalidEdgeEventsSetup;
+          }
+          if (config.latencyConfig.updateIntervalSeconds <= 0)
+          {
+            Debug.LogError("latencyConfig.updateIntervalSeconds must be > 0");
+            return InvalidUpdateInterval;
+          }
+        }
+      }
+      //location config validation
+      if (config.newFindCloudletEventTriggers.Contains(CloserCloudlet))
+      {
+        if (config.locationConfig.updatePattern == UpdatePattern.OnInterval)
+        {
+          if (config.locationConfig.maxNumberOfUpdates < 0)
+          {
+            Debug.LogError("Config.maxNumberOfUpdates must be >= 0");
+            return InvalidEdgeEventsSetup;
+          }
+          if (config.locationConfig.updateIntervalSeconds <= 0)
+          {
+            Debug.LogError("locationConfig.updateIntervalSeconds must be > 0");
+            return InvalidUpdateInterval;
+          }
+        }
+      }
+
+      if (connectionDetails.matchingEngine.sessionCookie == null || connectionDetails.matchingEngine.sessionCookie == "")
+      {
+        Debug.LogError("Missing SessionCookie");
+        return MissingSessionCookie;
+      }
+      if (connectionDetails.matchingEngine.edgeEventsCookie == null || connectionDetails.matchingEngine.edgeEventsCookie == "")
+      {
+        Debug.LogError("Missing EdgeEvents Cookie");
+        return MissingEdgeEventsCookie;
+      }
+      return EdgeEventsError.None;
+    }
+
+    /// <summary>
+    /// Gets the latency test port using latencyPort (int) and the proto (protocol)
+    /// </summary>
+    /// <param name="mobiledgexManager"></param>
+    /// <param name="latencyPortNumber"></param>
+    /// <param name="proto"></param>
+    /// <returns></returns>
+    public static AppPort GetLatencyTestPort(MobiledgeXIntegration mobiledgexManager, int latencyPortNumber = 0, LProto proto = LProto.Tcp)
+    {
+      AppPort appPort;
+      if (mobiledgexManager.latestFindCloudletReply == null)
+      {
+        return null;
+      }
+      try
+      {
+        appPort = mobiledgexManager.GetAppPort(proto, latencyPortNumber);
+      }
+      catch (AppPortException)
+      {
+        appPort = null;
+      }
+
+      if (appPort == null)
+      {
+        if (proto == LProto.Tcp)
+        {
+          Logger.LogWarning("No TCP ports exists in your App, It's recommended to use TCP ports for latency testing as Connect Tests is more reliable than Ping Tests.");
+          return GetLatencyTestPort(mobiledgexManager, latencyPortNumber, LProto.Udp);// try UDP proto
+        }
+        else
+        {
+          return null;
+        }
+      }
+      if (appPort == null && proto == LProto.Udp)
+      {
+        Debug.LogError("Test port doesn't exist");
+      }
+      return appPort;
+    }
+
   }
 }

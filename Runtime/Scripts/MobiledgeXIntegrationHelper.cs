@@ -245,10 +245,16 @@ namespace MobiledgeX
       {
         if (edgeEventsManager != null)
         {
-          if (NewFindCloudletHandler == null || NewFindCloudletHandler.GetInvocationList().Length == 0)
+
+          if (OnConnectionFailure == null)
           {
-            Debug.LogError("MobiledgeX: No delegate assigned to MobiledgeXIntegration.NewFindCloudletHandler, see ExampleRest.cs for complete example. To disable EdgeEvents set matchingEngine.EnableEdgeEvents = false");
-            throw new Exception("MobiledgeX: No NewFindCloudletHandler delegate assigned.");
+            Debug.LogError("No delegate assigned to MobiledgeXIntegration.OnConnectionFailure, see ExampleRest.cs for a complete example.\nTo disable EdgeEvents set matchingEngine.EnableEdgeEvents = false");
+            throw new EdgeEventsException("MobiledgeX: No OnConnectionFailure delegate assigned.");
+          }
+          if (OnConnectionUpgrade == null)
+          {
+            Debug.LogError("No delegate assigned to MobiledgeXIntegration.OnConnectionUpgrade, see ExampleRest.cs for a complete example.\nTo disable EdgeEvents set matchingEngine.EnableEdgeEvents = false");
+            throw new EdgeEventsException("MobiledgeX: No OnConnectionUpgrade delegate assigned.");
           }
           edgeEventsManager.startStreamingEvents(new ConnectionDetails(this, dmeHost, dmePort));
         }
