@@ -482,8 +482,8 @@ namespace MobiledgeX
             {
               errorMsg = $"Received EventAppinstHealth Event but NewCloudlet is null, {edgeEvent.ErrorMsg}";
               PropagateError(AppInstHealthChanged, EventTriggeredButFindCloudletError, errorMsg);
-              if (edgeEvent.HealthCheck == HealthCheck.FailRootlbOffline
-                || edgeEvent.HealthCheck == HealthCheck.FailServerFail
+              if (edgeEvent.HealthCheck == HealthCheck.RootlbOffline
+                || edgeEvent.HealthCheck == HealthCheck.ServerFail
                 || edgeEvent.HealthCheck == HealthCheck.CloudletOffline
                 || edgeEvent.HealthCheck == HealthCheck.Unknown)
               {
