@@ -482,7 +482,7 @@ namespace MobiledgeX
       {
         if (proto == LProto.Tcp)
         {
-          Logger.LogWarning("No TCP ports exists on your App, It's recommended to use TCP ports for latency testing as Connect Tests is more reliable than Ping Tests.");
+          Logger.LogWarning("No TCP ports exists in your App, It's recommended to use TCP ports for latency testing as Connect Tests is more reliable than Ping Tests.");
           return GetLatencyTestPort(mobiledgexManager, latencyPortNumber, LProto.Udp);// try UDP proto
         }
         else

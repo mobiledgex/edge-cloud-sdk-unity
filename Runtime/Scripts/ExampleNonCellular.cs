@@ -37,8 +37,8 @@ public class ExampleNonCellular : MonoBehaviour
     mxi.SetFallbackLocation(location.longitude, location.latitude);
     mxi.useFallbackLocation = true;
     mxi.edgeEventsManager.location = new Loc() { Latitude = location.latitude, Longitude = location.longitude };
-    mxi.OnConnectionFailure = OnConnectionFailure;
-    mxi.OnConnectionUpgrade = OnConnectionUpgrade;
+    mxi.OnConnectionFailure += OnConnectionFailure;
+    mxi.OnConnectionUpgrade += OnConnectionUpgrade;
     try
     {
       await mxi.RegisterAndFindCloudlet();

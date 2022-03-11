@@ -44,8 +44,8 @@ public class ExampleRest : MonoBehaviour
 
     mxi = new MobiledgeXIntegration(FindObjectOfType<EdgeEventsManager>());
     mxi.useSelectedRegionInProduction = true;
-    mxi.OnConnectionFailure = OnConnectionFailure;
-    mxi.OnConnectionUpgrade = OnConnectionUpgrade;
+    mxi.OnConnectionFailure += OnConnectionFailure;
+    mxi.OnConnectionUpgrade += OnConnectionUpgrade;
 
     try
     {
