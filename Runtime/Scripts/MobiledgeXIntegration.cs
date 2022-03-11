@@ -1,5 +1,5 @@
 /**
-* Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
+* Copyright 2018-2022 MobiledgeX, Inc. All rights and licenses reserved.
 * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -80,7 +80,6 @@ namespace MobiledgeX
     AppPort latestAppPort = null;
     AppPort[] latestAppPortList = null;
     Location fallbackLocation = new Location(0, 0);
-    MelMessaging melMessaging;
 
     string region
     {
@@ -121,11 +120,6 @@ namespace MobiledgeX
         netInterface == null ? pIntegration.NetInterface : netInterface,
         uniqueId == null ? pIntegration.UniqueID : uniqueId,
         deviceInfo == null ? pIntegration.DeviceInfo : deviceInfo);
-      if (settings.MEL_ENABLED)
-      {
-        melMessaging = new MelMessaging(appName);
-        matchingEngine.SetMelMessaging(melMessaging);
-      }
     }
 
     /// <summary>
@@ -142,11 +136,6 @@ namespace MobiledgeX
       pIntegration = new PlatformIntegration();
 
       matchingEngine = new MatchingEngine(pIntegration.CarrierInfo, pIntegration.NetInterface, pIntegration.UniqueID, pIntegration.DeviceInfo);
-      if (settings.MEL_ENABLED)
-      {
-        melMessaging = new MelMessaging(appName);
-        matchingEngine.SetMelMessaging(melMessaging);
-      }
     }
 
     /// <summary>
