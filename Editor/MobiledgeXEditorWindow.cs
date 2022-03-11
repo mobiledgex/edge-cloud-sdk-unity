@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
+ * Copyright 2018-2022 MobiledgeX, Inc. All rights and licenses reserved.
  * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -441,7 +441,6 @@ namespace MobiledgeX
       string iosPluginPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Runtime/Plugins/iOS/PlatformIntegration.m");
       string linkXMLPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/link.xml");
       string settingPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Resources/MobiledgeXSettings.asset");
-      string melAARPath = Path.GetFullPath("Packages/com.mobiledgex.sdk/Runtime/Plugins/Android/mel.aar");
       try
       {
         if (!Directory.Exists(@unityPluginsFolderPath))
@@ -468,7 +467,6 @@ namespace MobiledgeX
         {
           AssetDatabase.CreateFolder("Assets/Plugins/MobiledgeX", "Android");
         }
-        MoveFile(melAARPath, Path.Combine(@mobiledgeXFolderPath, @"Android/mel.aar"), true);
         AssetDatabase.Refresh();
       }
       catch (Exception e)
