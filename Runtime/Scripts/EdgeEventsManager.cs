@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
+ * Copyright 2018-2022 MobiledgeX, Inc. All rights and licenses reserved.
  * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +23,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using static DistributedMatchEngine.ServerEdgeEvent.Types;
 using static DistributedMatchEngine.PerformanceMetrics.NetTest;
+using static MobiledgeX.EdgeEventsError;
+using static MobiledgeX.FindCloudletEventTrigger;
 using DistributedMatchEngine.PerformanceMetrics;
 using System.Threading;
 
@@ -32,31 +34,32 @@ namespace MobiledgeX
   [AddComponentMenu("MobiledgeX/EdgeEventsManager")]
   public class EdgeEventsManager : MonoBehaviour
   {
-    internal Action<ConnectionDetails> startStreamingEvents;
-    ConnectionDetails managerConnectionDetails;
-    EdgeEventsConfig config;
-    static FindCloudletReply FCPerformanceReply;
-    public delegate void FCPerformanceCallback(FindCloudletReply findCloudletReply);
-    FCPerformanceThreadManager fcThreadManager;//FindCloudletPerformanceMode Thread Manager
-    Statistics latestServerStats;
-    internal static UpdatesMonitor updatesMonitor;
-    static CancellationTokenSource stopUpdatesSource;
     /// <summary>
     /// Location sent to the DME Server, used only if edgeEventsManager.useMobiledgexLocationServices = false
     /// </summary>
     public Loc location;
-    internal MobiledgeX.LocationService locationService;
-    static int uiThread;
-    static bool IsMainThread
-    {
-      get { return Thread.CurrentThread.ManagedThreadId == uiThread; }
-    }
 
     /// <summary>
     /// Set to false if you have your own Location handler. If useMobiledgexLocationServices = false, you must set edgeEventsManager.location to a value.
     /// </summary>
     [Tooltip("Set to false if you have your own Location handler.If useMobiledgexLocationServices = false, you must set edgeEventsManager.location to a value.")]
     public bool useMobiledgexLocationServices = true;
+
+    internal delegate void FCPerformanceCallback(FindCloudletReply findCloudletReply);
+    internal Action<ConnectionDetails> startStreamingEvents;
+    private ConnectionDetails connectionDetails;
+    private EdgeEventsConfig config;
+    private static FindCloudletReply FCPerformanceReply;
+    private FCPerformanceThreadManager fcThreadManager;//FindCloudletPerformanceMode Thread Manager
+    private Statistics latestServerStats;
+    internal static UpdatesMonitor updatesMonitor;
+    private static CancellationTokenSource stopUpdatesSource;
+    internal MobiledgeX.LocationService locationService;
+    private static int uiThread;
+    private static bool IsMainThread
+    {
+      get { return Thread.CurrentThread.ManagedThreadId == uiThread; }
+    }
 
     #region MonoBehaviour Callbacks
 
@@ -71,7 +74,7 @@ namespace MobiledgeX
         config = MobiledgeXIntegration.settings.edgeEventsConfig;
         if (locationService == null)
         {
-          throw new Exception("EdgeEventsManager.useMobiledgexLocationServices is set to true but no Active LocationService component in the scene.");
+          throw new EdgeEventsException("EdgeEventsManager.useMobiledgexLocationServices is set to true but no Active LocationService component in the scene.");
         }
         if (config.locationConfig.updatePattern == UpdatePattern.OnTrigger
         && config.latencyConfig.updatePattern == UpdatePattern.OnTrigger)
@@ -84,6 +87,7 @@ namespace MobiledgeX
         }
       }
     }
+
     private void OnApplicationQuit()
     {
       if (fcThreadManager != null)
@@ -136,117 +140,56 @@ namespace MobiledgeX
       {
         if (pause)
         {
-          if (config == null || managerConnectionDetails == null)
+          if (config == null || connectionDetails == null)
           {
             Logger.Log("Application paused but EdgeEvents didn't start, yet");
             return;
           }
-          managerConnectionDetails.matchingEngine.EdgeEventsConnection.PauseSendingUpdates();
+          connectionDetails.matchingEngine.EdgeEventsConnection.PauseSendingUpdates();
           updatesMonitor.PauseUpdates();
           stopUpdatesSource.Cancel();
         }
         else
         {
-          if (config == null || managerConnectionDetails == null)
+          if (config == null || connectionDetails == null)
           {
             Logger.Log("Application resumed but EdgeEvents didn't start, yet");
             return;
           }
-          managerConnectionDetails.matchingEngine.EdgeEventsConnection.ResumeSendingUpdates();
+          connectionDetails.matchingEngine.EdgeEventsConnection.ResumeSendingUpdates();
           updatesMonitor.ResumeUpdates();
-          EdgeEventsUpdatesDispatcher(managerConnectionDetails, config);
+          EdgeEventsUpdatesDispatcher(connectionDetails, config);
         }
       }
     }
+
     #endregion
 
     #region EdgeEventsManager Functions
 
-    public static EdgeEventsError ValidateConfigs(EdgeEventsConfig config, ConnectionDetails connectionDetails)
-    {
-      if (config.newFindCloudletEventTriggers.Count == 1) //No FindCloudletTrigger except Error (Added By Default)
-      {
-        Debug.LogError("Missing FindCloudlets Triggers");
-        return EdgeEventsError.InvalidEdgeEventsSetup;
-      }
-
-      if (config.latencyThresholdTriggerMs <= 0)
-      {
-        Debug.LogError("LatencyThresholdTriggerMs must be > 0");
-        return EdgeEventsError.InvalidLatencyThreshold;
-      }
-
-      if (config.performanceSwitchMargin > 1 || config.performanceSwitchMargin < 0)
-      {
-        Debug.LogError("performanceSwitchMargin must between (0 to 1.0f)");
-        return EdgeEventsError.InvalidPerformanceSwitchMargin;
-      }
-      //latency config validation
-      if (config.newFindCloudletEventTriggers.Contains(FindCloudletEventTrigger.LatencyTooHigh))
-      {
-        if (config.latencyConfig.updatePattern == UpdatePattern.OnInterval)
-        {
-          if (config.latencyConfig.maxNumberOfUpdates < 0)
-          {
-            Debug.LogError("latencyConfig.maxNumberOfUpdates must be >= 0");
-            return EdgeEventsError.InvalidEdgeEventsSetup;
-          }
-          if (config.latencyConfig.updateIntervalSeconds <= 0)
-          {
-            Debug.LogError("latencyConfig.updateIntervalSeconds must be > 0");
-            return EdgeEventsError.InvalidUpdateInterval;
-          }
-        }
-      }
-      //location config validation
-      if (config.newFindCloudletEventTriggers.Contains(FindCloudletEventTrigger.CloserCloudlet))
-      {
-        if (config.locationConfig.updatePattern == UpdatePattern.OnInterval)
-        {
-          if (config.locationConfig.maxNumberOfUpdates < 0)
-          {
-            Debug.LogError("Config.maxNumberOfUpdates must be >= 0");
-            return EdgeEventsError.InvalidEdgeEventsSetup;
-          }
-          if (config.locationConfig.updateIntervalSeconds <= 0)
-          {
-            Debug.LogError("locationConfig.updateIntervalSeconds must be > 0");
-            return EdgeEventsError.InvalidUpdateInterval;
-          }
-        }
-      }
-
-      if (connectionDetails.matchingEngine.sessionCookie == null || connectionDetails.matchingEngine.sessionCookie == "")
-      {
-        Debug.LogError("Missing SessionCookie");
-        return EdgeEventsError.MissingSessionCookie;
-      }
-      if (connectionDetails.matchingEngine.edgeEventsCookie == null || connectionDetails.matchingEngine.edgeEventsCookie == "")
-      {
-        Debug.LogError("Missing EdgeEvents Cookie");
-        return EdgeEventsError.MissingEdgeEventsCookie;
-      }
-      return EdgeEventsError.None;
-    }
-
-    public void StartEdgeEvents(ConnectionDetails connectionDetails)
+    /// <summary>
+    /// Starts EdgeEvents based on the MobiledgeXSettings.edgeEventsConfig, can be called manually or using EdgeEventsManager Component
+    /// StartEdgeEvents can not be called before RegisterAndFindCloudlet
+    /// </summary>
+    /// <param name="mobiledgeXConnectionDetails"> ConnectionDetails object holding the current state of MatchingEngine </param>
+    public void StartEdgeEvents(ConnectionDetails mobiledgeXConnectionDetails)
     {
       Logger.Log("Starting EdgeEvents");
       config = MobiledgeXIntegration.settings.edgeEventsConfig;
       if (config == null)
       {
-        throw new Exception("MobiledgeX EdgeEventsConfig is Null");
+        throw new EdgeEventsException("MobiledgeX EdgeEventsConfig is Null");
       }
       Logger.Log(config.ToString());
       updatesMonitor.Reset();
-      managerConnectionDetails = connectionDetails;
-      EdgeEventsError validationError = ValidateConfigs(config, managerConnectionDetails);
+      connectionDetails = mobiledgeXConnectionDetails;
+      EdgeEventsError validationError = EdgeEventsUtil.ValidateConfigs(config, connectionDetails);
       if (validationError != EdgeEventsError.None)
       {
-        PropagateError(FindCloudletEventTrigger.Error, validationError);
+        PropagateError(Error, validationError, "EdgeEvents Setup error, check logs for more details.");
         return;
       }
-      if (managerConnectionDetails.matchingEngine.EdgeEventsConnection == null)
+      if (connectionDetails.matchingEngine.EdgeEventsConnection == null)
       {
         Debug.LogError("MobiledgeX: EdgeEventsConnection is null");
         return;
@@ -255,31 +198,52 @@ namespace MobiledgeX
       {
         StartCoroutine(locationService.UpdateEdgeEventsManagerLocation(Math.Min(config.locationConfig.updateIntervalSeconds, config.latencyConfig.updateIntervalSeconds)));
       }
-      managerConnectionDetails.matchingEngine.EdgeEventsReceiver += HandleReceivedEvents;
-      DeviceInfoDynamic deviceInfoDynamic = GetDynamicInfo(managerConnectionDetails.matchingEngine);
-      DeviceInfoStatic deviceInfoStatic = GetStaticInfo(managerConnectionDetails.matchingEngine);
-      bool connectionOpened = managerConnectionDetails.matchingEngine.EdgeEventsConnection.Open(deviceInfoDynamic: deviceInfoDynamic, deviceInfoStatic: deviceInfoStatic);
+      connectionDetails.matchingEngine.EdgeEventsReceiver += HandleReceivedEvents;
+      DeviceInfoDynamic deviceInfoDynamic = GetDeviceDynamicInfo(connectionDetails.matchingEngine);
+      DeviceInfoStatic deviceInfoStatic = GetDeviceStaticInfo(connectionDetails.matchingEngine);
+      bool connectionOpened = connectionDetails.matchingEngine.EdgeEventsConnection.Open(deviceInfoDynamic: deviceInfoDynamic, deviceInfoStatic: deviceInfoStatic);
       if (!connectionOpened)
       {
         Debug.LogError("Failed to OpenEdgeEventsConnection, StoppingEdgeEvents updates");
         return;
       }
-      AppPort appPort = GetLatencyTestPort(managerConnectionDetails.mobiledgexManager, config.latencyTestPort);
+      AppPort appPort = EdgeEventsUtil.GetLatencyTestPort(connectionDetails.mobiledgexManager, config.latencyTestPort);
       if (appPort == null)
       {
-        PropagateError(FindCloudletEventTrigger.Error, EdgeEventsError.PortDoesNotExist);
+        PropagateError(Error, PortDoesNotExist, "Port doesn't exist, make sure config.latencyTestPort is available in your app instance.");
         return;
       }
-      managerConnectionDetails.latencyTestPort = appPort.PublicPort;
-      managerConnectionDetails.SetAppHost(appPort.PublicPort);
+      connectionDetails.latencyTestPort = appPort.PublicPort;
+      connectionDetails.SetAppHost(appPort.PublicPort);
       if (appPort.Proto == LProto.Tcp)
       {
-        managerConnectionDetails.hasTCPPort = true;
+        connectionDetails.hasTCPPort = true;
       }
-      Logger.Log("ConnectionDetails: " + managerConnectionDetails.ToString());
+      Logger.Log("ConnectionDetails: " + connectionDetails.ToString());
     }
 
-    public void EdgeEventsUpdatesDispatcher(ConnectionDetails connectionDetails, EdgeEventsConfig config)
+    // <summary>
+    // Terminates EdgeEvents Connection
+    // If you didn't set AutoMigration to true, You need to call StopEdgeEvents() to close the connection before migrating to a new app instance.
+    // </summary>
+    public void StopEdgeEvents()
+    {
+      Logger.Log("Stopping EdgeEvents");
+      connectionDetails.matchingEngine.EdgeEventsConnection.PauseSendingUpdates();
+      if (stopUpdatesSource != null)
+      {
+        stopUpdatesSource.Cancel();
+      }
+      updatesMonitor.StopUpdates();
+
+      if (connectionDetails != null)
+      {
+        connectionDetails.matchingEngine.EdgeEventsReceiver -= HandleReceivedEvents;
+      }
+      connectionDetails.matchingEngine.EdgeEventsConnection.Close();
+    }
+
+    private void EdgeEventsUpdatesDispatcher(ConnectionDetails connectionDetails, EdgeEventsConfig config)
     {
       stopUpdatesSource = new CancellationTokenSource();
 
@@ -332,7 +296,7 @@ namespace MobiledgeX
       }
     }
 
-    public async Task LatencyUpdatesLoop(ConnectionDetails connectionDetails, int latencyUpdatesCounter, int updateIntervalSeconds, CancellationToken token)
+    private async Task LatencyUpdatesLoop(ConnectionDetails connectionDetails, int latencyUpdatesCounter, int updateIntervalSeconds, CancellationToken token)
     {
       TimeSpan updateTimeSpan = new TimeSpan(0, 0, updateIntervalSeconds);
       DeviceInfoDynamic deviceInfoDynamic;
@@ -349,7 +313,7 @@ namespace MobiledgeX
       while (latencyUpdatesCounter > 0)
       {
         stopwatch.Start();
-        deviceInfoDynamic = GetDynamicInfo(connectionDetails.matchingEngine);
+        deviceInfoDynamic = GetDeviceDynamicInfo(connectionDetails.matchingEngine);
         await SendLatencySamples(connectionDetails.matchingEngine.EdgeEventsConnection, connectionDetails.appHost, (uint)connectionDetails.latencyTestPort, proto, deviceInfoDynamic, location).ConfigureAwait(false);
         latencyUpdatesCounter--;
         while (stopwatch.Elapsed < updateTimeSpan)
@@ -365,8 +329,7 @@ namespace MobiledgeX
       UpdatesMonitor.latencyUpdatesCounter = latencyUpdatesCounter;
     }
 
-
-    public async Task LocationUpdatesLoop(ConnectionDetails connectionDetails, int locationUpdatesCounter, int updateIntervalSeconds, CancellationToken token)
+    private async Task LocationUpdatesLoop(ConnectionDetails connectionDetails, int locationUpdatesCounter, int updateIntervalSeconds, CancellationToken token)
     {
       TimeSpan updateTimeSpan = new TimeSpan(0, 0, updateIntervalSeconds);
       DeviceInfoDynamic deviceInfoDynamic;
@@ -374,7 +337,7 @@ namespace MobiledgeX
       while (locationUpdatesCounter > 0)
       {
         stopwatch.Start();
-        deviceInfoDynamic = GetDynamicInfo(connectionDetails.matchingEngine);
+        deviceInfoDynamic = GetDeviceDynamicInfo(connectionDetails.matchingEngine);
         await SendLocationSamples(connectionDetails.matchingEngine.EdgeEventsConnection, deviceInfoDynamic, location).ConfigureAwait(false);
         locationUpdatesCounter--;
         while (stopwatch.Elapsed < updateTimeSpan)
@@ -390,8 +353,7 @@ namespace MobiledgeX
       UpdatesMonitor.locationUpdatesCounter = locationUpdatesCounter;
     }
 
-
-    async static Task<bool> SendLocationSamples(EdgeEventsConnection connection, DeviceInfoDynamic deviceInfoDynamic, Loc location)
+    private async static Task<bool> SendLocationSamples(EdgeEventsConnection connection, DeviceInfoDynamic deviceInfoDynamic, Loc location)
     {
       if (location == null)
       {
@@ -413,7 +375,7 @@ namespace MobiledgeX
       return true;
     }
 
-    public async static Task<bool> SendLatencySamples(EdgeEventsConnection connection, string host, uint latencyTestPort, LProto proto, DeviceInfoDynamic deviceInfoDynamic, Loc location)
+    private async static Task<bool> SendLatencySamples(EdgeEventsConnection connection, string host, uint latencyTestPort, LProto proto, DeviceInfoDynamic deviceInfoDynamic, Loc location)
     {
       if (host == "" || host == null)
       {
@@ -469,71 +431,16 @@ namespace MobiledgeX
       }
     }
 
-    public static AppPort GetLatencyTestPort(MobiledgeXIntegration mobiledgexManager, int latencyPortNumber = 0, LProto proto = LProto.Tcp)
+    private void HandleReceivedEvents(ServerEdgeEvent edgeEvent)
     {
-      AppPort appPort;
-      if (mobiledgexManager.latestFindCloudletReply == null)
-      {
-        return null;
-      }
-      try
-      {
-        appPort = mobiledgexManager.GetAppPort(proto, latencyPortNumber);
-      }
-      catch (AppPortException)
-      {
-        appPort = null;
-      }
-
-      if (appPort == null)
-      {
-        if (proto == LProto.Tcp)
-        {
-          Logger.LogWarning("No TCP ports exists on your App, It's recommended to use TCP ports for latency testing as Connect Tests is more reliable than Ping Tests.");
-          return GetLatencyTestPort(mobiledgexManager, latencyPortNumber, LProto.Udp);// try UDP proto
-        }
-        else
-        {
-          return null;
-        }
-      }
-      if (appPort == null && proto == LProto.Udp)
-      {
-        Debug.LogError("Test port doesn't exist");
-      }
-      return appPort;
-    }
-
-    // <summary>
-    // Terminates EdgeEvents Connection
-    // If you didn't set AutoMigration to true, You need to call StopEdgeEvents() to close the connection before migrating to a new app instance.
-    // </summary>
-    public void StopEdgeEvents()
-    {
-      Logger.Log("Stopping EdgeEvents");
-      managerConnectionDetails.matchingEngine.EdgeEventsConnection.PauseSendingUpdates();
-      if (stopUpdatesSource != null)
-      {
-        stopUpdatesSource.Cancel();
-      }
-      updatesMonitor.StopUpdates();
-
-      if (managerConnectionDetails != null)
-      {
-        managerConnectionDetails.matchingEngine.EdgeEventsReceiver -= HandleReceivedEvents;
-      }
-      managerConnectionDetails.matchingEngine.EdgeEventsConnection.Close();
-    }
-
-    void HandleReceivedEvents(ServerEdgeEvent edgeEvent)
-    {
-      Debug.Log("Received event: " + edgeEvent.EventType
+      Logger.Log("Received event: " + edgeEvent.EventType
         + "\nStatistics: " + edgeEvent.Statistics
         + "\nHealthCheck: " + edgeEvent.HealthCheck
         + "\nMaintenanceState: " + edgeEvent.MaintenanceState
         + "\nNewCloudlet: " + edgeEvent.NewCloudlet
         + "\nCloudletState: " + edgeEvent.CloudletState
         + "\nErrorMsg: " + edgeEvent.ErrorMsg);
+      string errorMsg = "";
       if (config == null)
       {
         Debug.LogError("MobiledgeX: Couldn't locate EdgeEvents Config");
@@ -545,17 +452,17 @@ namespace MobiledgeX
         case ServerEventType.EventInitConnection:
           Logger.Log("Successfully initiated EdgeEventConnection");
           UpdatesMonitor.edgeEventConnectionInitiated = true;
-          EdgeEventsUpdatesDispatcher(managerConnectionDetails, config);
+          EdgeEventsUpdatesDispatcher(connectionDetails, config);
           return;
         case ServerEventType.EventLatencyRequest:
-          if (fcTriggers.Contains(FindCloudletEventTrigger.LatencyTooHigh))
+          if (fcTriggers.Contains(LatencyTooHigh))
           {
             Logger.Log("Received EventLatencyRequest from Server");
-            StartCoroutine(EdgeEventsUtil.RespondToLatencyRequest(managerConnectionDetails, location, config.latencyTestPort));
+            StartCoroutine(EdgeEventsUtil.RespondToLatencyRequest(connectionDetails, location, config.latencyTestPort));
           }
           return;
         case ServerEventType.EventLatencyProcessed:
-          if (fcTriggers.Contains(FindCloudletEventTrigger.LatencyTooHigh))
+          if (fcTriggers.Contains(LatencyTooHigh))
           {
             if (UpdatesMonitor.latencyProcessingStatus == UpdatesStatus.Ready)
             {
@@ -569,12 +476,12 @@ namespace MobiledgeX
           }
           return;
         case ServerEventType.EventAppinstHealth:
-          if (fcTriggers.Contains(FindCloudletEventTrigger.AppInstHealthChanged))
+          if (fcTriggers.Contains(AppInstHealthChanged))
           {
             if (edgeEvent.NewCloudlet == null || edgeEvent.ErrorMsg != "")
             {
-              Debug.LogError("Received EventAppinstHealth Event but NewCloudlet is null, " + edgeEvent.ErrorMsg);
-              PropagateError(FindCloudletEventTrigger.AppInstHealthChanged, EdgeEventsError.EventTriggeredButFindCloudletError);
+              errorMsg = $"Received EventAppinstHealth Event but NewCloudlet is null, {edgeEvent.ErrorMsg}";
+              PropagateError(AppInstHealthChanged, EventTriggeredButFindCloudletError, errorMsg);
               if (edgeEvent.HealthCheck == HealthCheck.FailRootlbOffline
                 || edgeEvent.HealthCheck == HealthCheck.FailServerFail
                 || edgeEvent.HealthCheck == HealthCheck.CloudletOffline
@@ -585,17 +492,17 @@ namespace MobiledgeX
             }
             else
             {
-              PropagateSuccess(FindCloudletEventTrigger.AppInstHealthChanged, edgeEvent.NewCloudlet);
+              PropagateSuccess(AppInstHealthChanged, edgeEvent.NewCloudlet);
             }
           }
           return;
         case ServerEventType.EventCloudletMaintenance:
-          if (fcTriggers.Contains(FindCloudletEventTrigger.CloudletMaintenanceStateChanged))
+          if (fcTriggers.Contains(CloudletMaintenanceStateChanged))
           {
             if (edgeEvent.NewCloudlet == null || edgeEvent.ErrorMsg != "")
             {
-              Debug.LogError("Received CloudletStateChanged Event but NewCloudlet is null, " + edgeEvent.ErrorMsg);
-              PropagateError(FindCloudletEventTrigger.CloudletMaintenanceStateChanged, EdgeEventsError.EventTriggeredButFindCloudletError);
+              errorMsg = $"Received CloudletStateChanged Event but NewCloudlet is null, {edgeEvent.ErrorMsg}";
+              PropagateError(CloudletMaintenanceStateChanged, EventTriggeredButFindCloudletError, errorMsg);
               if (edgeEvent.MaintenanceState == MaintenanceState.MaintenanceStart
                   || edgeEvent.MaintenanceState == MaintenanceState.CrmUnderMaintenance
                   || edgeEvent.MaintenanceState == MaintenanceState.FailoverError
@@ -607,18 +514,18 @@ namespace MobiledgeX
             }
             else
             {
-              PropagateSuccess(FindCloudletEventTrigger.CloudletMaintenanceStateChanged, edgeEvent.NewCloudlet);
+              PropagateSuccess(CloudletMaintenanceStateChanged, edgeEvent.NewCloudlet);
             }
 
           }
           return;
         case ServerEventType.EventCloudletState:
-          if (fcTriggers.Contains(FindCloudletEventTrigger.CloudletStateChanged))
+          if (fcTriggers.Contains(CloudletStateChanged))
           {
             if (edgeEvent.NewCloudlet == null || edgeEvent.ErrorMsg != "")
             {
-              Debug.LogError("Received CloudletStateChanged Event but NewCloudlet is null, " + edgeEvent.ErrorMsg);
-              PropagateError(FindCloudletEventTrigger.CloudletStateChanged, EdgeEventsError.EventTriggeredButFindCloudletError);
+              errorMsg = $"Received CloudletStateChanged Event but NewCloudlet is null, {edgeEvent.ErrorMsg}";
+              PropagateError(CloudletStateChanged, EventTriggeredButFindCloudletError, errorMsg);
               if (edgeEvent.CloudletState == CloudletState.Errors
                   || edgeEvent.CloudletState == CloudletState.NotPresent
                   || edgeEvent.CloudletState == CloudletState.Offline
@@ -629,113 +536,101 @@ namespace MobiledgeX
             }
             else
             {
-              PropagateSuccess(FindCloudletEventTrigger.CloudletStateChanged, edgeEvent.NewCloudlet);
+              PropagateSuccess(CloudletStateChanged, edgeEvent.NewCloudlet);
             }
           }
           return;
         case ServerEventType.EventCloudletUpdate:
-          if (fcTriggers.Contains(FindCloudletEventTrigger.CloserCloudlet))
+          if (fcTriggers.Contains(CloserCloudlet))
           {
-            if (edgeEvent.NewCloudlet == null || edgeEvent.ErrorMsg != "" || edgeEvent.NewCloudlet.Fqdn == managerConnectionDetails.mobiledgexManager.latestFindCloudletReply.Fqdn)
+            if (edgeEvent.NewCloudlet == null || edgeEvent.ErrorMsg != "" || edgeEvent.NewCloudlet.Fqdn == connectionDetails.mobiledgexManager.latestFindCloudletReply.Fqdn)
             {
-              Debug.LogError("Received CloserCloudlet Event but NewCloudlet is null or the same, " + edgeEvent.ErrorMsg);
-              PropagateError(FindCloudletEventTrigger.CloserCloudlet, EdgeEventsError.EventTriggeredButCurrentCloudletIsBest);
+              errorMsg = $"Received CloserCloudlet Event but NewCloudlet is null or the same, {edgeEvent.ErrorMsg}";
+              PropagateError(CloserCloudlet, EventTriggeredButCurrentCloudletIsBest, errorMsg);
             }
             else
             {
-              PropagateSuccess(FindCloudletEventTrigger.CloserCloudlet, edgeEvent.NewCloudlet);
+              PropagateSuccess(CloserCloudlet, edgeEvent.NewCloudlet);
             }
           }
           return;
         case ServerEventType.EventError:
-          Logger.Log("Received EventError from server, Error : " + edgeEvent.ErrorMsg);
-          PropagateError(FindCloudletEventTrigger.Error, EdgeEventsError.EventError);
+          errorMsg = $"Received EventError from server, Error :{edgeEvent.ErrorMsg}";
+          PropagateError(Error, EventError, errorMsg);
           return;
         default:
-          Logger.Log("Received Unknown event, event type: " + edgeEvent.EventType);
+          Logger.LogWarning($"Received Unknown event, event type: {edgeEvent.EventType}");
           return;
       }
     }
 
     //Compares between the FindCloudletPerformance Cloudlet and the Current Cloudlet(last stats received from the server)
-    async Task CompareLatencies(FindCloudletReply fcPerformanceReply, Statistics receivedStats)
+    private async Task CompareLatencies(FindCloudletReply fcPerformanceReply, Statistics receivedStats)
     {
+      string errorMsg = "";
       if (FCPerformanceReply == null)
       {
-        Debug.LogError("Error In FindCloudlet Perfromance Mode, FindCloudlet Reply is null");
-        PropagateError(FindCloudletEventTrigger.LatencyTooHigh, EdgeEventsError.EventTriggeredButFindCloudletError);
+        errorMsg = "Error In FindCloudlet Perfromance Mode, FindCloudlet Reply is null";
+        PropagateError(LatencyTooHigh, EventTriggeredButFindCloudletError, errorMsg);
         return;
       }
 
       if (FCPerformanceReply.Status == FindCloudletReply.Types.FindStatus.FindNotfound || FCPerformanceReply.Status == FindCloudletReply.Types.FindStatus.FindUnknown)
       {
-        Debug.LogError("Error In FindCloudlet Perfromance Mode, FindCloudlet Status is " + FCPerformanceReply.Status);
-        PropagateError(FindCloudletEventTrigger.LatencyTooHigh, EdgeEventsError.EventTriggeredButFindCloudletError);
+        errorMsg = $"Error In FindCloudlet Perfromance Mode, FindCloudlet Status is {FCPerformanceReply.Status}";
+        PropagateError(LatencyTooHigh, EventTriggeredButFindCloudletError, errorMsg);
         return;
       }
 
-      if (managerConnectionDetails.mobiledgexManager.latestFindCloudletReply.Fqdn.Equals(FCPerformanceReply.Fqdn))
+      if (connectionDetails.mobiledgexManager.latestFindCloudletReply.Fqdn.Equals(FCPerformanceReply.Fqdn))
       {
-        Debug.LogError("New Cloudlet obtained from FindCloudletPerformanceMode is the same as old cloudlet");
-        PropagateError(FindCloudletEventTrigger.LatencyTooHigh, EdgeEventsError.EventTriggeredButCurrentCloudletIsBest);
+        errorMsg = "New Cloudlet obtained from FindCloudletPerformanceMode is the same as old cloudlet";
+        PropagateError(LatencyTooHigh, EventTriggeredButCurrentCloudletIsBest, errorMsg);
         return;
       }
 
       Logger.Log("Comparing Latencies");
-      AppPort appPort = GetLatencyTestPort(managerConnectionDetails.mobiledgexManager, config.latencyTestPort);
+      AppPort appPort = EdgeEventsUtil.GetLatencyTestPort(connectionDetails.mobiledgexManager, config.latencyTestPort);
       Site site;
-      var netTest = new NetTest(managerConnectionDetails.matchingEngine);
+      var netTest = new NetTest(connectionDetails.matchingEngine);
 
-      if (managerConnectionDetails.hasTCPPort)
+      if (connectionDetails.hasTCPPort)
       {
         Logger.Log("Performing Connect Test");
-        site = new Site { host = appPort.FqdnPrefix + fcPerformanceReply.Fqdn, port = managerConnectionDetails.latencyTestPort, testType = TestType.CONNECT };
+        site = new Site { host = appPort.FqdnPrefix + fcPerformanceReply.Fqdn, port = connectionDetails.latencyTestPort, testType = TestType.CONNECT };
       }
       else
       {
         Logger.Log("Performing Ping Test");
-        site = new Site { host = appPort.FqdnPrefix + fcPerformanceReply.Fqdn, port = managerConnectionDetails.latencyTestPort, testType = TestType.PING };
+        site = new Site { host = appPort.FqdnPrefix + fcPerformanceReply.Fqdn, port = connectionDetails.latencyTestPort, testType = TestType.PING };
       }
       await netTest.TestSite(site);
       double normalizedLatency = receivedStats.Avg - (receivedStats.Avg * config.performanceSwitchMargin);
       if (site.average < normalizedLatency)
       {
         Logger.Log("NewCloudlet Obtained from LatencyTest have better Latency, Connecting to NewCloudlet");
-        PropagateSuccess(FindCloudletEventTrigger.LatencyTooHigh, fcPerformanceReply);
+        PropagateSuccess(LatencyTooHigh, fcPerformanceReply);
       }
       else
       {
-        Debug.LogError("Latency threshold exceeded, but no other cloudlets have a meaningful improvement in latency");
-        PropagateError(FindCloudletEventTrigger.LatencyTooHigh, EdgeEventsError.EventTriggeredButCurrentCloudletIsBest);
+        errorMsg = "Latency threshold exceeded, but no other cloudlets have a meaningful improvement in latency";
+        PropagateError(LatencyTooHigh, EventTriggeredButCurrentCloudletIsBest, errorMsg);
       }
       return;
     }
 
-    void PropagateSuccess(FindCloudletEventTrigger trigger, FindCloudletReply newCloudlet)
+    private void PropagateSuccess(FindCloudletEventTrigger trigger, FindCloudletReply newCloudlet)
     {
-      Logger.Log("Received NewCloudlet by trigger: " + trigger.ToString() + ", NewCloudlet" + newCloudlet.ToString());
-      FindCloudletEvent findCloudletEvent = new FindCloudletEvent();
-      findCloudletEvent.trigger = trigger;
-      findCloudletEvent.newCloudlet = newCloudlet;
-      EdgeEventsStatus eventStatus = new EdgeEventsStatus(Status.success);
-      try
-      {
-        managerConnectionDetails.mobiledgexManager.NewFindCloudletHandler(eventStatus, findCloudletEvent);
-      }
-      catch (NullReferenceException)
-      {
-        Debug.LogError("Missing NewCloudletHandler, " +
-          "Listen to EdgeEvents by using \"mobiledgexIntegration.NewCloudletHandler += HandleNewFindCloudlet;\"");
-      }
+      Logger.Log($"Received NewCloudlet by trigger: {trigger.ToString()},NewCloudlet: {newCloudlet.ToString()}");
+      connectionDetails.mobiledgexManager.OnConnectionUpgrade(newCloudlet);
+
       if (config.autoMigration)
       {
-        managerConnectionDetails.mobiledgexManager.latestFindCloudletReply = newCloudlet;
+        connectionDetails.mobiledgexManager.latestFindCloudletReply = newCloudlet;
         StopEdgeEvents();
-        Logger.Log("Restart EdgeEventsConnection, newCloudlet.EdgeEventsCookie: " + newCloudlet.EdgeEventsCookie
-          + ", dmeHostOverride: " + managerConnectionDetails.dmeHostOverride
-          + ", dmePortOverride: " + managerConnectionDetails.dmePortOverride);
-        managerConnectionDetails.matchingEngine.RestartEdgeEventsConnection(newCloudlet, managerConnectionDetails.dmeHostOverride, managerConnectionDetails.dmePortOverride);
-        StartEdgeEvents(managerConnectionDetails);
+        Logger.Log($"Restart EdgeEventsConnection, newCloudlet.EdgeEventsCookie: {newCloudlet.EdgeEventsCookie}, dmeHostOverride: {connectionDetails.dmeHostOverride},dmePortOverride: {connectionDetails.dmePortOverride}");
+        connectionDetails.matchingEngine.RestartEdgeEventsConnection(newCloudlet, connectionDetails.dmeHostOverride, connectionDetails.dmePortOverride);
+        StartEdgeEvents(connectionDetails);
       }
       else
       {
@@ -748,49 +643,55 @@ namespace MobiledgeX
       }
     }
 
-    void PropagateError(FindCloudletEventTrigger trigger, EdgeEventsError error)
+    private void PropagateError(FindCloudletEventTrigger trigger, EdgeEventsError error, string logMsg)
     {
-      FindCloudletEvent findCloudletEvent = new FindCloudletEvent();
-      findCloudletEvent.trigger = trigger;
-      Debug.LogError(error);
-      EdgeEventsStatus eventStatus = new EdgeEventsStatus(Status.error, error);
-      try
+      Debug.LogError(logMsg);
+      switch (error)
       {
-        managerConnectionDetails.mobiledgexManager.NewFindCloudletHandler(eventStatus, findCloudletEvent);
-      }
-      catch (NullReferenceException)
-      {
-        Debug.LogError("Missing NewCloudletHandler, " +
-          "Listen to EdgeEventsHandler by using \"mobiledgexIntegration.NewCloudletHandler += HandleNewFindCloudlet;\"");
-        return;
+        case EventTriggeredButFindCloudletError:
+          connectionDetails.mobiledgexManager.OnConnectionFailure(trigger.ToString() + "\n" + error.ToString());
+          break;
+        case InvalidEdgeEventsSetup:
+          throw new EdgeEventsException(InvalidEdgeEventsSetup.ToString());
+        case InvalidLatencyThreshold:
+          throw new EdgeEventsException(InvalidLatencyThreshold.ToString());
+        case InvalidPerformanceSwitchMargin:
+          throw new EdgeEventsException(InvalidPerformanceSwitchMargin.ToString());
+        case InvalidUpdateInterval:
+          throw new EdgeEventsException(InvalidUpdateInterval.ToString());
+        case MissingEdgeEventsCookie:
+          throw new EdgeEventsException(MissingEdgeEventsCookie.ToString());
+        case MissingSessionCookie:
+          throw new EdgeEventsException(MissingSessionCookie.ToString());
+        case EventTriggeredButCurrentCloudletIsBest:
+          Logger.LogWarning("EventTriggeredButCurrentCloudletIsBest ");
+          break;
+        case UnableToGetLastLocation:
+          Logger.LogWarning("UnableToGetLastLocation ");
+          break;
       }
     }
 
-    void ProcessLatency(Statistics stats)
+    private void ProcessLatency(Statistics stats)
     {
       Logger.Log("Processing Latency Received from Server");
       if (stats.Avg > config.latencyThresholdTriggerMs)
       {
-        Logger.Log("Current Latency (" + stats.Avg + ") > LatencyThreshold (" + config.latencyThresholdTriggerMs + ")");
+        Logger.Log($"Current Latency ({stats.Avg}) > LatencyThreshold ({config.latencyThresholdTriggerMs})");
         Logger.Log("Performing FindCloudlet PerformanceMode");
         FCPerformanceThreadManager fcThreadObj = new FCPerformanceThreadManager
-          (matchingEngine: managerConnectionDetails.matchingEngine, location: location, hostOverride: managerConnectionDetails.dmeHostOverride, portOverride: managerConnectionDetails.dmePortOverride, callbackDelegate: FCCallback, latencyTestPort: config.latencyTestPort);
+          (matchingEngine: connectionDetails.matchingEngine, location: location, hostOverride: connectionDetails.dmeHostOverride, portOverride: connectionDetails.dmePortOverride, callbackDelegate: FCCallback, latencyTestPort: config.latencyTestPort);
         fcThreadObj.RunFCPerformance();
       }
       else
       {
-        Logger.Log("Current Latency (" + stats.Avg + ") < LatencyThreshold (" + config.latencyThresholdTriggerMs + ")");
+        Logger.Log($"Current Latency ({stats.Avg}) < LatencyThreshold ({config.latencyThresholdTriggerMs})");
         UpdatesMonitor.latencyUpdatesStatus = UpdatesStatus.Ready;
       }
       return;
     }
 
-    /// <summary>
-    /// Helper function for acquiring DeviceDynamicInfo in Multithreading environment to avoid stale references on Android Devices
-    /// </summary>
-    /// <param name="matchingEngine"></param>
-    /// <returns>DeviceInfoDynamic Object</returns>
-    public static DeviceInfoDynamic GetDynamicInfo(MatchingEngine matchingEngine, EdgeEventsConfig config = null)
+    internal static DeviceInfoDynamic GetDeviceDynamicInfo(MatchingEngine matchingEngine, EdgeEventsConfig config = null)
     {
       if (config == null)
       {
@@ -823,7 +724,7 @@ namespace MobiledgeX
       return deviceInfoDynamic;
     }
 
-    public static DeviceInfoStatic GetStaticInfo(MatchingEngine matchingEngine)
+    internal static DeviceInfoStatic GetDeviceStaticInfo(MatchingEngine matchingEngine)
     {
       DeviceInfoStatic deviceInfoStatic;
       if (Application.platform == RuntimePlatform.Android)

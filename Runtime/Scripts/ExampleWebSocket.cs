@@ -23,7 +23,8 @@ public class ExampleWebSocket : MonoBehaviour
   async void GetEdgeConnection()
   {
     mxi = new MobiledgeXIntegration(FindObjectOfType<EdgeEventsManager>());
-    mxi.NewFindCloudletHandler += HandleFindCloudlet;
+    mxi.OnConnectionFailure += OnConnectionFailure;
+    mxi.OnConnectionUpgrade += OnConnectionUpgrade;
     try
     {
       await mxi.RegisterAndFindCloudlet();
@@ -55,17 +56,15 @@ public class ExampleWebSocket : MonoBehaviour
     await wsClient.Connect(uri);
   }
 
-  private void HandleFindCloudlet(EdgeEventsStatus edgeEventstatus, FindCloudletEvent fcEvent)
+  private void OnConnectionFailure(string errorMsg)
   {
-    print("NewFindCloudlet triggered status is " + edgeEventstatus.status + ", Trigger" + fcEvent.trigger);
-    if (fcEvent.newCloudlet != null)
-    {
-      print("New Cloudlet FQDN: " + fcEvent.newCloudlet.Fqdn);
-    }
-    if (edgeEventstatus.status == Status.error)
-    {
-      print("Error received: " + edgeEventstatus.error);
-    }
+    Debug.LogError("Error msg: " + errorMsg);
+    //switch to public cloud
+  }
+
+  private void OnConnectionUpgrade(FindCloudletReply newCloudlet)
+  {
+    Debug.Log("NewCloudelt found, new FQDN: " + newCloudlet.Fqdn);
   }
 
   // Dequeue WebSocket Messages every frame (if there is any)
@@ -86,7 +85,9 @@ public class ExampleWebSocket : MonoBehaviour
 
   private void OnDestroy()
   {
-    mxi.Dispose();
+    mxi.OnConnectionUpgrade -= OnConnectionUpgrade;
+    mxi.OnConnectionFailure -= OnConnectionFailure;
+    mxi.matchingEngine.Dispose();
   }
 }
 

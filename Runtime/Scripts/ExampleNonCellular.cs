@@ -37,7 +37,8 @@ public class ExampleNonCellular : MonoBehaviour
     mxi.SetFallbackLocation(location.longitude, location.latitude);
     mxi.useFallbackLocation = true;
     mxi.edgeEventsManager.location = new Loc() { Latitude = location.latitude, Longitude = location.longitude };
-    mxi.NewFindCloudletHandler += HandleFindCloudlet;
+    mxi.OnConnectionFailure += OnConnectionFailure;
+    mxi.OnConnectionUpgrade += OnConnectionUpgrade;
     try
     {
       await mxi.RegisterAndFindCloudlet();
@@ -54,22 +55,21 @@ public class ExampleNonCellular : MonoBehaviour
     Debug.Log("url : " + url); // Once you have your edge server url you can start communicating with your Edge server deployed on MobiledgeX Console
   }
 
-  private void HandleFindCloudlet(EdgeEventsStatus edgeEventstatus, FindCloudletEvent fcEvent)
+  private void OnConnectionFailure(string errorMsg)
   {
-    print("NewFindCloudlet triggered status is " + edgeEventstatus.status + ", Trigger" + fcEvent.trigger);
-    if (fcEvent.newCloudlet != null)
-    {
-      print("New Cloudlet FQDN: " + fcEvent.newCloudlet.Fqdn);
-    }
-    if (edgeEventstatus.status == Status.error)
-    {
-      print("Error received: " + edgeEventstatus.error);
-    }
+    Debug.LogError("Error msg: " + errorMsg);
+    //switch to public cloud
+  }
+
+  private void OnConnectionUpgrade(FindCloudletReply newCloudlet)
+  {
+    Debug.Log("NewCloudelt found, new FQDN: " + newCloudlet.Fqdn);
   }
 
   private void OnDestroy()
   {
-    mxi.NewFindCloudletHandler -= HandleFindCloudlet;
+    mxi.OnConnectionUpgrade -= OnConnectionUpgrade;
+    mxi.OnConnectionFailure -= OnConnectionFailure;
     mxi.matchingEngine.Dispose();
   }
 }
