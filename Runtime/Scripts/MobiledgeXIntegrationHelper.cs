@@ -245,6 +245,7 @@ namespace MobiledgeX
       {
         if (edgeEventsManager != null)
         {
+
           if (OnConnectionFailure == null)
           {
             Debug.LogError("No delegate assigned to MobiledgeXIntegration.OnConnectionFailure, see ExampleRest.cs for a complete example.\nTo disable EdgeEvents set matchingEngine.EnableEdgeEvents = false");
@@ -259,7 +260,7 @@ namespace MobiledgeX
         }
         else
         {
-          Debug.LogError("EdgeEventsManager is not assigned.");
+          Debug.LogError("MobiledgeX: EdgeEventsManager is not assigned.");
         }
       }
       return reply.Status == FindCloudletReply.Types.FindStatus.FindFound;
