@@ -23,8 +23,8 @@ public class ExampleWebSocket : MonoBehaviour
   async void GetEdgeConnection()
   {
     mxi = new MobiledgeXIntegration(FindObjectOfType<EdgeEventsManager>());
-    mxi.OnConnectionFailure = OnConnectionFailure;
-    mxi.OnConnectionUpgrade = OnConnectionUpgrade;
+    mxi.OnConnectionFailure += OnConnectionFailure;
+    mxi.OnConnectionUpgrade += OnConnectionUpgrade;
     try
     {
       await mxi.RegisterAndFindCloudlet();

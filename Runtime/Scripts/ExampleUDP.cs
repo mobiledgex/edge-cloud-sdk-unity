@@ -21,8 +21,8 @@ public class ExampleUDP : MonoBehaviour
   async void GetEdgeConnection()
   {
     mxi = new MobiledgeXIntegration(FindObjectOfType<EdgeEventsManager>());
-    mxi.OnConnectionFailure = OnConnectionFailure;
-    mxi.OnConnectionUpgrade = OnConnectionUpgrade;
+    mxi.OnConnectionFailure += OnConnectionFailure;
+    mxi.OnConnectionUpgrade += OnConnectionUpgrade;
     await mxi.RegisterAndFindCloudlet();
     udpSendPort = mxi.GetAppPort(LProto.Udp).PublicPort;
     udpHost = mxi.GetHost();
