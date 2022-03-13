@@ -194,17 +194,17 @@ namespace MobiledgeX
       // GPS and Tower Status:
       switch (reply.gps_location_status)
       {
-        case VerifyLocationReply.GPSLocationStatus.LOC_ROAMING_COUNTRY_MISMATCH:
-        case VerifyLocationReply.GPSLocationStatus.LOC_ERROR_UNAUTHORIZED:
-        case VerifyLocationReply.GPSLocationStatus.LOC_ERROR_OTHER:
-        case VerifyLocationReply.GPSLocationStatus.LOC_UNKNOWN:
+        case VerifyLocationReply.GPSLocationStatus.RoamingCountryMismatch:
+        case VerifyLocationReply.GPSLocationStatus.ErrorUnauthorized:
+        case VerifyLocationReply.GPSLocationStatus.ErrorOther:
+        case VerifyLocationReply.GPSLocationStatus.Unknown:
           return false;
       }
 
       switch (reply.tower_status)
       {
-        case VerifyLocationReply.TowerStatus.NOT_CONNECTED_TO_SPECIFIED_TOWER:
-        case VerifyLocationReply.TowerStatus.TOWER_UNKNOWN:
+        case VerifyLocationReply.TowerStatus.NotConnectedToSpecifiedTower:
+        case VerifyLocationReply.TowerStatus.TowerUnknown:
           return false;
       }
 
