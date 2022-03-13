@@ -1,9 +1,20 @@
-﻿{
+{
     "name": "Tests",
-    "optionalUnityReferences": [
-        "TestAssemblies"
+    "references": [
+        "GUID:90ee89c496868459692638f4c3107aa4"
     ],
     "includePlatforms": [
         "Editor"
-    ]
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "MatchingEngineSDKRestLibrary.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
