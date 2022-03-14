@@ -1,7 +1,7 @@
 {
     "name": "Tests",
     "references": [
-        "GUID:90ee89c496868459692638f4c3107aa4"
+        "Unity.Mobiledgex"
     ],
     "includePlatforms": [
         "Editor"
@@ -13,7 +13,7 @@
         "nunit.framework.dll",
         "MatchingEngineSDKRestLibrary.dll"
     ],
-    "autoReferenced": false,
+    "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
     "noEngineReferences": false
