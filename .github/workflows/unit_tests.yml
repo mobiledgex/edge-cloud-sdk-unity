@@ -33,7 +33,7 @@ jobs:
         run: |
           rm -rf ./project/EmptyProject/Assets/Tests/Editor
           rm ./project/EmptyProject/Assets/Tests/Editor.meta
-
+          
       - name: Run Tests using Unity TestRunner
         uses: game-ci/unity-test-runner@v2
         id: tests
