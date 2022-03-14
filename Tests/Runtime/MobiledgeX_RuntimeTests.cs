@@ -232,7 +232,7 @@ namespace MobiledgeX
         var task = Task.Run(async () =>
         {
           string hostName = await GetHostHelper(mxi, "udp");
-          MobiledgeXUDPClient udpClient = new MobiledgeXUDPClient(hostName, mxi.GetAppPort(LProto.L_PROTO_UDP).public_port);
+          MobiledgeXUDPClient udpClient = new MobiledgeXUDPClient(hostName, mxi.GetAppPort(LProto.Udp).public_port);
           return UDPMessageHelper(udpClient, "ping", timeOutMs);
         });
         Assert.True(task.Result == "pong");
@@ -278,14 +278,14 @@ namespace MobiledgeX
       switch (proto)
       {
         case "udp":
-          appPort = mxi.GetAppPort(LProto.L_PROTO_UDP, port);
+          appPort = mxi.GetAppPort(LProto.Udp, port);
           break;
         case "ws":
         case "wss":
         case "http":
         case "https":
         default:
-          appPort = mxi.GetAppPort(LProto.L_PROTO_TCP, port);
+          appPort = mxi.GetAppPort(LProto.Tcp, port);
           break;
       }
 
@@ -318,14 +318,14 @@ namespace MobiledgeX
       switch (proto)
       {
         case "udp":
-          appPort = mxi.GetAppPort(LProto.L_PROTO_UDP, port);
+          appPort = mxi.GetAppPort(LProto.Udp, port);
           break;
         case "ws":
         case "wss":
         case "http":
         case "https":
         default:
-          appPort = mxi.GetAppPort(LProto.L_PROTO_TCP, port);
+          appPort = mxi.GetAppPort(LProto.Tcp, port);
           break;
       }
       return mxi.GetHost(appPort);
