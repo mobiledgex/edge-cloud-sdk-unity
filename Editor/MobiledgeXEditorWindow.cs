@@ -224,8 +224,12 @@ namespace MobiledgeX
     string GetSDKVersion()
     {
       TextAsset asset = (TextAsset)AssetDatabase.LoadAssetAtPath("Packages/com.mobiledgex.sdk/package.json", typeof(TextAsset));
-      string sdkVersion = JsonUtility.FromJson<PackageDetails>(asset.text).version;
-      return "v" + sdkVersion;
+      if (asset != null)
+      {
+        string sdkVersion = JsonUtility.FromJson<PackageDetails>(asset.text).version;
+        return "v" + sdkVersion;
+      }
+      return "DEBUG_VER";
     }
 
     /// <summary>
