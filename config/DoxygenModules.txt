@@ -8,7 +8,7 @@
  * The client library also allows verification of a device's location for all location-specific tasks. Because these APIs involve networking, most functions will run asynchronously.
  *
  *
- * -  Check the \link getting_started GettingStarted \endlink page For information about: 
+ * -  Check the \link getting_started Getting Started \endlink page For information about: 
  *   - \link prerequisites SDK prerequisites \endlink
  *   - \link import_sdk How to Import MobiledgeX Unity SDK  \endlink
  *   - \link setup How to Setup SDK  \endlink
@@ -21,7 +21,7 @@
  *   - \link websocket_connection How to Communicate with your Edge Server using WebSockets  \endlink
  *   - \link udp_connection How to Communicate with your Edge Server using UDP  \endlink
  * 
- * - To Navigate the Unity SDK classes please use the tree view, or you use the search bar for searching for a specific function or class
+ * - To Navigate the Unity SDK classes please use the tree view, or you may use the search bar for searching for a specific function or class
  * 
  * The Unity MobiledgeX SDK comes with a MatchingEngineSDKRestLibrary.dll, Please find full documentation of MatchingEngine here <BR> https://api.mobiledgex.net/swagger/mexdemo/edge-cloud-sdk-csharp/html/index.html 
  * \page getting_started Getting Started
@@ -83,12 +83,12 @@
  * 
  * 
  * \page example_usage Example Usage
- * Once that setup has been completed, you can very easily call all the necessary API requests to connect to a cloudlet with your application deployed. Here is some example code using the MobiledgeXIntegration class that comes with the package 
+ * Once that setup has been completed, you can very easily call all the necessary API requests to connect to a cloudlet with your application deployed. Here is some example code using the MobiledgeXIntegration class that comes with the package:
  * 
  * \section edge_url Getting Edge Connection Url
  *
  * 
- * MobiledgeX SDK uses the device Location and [the device's MCC-MNC ID (if avaliable)](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine) to connect you to the closest Edge cloudlet where you application instance is deployed.
+ * MobiledgeX SDK uses the device Location and the device's MCC-MNC if avaliable (https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine) to connect you to the closest Edge cloudlet where you application instance is deployed.
  * 
  * If your carrier is not supported yet by MobiledgeX the SDK will throw a DmeDnsException. You can catch this exception and instead use WifiOnly(true) to connect to [the wifi dme](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine) which will connect you to the closest [regional DME](https://developers.mobiledgex.com/getting-started/connecting-client-app#distributed-matching-engine).
  * 
@@ -139,7 +139,7 @@
  * 
  * **In UnityEditor** 
  * 
- * While developing in Unity Editor (Location is not used), The fallback location by default is San Jose, CA.
+ * While developing in Unity Editor (Location is not used), the fallback location by default is San Jose, CA.
  * 
  * If you wish to change the fallback Location, use SetFallbackLocation() before you call RegisterAndFindCloudlet().
  * 
