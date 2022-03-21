@@ -23,7 +23,14 @@ jobs:
         uses: mattnotmitt/doxygen-action@v1.9.2
         with:  
           doxyfile-path: './config/Doxyfile'
-  
+
+      - name: Clean before commit
+        run: |
+          sudo rm -rf ./sdk
+          sudo mv docs/html/* docs/
+          sudo rm -rf docs/html
+        shell: bash
+
       - name: Commit Doxygen Updates
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
