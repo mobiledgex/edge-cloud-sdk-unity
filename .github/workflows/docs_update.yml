@@ -1,0 +1,34 @@
+
+   
+name: MobiledgeX Unity Docs Update
+
+on: [release]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Docs branch
+        uses: actions/checkout@v2
+        with:
+           ref: docs-config
+           token: ${ secrets.GITHUB_TOKEN )
+        
+      - name: Check out the SDK master branch (REST)
+        uses: actions/checkout@v2
+        with:
+           ref: master
+           path: ./sdk
+           token: ${ secrets.GITHUB_TOKEN )
+
+      - name: Update Docs
+        uses: mattnotmitt/doxygen-action@v1.9.2
+        with:  
+          doxyfile-path: './config/Doxyfile'
+  
+      - name: Commit Doxygen Updates
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+            commit_message: Docs Automated Updates
+            branch: docs
+            push_options: '--force'
