@@ -37,3 +37,4 @@ jobs:
             commit_message: Docs Automated Updates
             branch: docs
             push_options: '--force'
+            add_options: '-u'
