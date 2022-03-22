@@ -38,3 +38,4 @@ jobs:
             branch: docs
             push_options: '--force'
             add_options: '-u'
+            skip_checkout: true
