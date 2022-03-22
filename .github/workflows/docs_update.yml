@@ -2,7 +2,7 @@
    
 name: MobiledgeX Unity Docs Update
 
-on: [push]
+on: [release]
 
 jobs:
   build:
