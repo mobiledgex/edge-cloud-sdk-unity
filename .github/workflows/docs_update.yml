@@ -11,7 +11,7 @@ jobs:
       - name: Check out Docs branch
         uses: actions/checkout@v2
         with:
-           ref: docs-config
+           ref: docs
         
       - name: Check out the SDK master branch (REST)
         uses: actions/checkout@v2
