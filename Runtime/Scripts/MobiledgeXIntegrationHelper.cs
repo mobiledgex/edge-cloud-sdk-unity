@@ -20,6 +20,7 @@ using UnityEngine;
 using DistributedMatchEngine;
 using System.Threading.Tasks;
 using System.Net.Sockets;
+using Grpc.Core;
 using System.Collections.Generic;
 using Google.Protobuf.Collections;
 
@@ -124,10 +125,10 @@ namespace MobiledgeX
           }
         }
       }
-      catch (HttpException httpe)
+      catch (RpcException rpce)
       {
-        Debug.LogError("MobiledgeX: RegisterClient HttpException: " + httpe.Message);
-        throw new RegisterClientException("RegisterClient Exception: " + httpe.Message + ", HTTP StatusCode: " + httpe.HttpStatusCode + ", API ErrorCode: " + httpe.ErrorCode + "\nStack: " + httpe.StackTrace);
+        Debug.LogError("MobiledgeX: RegisterClient RPCException: " + rpce.Message);
+        throw new RegisterClientException("RegisterClient Exception: " + rpce.Message + ", HTTP StatusCode: " + rpce.Status + ", API HResult: " + rpce.HResult + "\nStack: " + rpce.StackTrace);
       }
       catch (Exception e)
       {
@@ -213,9 +214,9 @@ namespace MobiledgeX
           }
         }
       }
-      catch (HttpException httpe)
+      catch (RpcException rpce)
       {
-        throw new FindCloudletException("FindCloudlet Exception: " + httpe.Message + ", HTTP StatusCode: " + httpe.HttpStatusCode + ", API ErrorCode: " + httpe.ErrorCode + "\nStack: " + httpe.StackTrace);
+        throw new FindCloudletException("FindCloudlet Exception: " + rpce.Message + ", HTTP StatusCode: " + rpce.Status + ", API HResult: " + rpce.HResult + "\nStack: " + rpce.StackTrace);
       }
       catch (Exception e)
       {
