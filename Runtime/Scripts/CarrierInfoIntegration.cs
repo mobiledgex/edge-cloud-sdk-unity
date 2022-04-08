@@ -25,6 +25,9 @@ using System.Runtime.InteropServices; //for importing IOS functionS
 
 namespace MobiledgeX
 {
+  /// <summary>
+  /// CarrierInfoException is thrown if there is an error in Roaming Detection.
+  /// </summary>
   public class CarrierInfoException : Exception
   {
     public CarrierInfoException(string message)
@@ -37,7 +40,9 @@ namespace MobiledgeX
     {
     }
   }
-
+  /// <summary>
+  /// CarrierInfoClass is responsible for collecting data about the device and the telecom carrier.
+  /// </summary>
   public class CarrierInfoClass : CarrierInfo
   {
 #pragma warning disable 0649
@@ -125,6 +130,10 @@ namespace MobiledgeX
       }*/
     }
 
+    /// <summary>
+	  /// Gets the Android SDK Version (android.os.Build$VERSION)
+	  /// </summary>
+	  /// <returns>Android SDK Version (integer)</returns>
     public int getAndroidSDKVers()
     {
       AndroidJavaClass version = PlatformIntegrationUtil.GetAndroidJavaClass("android.os.Build$VERSION");
@@ -136,6 +145,11 @@ namespace MobiledgeX
       return PlatformIntegrationUtil.GetStatic<int>(version, "SDK_INT");
     }
 
+    /// <summary>
+	  /// Obtains the TelephonyManager object from the device(Android Only).
+	  /// https://developer.android.com/reference/android/telephony/TelephonyManager
+	  /// </summary>
+	  /// <returns> Telephony Manager(AndroidJavaObject)</returns>
     public AndroidJavaObject GetTelephonyManager()
     {
       AndroidJavaClass unityPlayer = PlatformIntegrationUtil.GetAndroidJavaClass("com.unity3d.player.UnityPlayer");
@@ -195,6 +209,11 @@ namespace MobiledgeX
       return telManager;
     }
 
+    /// <summary>
+	  /// Gets the current carrier name from the device
+	  /// (Android) Requires TelephonyManager
+	  /// </summary>
+	  /// <returns>Network Operator Name (string)</returns>
     public string GetCurrentCarrierName()
     {
       string networkOperatorName = "";
@@ -222,6 +241,11 @@ namespace MobiledgeX
       return networkOperatorName;
     }
 
+    /// <summary>
+	  /// MCC-MNC (Mobile Country Code- Mobile Network Code)
+	  /// Gets the MCC-MNC code from the device, used for selecting the regional DME 
+	  /// </summary>
+	  /// <returns>MCC-MNC code (string)</returns>
     public string GetMccMnc()
     {
       string mccmnc = null;
@@ -252,7 +276,7 @@ namespace MobiledgeX
       return mccmnc;
     }
 
-    KeyValuePair<string, ulong> GetCidKeyValuePair(AndroidJavaObject cellInfo)
+    private KeyValuePair<string, ulong> GetCidKeyValuePair(AndroidJavaObject cellInfo)
     {
       KeyValuePair<string, ulong> pair = new KeyValuePair<string, ulong>(null, 0);
 
@@ -321,6 +345,12 @@ namespace MobiledgeX
 
     }
 
+    /// <summary>
+	  /// Obtains a list of Cellular Info from the device.
+	  /// (Android)Requires Access to TelephonyManager and permission to access the user fine location.
+	  /// https://developer.android.com/reference/android/telephony/CellInfo
+	  /// </summary>
+	  /// <returns>List of KeyValue Pairs <string, unsigned long></returns>
     public List<KeyValuePair<String, ulong>> GetCellInfoList()
     {
       if (Application.platform != RuntimePlatform.Android)
@@ -378,6 +408,10 @@ namespace MobiledgeX
       return cellIDList;
     }
 
+    /// <summary>
+	  /// Obtains CellIdentity from the device
+	  /// </summary>
+	  /// <returns>CellIdentity (unsinged long)</returns>
     public ulong GetCellID()
     {
       /*
@@ -399,6 +433,11 @@ namespace MobiledgeX
       return 0;
     }
 
+    /// <summary>
+    /// Obtains the NetworkDataType (GPRS, LTE ... )
+    /// (Android)Requires READ_PHONE_STATE permission
+    /// </summary>
+    /// <returns> NetworkDataType (string)</returns>
     public string GetDataNetworkPath()
     {
       AndroidJavaObject telManager = GetTelephonyManager();
@@ -427,6 +466,11 @@ namespace MobiledgeX
       }
     }
 
+    /// <summary>
+	  /// Obtains the Signal Strength of the network
+	  /// (Android) Requires TelephonyManager
+	  /// </summary>
+	  /// <returns>Signal Strength (unsigned long)</returns>
     public ulong GetSignalStrength()
     {
       AndroidJavaObject telManager = GetTelephonyManager();
@@ -467,6 +511,10 @@ namespace MobiledgeX
     [DllImport("__Internal")]
     private static extern string _getISOCountryCodeFromCarrier();
 
+    /// <summary>
+	  /// Gets the current carrier name from the device
+	  /// </summary>
+	  /// <returns>Network Operator Name (string)</returns>
     public string GetCurrentCarrierName()
     {
       string networkOperatorName = "";
@@ -477,6 +525,11 @@ namespace MobiledgeX
       return networkOperatorName;
     }
 
+    /// <summary>
+	  /// MCC-MNC (Mobile Country Code- Mobile Network Code)
+	  /// Gets the MCC-MNC code from the device used for selecting the regional DME 
+	  /// </summary>
+	  /// <returns>MCC-MNC code (string)</returns>
     public string GetMccMnc()
     {
       string mccmnc = null;
@@ -487,6 +540,10 @@ namespace MobiledgeX
       return mccmnc;
     }
 
+    /// <summary>
+	  /// Obtains CellIdentity from the device
+	  /// </summary>
+	  /// <returns>CellIdentity (unsinged long)</returns>
     public ulong GetCellID()
     {
       int cellID = 0;
@@ -497,16 +554,33 @@ namespace MobiledgeX
       return (ulong)cellID;
     }
 
+    /// <summary>
+    /// Obtains the NetworkDataType (GPRS, LTE ... )
+    /// Requires READ_PHONE_STATE permission on Android Phones
+    /// </summary>
+    /// <returns> NetworkDataType (string)</returns>
     public string GetDataNetworkPath()
     {
       return "";
     }
 
+    /// <summary>
+	  /// Obtains the Signal Strength of the network
+	  /// </summary>
+	  /// <returns>Signal Strength (unsigned long)</returns>
     public ulong GetSignalStrength()
     {
       return 0;
     }
 
+    /// <summary>
+	  /// Returns wether the device is on the normal provider network or another network.
+	  /// This method compares between the ISO Country code obtained from the DeviceLocation and from the DeviceCarrier
+	  /// (Asynchronous method) (iOS only)
+	  /// </summary>
+	  /// <param name="longitude">(double)</param>
+	  /// <param name="latitude">(double)</param>
+	  /// <returns>boolean value</returns>
     public async Task<bool> IsRoaming(double longitude, double latitude)
     {
       if (Application.platform == RuntimePlatform.IPhonePlayer)
@@ -544,6 +618,13 @@ namespace MobiledgeX
       return false;
     }
 
+    /// <summary>
+    /// Convert GPS (longitude, latitude) to ISOCountryCode
+	  /// (Asynchronous method)(iOS only)
+    /// </summary>
+    /// <param name="longitude">(double)</param>
+    /// <param name="latitude">(double)</param>
+    /// <returns>ISOCountryCode (string)</returns>
     public async Task<string> ConvertGPSToISOCountryCode(double longitude, double latitude)
     {
       if (Application.platform == RuntimePlatform.IPhonePlayer)
@@ -563,6 +644,11 @@ namespace MobiledgeX
       return null;
     }
 
+    /// <summary>
+	  /// Gets the ISO Country Code from the device location.
+	  /// (iOS only)
+	  /// </summary>
+	  /// <returns>ISO Country Code (string)</returns>
     public string GetISOCountryCodeFromGPS()
     {
       string isoCC = null;
@@ -573,6 +659,11 @@ namespace MobiledgeX
       return isoCC;
     }
 
+    /// <summary>
+	  /// Gets the ISO Country Code from the device carrier.
+	  /// (iOS only)
+	  /// </summary>
+	  /// <returns>ISO Country Code (string)</returns>
     public string GetISOCountryCodeFromCarrier()
     {
       string isoCC = null;
@@ -585,31 +676,52 @@ namespace MobiledgeX
 
 #else
 
-    // Implement CarrierInfo
+    /// <summary>
+    /// Gets the current carrier name from the device
+    /// </summary>
+    /// <returns>Network Operator Name (string)</returns>
     public string GetCurrentCarrierName()
     {
       Logger.Log("GetCurrentCarrierName is NOT IMPLEMENTED");
       return null;
     }
 
+    /// <summary>
+	  /// MCC-MNC (Mobile Country Code- Mobile Network Code)
+	  /// Gets the MCC-MNC code from the device used for selecting the regional DME 
+	  /// </summary>
+	  /// <returns>MCC-MNC code (string)</returns>
     public string GetMccMnc()
     {
       Logger.Log("GetMccMnc is NOT IMPLEMENTED");
       return null;
     }
 
+    /// <summary>
+	  /// Obtains CellIdentity from the device
+	  /// </summary>
+	  /// <returns>CellIdentity (unsinged long)</returns>
     public ulong GetCellID()
     {
       Logger.Log("GetCellID is NOT IMPLEMENTED");
       return 0;
     }
 
+    /// <summary>
+    /// Obtains the NetworkDataType (GPRS, LTE ... )
+    /// Requires READ_PHONE_STATE permission on Android Phones
+    /// </summary>
+    /// <returns> NetworkDataType (string)</returns>
     public string GetDataNetworkPath()
     {
       Logger.Log("GetDataNetworkPath is NOT IMPLEMENTED");
       return "";
     }
 
+    /// <summary>
+	  /// Obtains the Signal Strength of the network
+	  /// </summary>
+	  /// <returns>Signal Strength (unsigned long)</returns>
     public ulong GetSignalStrength()
     {
       Logger.Log("GetSignalStrength is NOT IMPLEMENTED");
@@ -620,30 +732,53 @@ namespace MobiledgeX
 
   }
 
-  // Used for testing in UnityEditor (any target platform)
+  /// <summary>
+  /// Used for testing in UnityEditor (any target platform)
+  /// </summary>
   public class TestCarrierInfoClass : CarrierInfo
   {
-    // Implement CarrierInfo
+    /// <summary>
+	  /// Gets the current carrier name from the device
+	  /// </summary>
+	  /// <returns>Network Operator Name (string)</returns>
     public string GetCurrentCarrierName()
     {
       return "";
     }
 
+    /// <summary>
+	  /// MCC-MNC (Mobile Country Code- Mobile Network Code)
+	  /// Gets the MCC-MNC code from the device used for selecting the regional DME 
+	  /// </summary>
+	  /// <returns>MCC-MNC code (string)</returns>
     public string GetMccMnc()
     {
       return "";
     }
 
+    /// <summary>
+	  /// Obtains CellIdentity from the device
+	  /// </summary>
+	  /// <returns>CellIdentity (unsinged long)</returns>
     public ulong GetCellID()
     {
       return 0;
     }
 
+    /// <summary>
+    /// Obtains the NetworkDataType (GPRS, LTE ... )
+    /// Requires READ_PHONE_STATE permission on Android Phones
+    /// </summary>
+    /// <returns> NetworkDataType (string)</returns>
     public string GetDataNetworkPath()
     {
       return "";
     }
 
+    /// <summary>
+	  /// Obtains the Signal Strength of the network
+	  /// </summary>
+	  /// <returns>Signal Strength (unsigned long)</returns>
     public ulong GetSignalStrength()
     {
       return 0;
