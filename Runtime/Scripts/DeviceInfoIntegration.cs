@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 MobiledgeX, Inc. All rights and licenses reserved.
+ * Copyright 2019-2022 MobiledgeX, Inc. All rights and licenses reserved.
  * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,9 +21,12 @@ using UnityEngine;
 
 namespace MobiledgeX
 {
+  /// <summary>
+  /// DeviceInfoIntegration is responsible for collecting Device low level information across different operating systems
+  /// </summary>
   public class DeviceInfoIntegration : DeviceInfo
   {
-    CarrierInfo overrideCarrierInfo;
+    private CarrierInfo overrideCarrierInfo;
 
     public DeviceInfoIntegration(CarrierInfo overrideCarrierInfo = null)
     {
@@ -34,6 +37,10 @@ namespace MobiledgeX
     {
     }
 
+    /// <summary>
+    /// Retrieves the device information (DataNetworkPath, CarrierName, SignalStrength, DeviceOS, DeviceModel)
+    /// </summary>
+    /// <returns> Device Information Dictionary(string, string)</returns>
     public Dictionary<string, string> GetDeviceInfo()
     {
       CarrierInfo carrierInfo = overrideCarrierInfo;
@@ -51,16 +58,28 @@ namespace MobiledgeX
       return deviceInfo;
     }
 #if UNITY_IOS
+    /// <summary>
+    /// Returns wether the OS supports the network utility Ping (ICMP packets)
+    /// </summary>
+    /// <returns>boolean</returns>
     public bool IsPingSupported()
     {
-       return false;
+      return false;
     }
 #elif UNITY_ANDROID
+    /// <summary>
+    /// Returns wether the OS supports the network utility Ping (ICMP packets)
+    /// </summary>
+    /// <returns>boolean</returns>
     public bool IsPingSupported()
     {
       return true;
     }
 #else //unsupported platform
+    /// <summary>
+    /// Returns wether the OS supports the network utility Ping (ICMP packets)
+    /// </summary>
+    /// <returns>boolean</returns>
     public bool IsPingSupported()
     {
       return true;
@@ -69,15 +88,25 @@ namespace MobiledgeX
 
   }
 
-  // Used for DeviceInfo in UnityEditor (any target platform)
+  /// <summary>
+  /// Used for DeviceInfo in UnityEditor (any target platform)
+  /// </summary>
   public class TestDeviceInfo : DeviceInfo
   {
+    /// <summary>
+    /// Retrieves the device information (DataNetworkPath, CarrierName, SignalStrength, DeviceOS, DeviceModel)
+    /// </summary>
+    /// <returns> Device Information Dictionary(string, string)</returns>
     public Dictionary<string, string> GetDeviceInfo()
     {
       Logger.Log("DeviceInfo not implemented!");
       return null;
     }
 
+    /// <summary>
+    /// Returns wether the OS supports the network utility Ping (ICMP packets)
+    /// </summary>
+    /// <returns>boolean</returns>
     public bool IsPingSupported()
     {
       return true;

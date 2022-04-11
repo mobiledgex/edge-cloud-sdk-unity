@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2021 MobiledgeX, Inc. All rights and licenses reserved.
+ * Copyright 2019-2022 MobiledgeX, Inc. All rights and licenses reserved.
  * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
