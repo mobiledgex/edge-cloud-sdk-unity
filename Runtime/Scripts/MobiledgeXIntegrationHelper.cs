@@ -1,5 +1,5 @@
 /**
-* Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
+* Copyright 2018-2022 MobiledgeX, Inc. All rights and licenses reserved.
 * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,6 +28,10 @@ using System.Collections.Generic;
 
 namespace MobiledgeX
 {
+  /// <summary>
+  /// AppPort Exception is thrown if the SDK is not able to detect the AppPort.
+  /// For example: EmptyFindCloudlet, Port not found or Protocol is not supported.
+  /// </summary>
   public class AppPortException : Exception
   {
     public AppPortException(string message)
@@ -41,6 +45,9 @@ namespace MobiledgeX
     }
   }
 
+  /// <summary>
+  /// Location Struct used in MobiledgeX SDK
+  /// </summary>
   public struct Location
   {
     public Location(double longitude, double latitude)
