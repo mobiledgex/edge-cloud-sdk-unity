@@ -34,54 +34,94 @@ namespace MobiledgeX
 {
   public partial class MobiledgeXIntegration : IDisposable
   {
-    public static string sdkVersion { get; set; }
+    internal static string sdkVersion { get; set; }
 
     /// <summary>
     /// Scriptable Object Holding MobiledgeX Settings (OrgName, AppName, AppVers)
     /// </summary>
     public static MobiledgeXSettings settings = Resources.Load<MobiledgeXSettings>("MobiledgeXSettings");
 
+    private PlatformIntegration pIntegration;
+
     /// <summary>
-    /// MatchingEngine objects
+    /// MobiledgeX MatchingEngine, this is MobiledgeX C# SDK
+    /// Please refer to the documentation here
+    /// https://api.mobiledgex.net/swagger/mexdemo/edge-cloud-sdk-csharp/html/index.html
     /// </summary>
-    PlatformIntegration pIntegration;
     public MatchingEngine matchingEngine;
-
     /// <summary>
-    /// MatchingEngine API parameters
+    ///  carrierName depends on the available subscriber SIM card and roaming carriers, and must be supplied by platform API.
     /// </summary>
-    public string carrierName { get; set; } = ""; // carrierName depends on the available subscriber SIM card and roaming carriers, and must be supplied by platform API.
-    public string orgName { get; set; } = ""; // Organization name
-    public string appName { get; set; } = ""; // Your appName, if you have created this in the MobiledgeX console.
-    public string appVers { get; set; } = ""; // Your app version uploaded to the docker registry.
-    public string developerAuthToken { get; set; } = ""; // This is an opaque string value supplied by the developer.
+    public string carrierName { get; set; } = "";
+    /// <summary>
+    /// Organization name
+    /// </summary>
+    public string orgName { get; set; } = "";
+    /// <summary>
+    /// Your  MobiledgeX console appName
+    /// </summary>
+    public string appName { get; set; } = "";
+    /// <summary>
+    /// Your app version uploaded to MobiledgeX docker registry.
+    /// </summary>
+    public string appVers { get; set; } = "";
+    /// <summary>
+    /// An opaque string value supplied by the developer.
+    /// </summary>
+    public string developerAuthToken { get; set; } = "";
+    /// <summary>
+    /// Cellular Identity
+    /// </summary>
     public uint cellID { get; set; } = 0;
-    public string uniqueIDType { get; set; } = "";
-    public string uniqueID { get; set; } = "";
-    public Loc location { get; set; } = new Loc();
-
     /// <summary>
-    /// Public MatchingEngine Reply/ State properties
+    /// The UniqueIdentifier type
     /// </summary>
-    public bool RegisterStatus { get { return latestRegisterStatus; } } // Whether the most recent registerClient call was successful
-    public FindCloudletReply FindCloudletReply { get { return latestFindCloudletReply; } } // Stored to be used in GetUrl, GetHost, GetPort, Get[]Connection
-    public bool VerifyLocationStatus { get { return latestVerifyLocationStatus; } } // Whether the most recent verifyLocation call was successful
-    public FindCloudletMode Mode { get { return mode; } } // FindCloudlet mode
+    public string uniqueIDType { get; set; } = "";
+    /// <summary>
+    /// The UniqueIdentifier for the device 
+    /// </summary>
+    public string uniqueID { get; set; } = "";
+    /// <summary>
+    /// The Device Location
+    /// </summary>
+    public Loc location { get; set; } = new Loc();
+    /// <summary>
+    /// Whether the most recent registerClient call was successful
+    /// </summary>
+    public bool RegisterStatus { get { return latestRegisterStatus; } }
+    /// <summary>
+    /// Stored to be used in GetUrl, GetHost, GetPort, Get[]Connection
+    /// </summary>
+    public FindCloudletReply FindCloudletReply { get { return latestFindCloudletReply; } }
+    /// <summary>
+    /// Whether the most recent verifyLocation call was successful
+    /// </summary>
+    public bool VerifyLocationStatus { get { return latestVerifyLocationStatus; } }
+    /// <summary>
+    /// FindCloudlet mode (Proximity Mode, Performance Mode)
+    /// </summary>
+    public FindCloudletMode Mode { get { return mode; } }
+    /// <summary>
+    /// Latest Application Port object
+    /// </summary>
     public AppPort AppPort { get { return latestAppPort; } }
+    /// <summary>
+    /// ApplicationPorts List
+    /// </summary>
     public AppPort[] AppPortList { get { return latestAppPortList; } }
 
     /// <summary>
     /// MatchingEngine Reply/ State variables (for internal use)
     /// </summary>
-    bool latestRegisterStatus = false; // Whether the most recent registerClient call was successful
-    FindCloudletReply latestFindCloudletReply = null; // Stored to be used in GetUrl, GetHost, GetPort, Get[]Connection
-    bool latestVerifyLocationStatus = false; // Whether the most recent verifyLocation call was successful
-    FindCloudletMode mode = FindCloudletMode.PROXIMITY; // FindCloudlet mode
-    AppPort latestAppPort = null;
-    AppPort[] latestAppPortList = null;
-    Location fallbackLocation = new Location(0, 0);
+    private bool latestRegisterStatus = false; // Whether the most recent registerClient call was successful
+    private FindCloudletReply latestFindCloudletReply = null; // Stored to be used in GetUrl, GetHost, GetPort, Get[]Connection
+    private bool latestVerifyLocationStatus = false; // Whether the most recent verifyLocation call was successful
+    private FindCloudletMode mode = FindCloudletMode.PROXIMITY; // FindCloudlet mode
+    private AppPort latestAppPort = null;
+    private AppPort[] latestAppPortList = null;
+    private Location fallbackLocation = new Location(0, 0);
 
-    string region
+    private string region
     {
       get
       {
