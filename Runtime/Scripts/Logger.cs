@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
+ * Copyright 2018-2022 MobiledgeX, Inc. All rights and licenses reserved.
  * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,10 +19,17 @@ using UnityEngine;
 
 namespace MobiledgeX
 {
+  /// <summary>
+  /// Internal class for MobiledgeX SDK logs
+  /// </summary>
   public class Logger
   {
+    /// <summary>
+    /// Defines the log level for the SDK, Its advised to set the log level to ErrorsOnly in a production environment.
+    /// </summary>
     public enum LogType { All, ErrorsAndWarnings, ErrorsOnly };
-    public static void LogWarning(string message)
+
+    internal static void LogWarning(string message)
     {
       if (MobiledgeXIntegration.settings.logType == LogType.All || MobiledgeXIntegration.settings.logType == LogType.ErrorsAndWarnings)
       {
@@ -30,7 +37,7 @@ namespace MobiledgeX
       }
     }
 
-    public static void Log(string message)
+    internal static void Log(string message)
     {
       if (MobiledgeXIntegration.settings.logType == LogType.All)
       {
