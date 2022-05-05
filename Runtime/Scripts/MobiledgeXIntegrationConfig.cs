@@ -1,5 +1,5 @@
 /**
-* Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
+* Copyright 2018-2022 MobiledgeX, Inc. All rights and licenses reserved.
 * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -79,7 +79,12 @@ namespace MobiledgeX
       fallbackLocation.Longitude = longitude;
       fallbackLocation.Latitude = latitude;
     }
-
+    /// <summary>
+    /// Gets the location from the IP Address
+    /// The location retrieved from this method is very arbitrary (ex. Country Location),this method becomes handy if the user rejects the precise location permissions.
+    /// The method uses FreeGeoIP API https://freegeoip.app/json/ , please refer to the FreeGeoIP API rate limiting for more details
+    /// </summary>
+    /// <returns>LocationFromIPAddress Task</returns>
     public static async Task<LocationFromIPAddress> GetLocationFromIP()
     {
       HttpClient httpClient = new HttpClient();
@@ -88,6 +93,10 @@ namespace MobiledgeX
         HttpResponseMessage response = await httpClient.GetAsync("https://freegeoip.app/json/").ConfigureAwait(false);
         string responseBodyStr = response.Content.ReadAsStringAsync().Result;
         LocationFromIPAddress location = Messaging<LocationFromIPAddress>.Deserialize(responseBodyStr);
+        if (location.latitude == 0 && location.longitude == 0)
+        {
+          throw new Exception("Location API returned {0,0}, Overriding Location to (37.3382, 121.8863)");
+        }
         return location;
       }
       catch (Exception)
@@ -100,6 +109,9 @@ namespace MobiledgeX
       }
     }
 
+    /// <summary>
+    /// Used for deserializing the FreeGeoIP API response, used in GetLocationFromIP()
+    /// </summary>
     [DataContract]
     public class LocationFromIPAddress
     {
@@ -109,14 +121,28 @@ namespace MobiledgeX
       public float latitude;
     }
 
+    /// <summary>
+    /// Helper class used for deserializing JSON and Byte Streams
+    /// </summary>
+    /// <typeparam name="T">DataType compatible with jsonString and Stream Objects</typeparam>
     public static class Messaging<T>
     {
+      /// <summary>
+      /// Deserializes jsonString into a C# Object
+      /// </summary>
+      /// <param name="jsonString">UTF8 jsonString</param>
+      /// <returns>C# Object (T)</returns>
       public static T Deserialize(string jsonString)
       {
         MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(jsonString ?? ""));
         return Deserialize(ms);
       }
 
+      /// <summary>
+      /// Deserializes a Stream into a C# Object
+      /// </summary>
+      /// <param name="stream">Stream Object</param>
+      /// <returns>C# Object (T)</returns>
       public static T Deserialize(Stream stream)
       {
         DataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(T));

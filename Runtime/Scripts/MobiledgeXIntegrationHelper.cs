@@ -1,5 +1,5 @@
 /**
-* Copyright 2018-2021 MobiledgeX, Inc. All rights and licenses reserved.
+* Copyright 2018-2022 MobiledgeX, Inc. All rights and licenses reserved.
 * MobiledgeX, Inc. 156 2nd Street #408, San Francisco, CA 94105
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,6 +28,10 @@ using System.Collections.Generic;
 
 namespace MobiledgeX
 {
+  /// <summary>
+  /// AppPort Exception is thrown if the SDK is not able to detect the AppPort.
+  /// For example: EmptyFindCloudlet, Port not found or Protocol is not supported.
+  /// </summary>
   public class AppPortException : Exception
   {
     public AppPortException(string message)
@@ -41,6 +45,9 @@ namespace MobiledgeX
     }
   }
 
+  /// <summary>
+  /// Location Struct used in MobiledgeX SDK
+  /// </summary>
   public struct Location
   {
     public Location(double longitude, double latitude)
@@ -139,7 +146,7 @@ namespace MobiledgeX
           Debug.LogError("MobiledgeX: Register reply NULL!");
           throw new RegisterClientException("RegisterClient returned null.");
         }
-        if (reply.status != ReplyStatus.RS_SUCCESS)
+        if (reply.status != ReplyStatus.Success)
         {
           Debug.LogError("MobiledgeX: Register Failed: " + reply.status);
           throw new RegisterClientException("Bad RegisterClient. RegisterClient status is " + reply.status);
@@ -226,7 +233,7 @@ namespace MobiledgeX
         {
           throw new FindCloudletException("FindCloudletReply returned null. Make Sure you created App Instances for your Application and they are deployed in the correct region.");
         }
-        if (reply.status != FindCloudletReply.FindStatus.FIND_FOUND)
+        if (reply.status != FindCloudletReply.FindStatus.Found)
         {
           throw new FindCloudletException("Unable to findCloudlet. Status is " + reply.status);
         }
@@ -235,7 +242,7 @@ namespace MobiledgeX
       Logger.Log("FindCloudlet with DME result: " + reply.status);
       latestFindCloudletReply = reply;
       latestAppPortList = reply.ports;
-      return reply.status == FindCloudletReply.FindStatus.FIND_FOUND;
+      return reply.status == FindCloudletReply.FindStatus.Found;
     }
 
     /// <summary>

@@ -46,7 +46,7 @@ public class ExampleNonCellular : MonoBehaviour
       Debug.Log("FindCloudletException: " + fce.Message + "Inner Exception: " + fce.InnerException);
       // your fallback logic here
     }
-    mxi.GetAppPort(LProto.L_PROTO_TCP); // or LProto.L_PROTO_UDP
+    mxi.GetAppPort(LProto.Tcp); // or LProto.L_PROTO_UDP
     string url = mxi.GetUrl("http"); // or another L7 proto such as https, ws, wss, udp
 
     Debug.Log("url : " + url); // Once you have your edge server url you can start communicating with your Edge server

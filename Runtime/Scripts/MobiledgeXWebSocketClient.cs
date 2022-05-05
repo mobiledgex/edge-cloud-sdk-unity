@@ -241,7 +241,6 @@ namespace MobiledgeX
       if (ws != null)
       {
         ws.Abort();
-        ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Dispose", tokenSource.Token).ConfigureAwait(false).GetAwaiter().GetResult();
         ws = null;
       }
     }

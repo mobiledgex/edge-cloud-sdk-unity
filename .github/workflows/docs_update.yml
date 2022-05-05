@@ -1,0 +1,41 @@
+
+   
+name: MobiledgeX Unity Docs Update
+
+on: [release]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Docs branch
+        uses: actions/checkout@v2
+        with:
+           ref: docs
+        
+      - name: Check out the SDK master branch (REST)
+        uses: actions/checkout@v2
+        with:
+           ref: master
+           path: ./sdk
+
+      - name: Update Docs
+        uses: mattnotmitt/doxygen-action@v1.9.2
+        with:  
+          doxyfile-path: './config/Doxyfile'
+
+      - name: Clean before commit
+        run: |
+          sudo rm -rf ./sdk
+          sudo mv docs/html/* docs/
+          sudo rm -rf docs/html
+          sudo cp ./config/tab_b.png ./docs/tab_b.png 
+        shell: bash
+
+      - name: Commit Doxygen Updates
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+            commit_message: Docs Automated Updates
+            branch: docs
+            push_options: '--force'
+            skip_checkout: true
